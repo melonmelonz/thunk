@@ -1,12 +1,12 @@
 [package]
-name = "kern-content"
+name = "thunk-content"
 version.workspace = true
 edition.workspace = true
 license.workspace = true
-description = "kern curriculum, embedded at compile time."
+description = "thunk curriculum, embedded at compile time."
 
 [dependencies]
-kern-core = { path = "../kern-core" }
+thunk-core = { path = "../thunk-core" }
 serde = { workspace = true }
 ron = { workspace = true }
 rust-embed = { workspace = true }

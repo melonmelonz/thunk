@@ -7,8 +7,17 @@ pub struct CheckId(pub String);
 
 #[derive(Clone, Debug, PartialEq, Eq, Serialize, Deserialize)]
 pub enum Check {
-    Choice { id: CheckId, prompt: String, options: Vec<String>, answer: usize },
-    Short { id: CheckId, prompt: String, answers: Vec<String> },
+    Choice {
+        id: CheckId,
+        prompt: String,
+        options: Vec<String>,
+        answer: usize,
+    },
+    Short {
+        id: CheckId,
+        prompt: String,
+        answers: Vec<String>,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
@@ -50,7 +59,11 @@ impl Check {
             }
             _ => false,
         };
-        if ok { Verdict::Correct } else { Verdict::Incorrect }
+        if ok {
+            Verdict::Correct
+        } else {
+            Verdict::Incorrect
+        }
     }
 }
 
@@ -85,8 +98,17 @@ mod tests {
     #[test]
     fn canonical_answer_always_grades_correct() {
         let checks = vec![
-            Check::Choice { id: CheckId("a".into()), prompt: "p".into(), options: vec!["x".into(), "y".into()], answer: 1 },
-            Check::Short { id: CheckId("b".into()), prompt: "p".into(), answers: vec!["mmap".into(), "map".into()] },
+            Check::Choice {
+                id: CheckId("a".into()),
+                prompt: "p".into(),
+                options: vec!["x".into(), "y".into()],
+                answer: 1,
+            },
+            Check::Short {
+                id: CheckId("b".into()),
+                prompt: "p".into(),
+                answers: vec!["mmap".into(), "map".into()],
+            },
         ];
         for c in &checks {
             assert_eq!(c.grade(&c.canonical_answer()), Verdict::Correct);

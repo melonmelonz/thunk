@@ -9,7 +9,11 @@ pub struct Panel {
 
 impl Panel {
     pub fn new(w: usize, h: usize) -> Self {
-        Self { w, h, buf: vec![0; w * h] }
+        Self {
+            w,
+            h,
+            buf: vec![0; w * h],
+        }
     }
     pub fn fill(&mut self, color: u16) {
         for p in &mut self.buf {

@@ -180,36 +180,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a6cb138bb79a146c1bd460005623e142ef0181e3d0219cb493e02f7d08a35695"
 
 [[package]]
-name = "kern-cli"
-version = "0.1.0"
-dependencies = [
- "clap",
- "kern-content",
- "kern-sim",
-]
-
-[[package]]
-name = "kern-content"
-version = "0.1.0"
-dependencies = [
- "kern-core",
- "ron",
- "rust-embed",
- "serde",
-]
-
-[[package]]
-name = "kern-core"
-version = "0.1.0"
-dependencies = [
- "serde",
-]
-
-[[package]]
-name = "kern-sim"
-version = "0.1.0"
-
-[[package]]
 name = "libc"
 version = "0.2.186"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -351,6 +321,36 @@ dependencies = [
  "quote",
  "unicode-ident",
 ]
+
+[[package]]
+name = "thunk-cli"
+version = "0.1.0"
+dependencies = [
+ "clap",
+ "thunk-content",
+ "thunk-sim",
+]
+
+[[package]]
+name = "thunk-content"
+version = "0.1.0"
+dependencies = [
+ "ron",
+ "rust-embed",
+ "serde",
+ "thunk-core",
+]
+
+[[package]]
+name = "thunk-core"
+version = "0.1.0"
+dependencies = [
+ "serde",
+]
+
+[[package]]
+name = "thunk-sim"
+version = "0.1.0"
 
 [[package]]
 name = "typenum"

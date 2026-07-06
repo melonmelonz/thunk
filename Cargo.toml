@@ -1,14 +1,14 @@
 [workspace]
 resolver = "2"
-members = ["kern-core", "kern-content", "kern-sim", "kern-cli"]
+members = ["thunk-core", "thunk-content", "thunk-sim", "thunk-cli"]
 
 [workspace.package]
 version = "0.1.0"
 edition = "2021"
 license = "MIT OR Apache-2.0"
 authors = ["Penn Porterfield"]
-repository = "https://github.com/melonmelonz/kern"
-description = "kern: a self-contained, offline systems course. From true zero to DOOM on a panel."
+repository = "https://github.com/melonmelonz/thunk"
+description = "thunk: a self-contained, offline systems course. From true zero to DOOM on a panel."
 
 [workspace.dependencies]
 serde = { version = "1", features = ["derive"] }

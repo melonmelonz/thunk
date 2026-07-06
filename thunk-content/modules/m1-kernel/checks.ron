@@ -1,0 +1,107 @@
+[
+    // --- Lesson 01: programs and the OS ---
+    Choice(
+        id: CheckId("m1-01-privilege"),
+        prompt: "Which processor mode is allowed to change page tables and talk to devices directly?",
+        options: ["user mode", "kernel mode"],
+        answer: 1,
+    ),
+    Short(
+        id: CheckId("m1-01-syscall"),
+        prompt: "What is the name for the controlled doorway a program uses to ask the kernel for something? (one word is fine)",
+        answers: ["syscall", "system call"],
+    ),
+    Choice(
+        id: CheckId("m1-01-owns"),
+        prompt: "Which of these does the kernel own and manage?",
+        options: [
+            "the color theme of your text editor",
+            "the scheduler and the page tables",
+            "the contents of a program's source file",
+        ],
+        answer: 1,
+    ),
+
+    // --- Lesson 02: syscalls ---
+    Choice(
+        id: CheckId("m1-02-register"),
+        prompt: "On x86-64, which register holds the syscall number?",
+        options: ["rdi", "rax", "rsp"],
+        answer: 1,
+    ),
+    Short(
+        id: CheckId("m1-02-negative"),
+        prompt: "A syscall returns a negative number. What does that usually indicate? (one word)",
+        answers: ["error", "failure", "an error"],
+    ),
+    Choice(
+        id: CheckId("m1-02-strace"),
+        prompt: "Which tool prints every syscall a program makes?",
+        options: ["strace", "gdb", "make"],
+        answer: 0,
+    ),
+
+    // --- Lesson 03: files and devices ---
+    Short(
+        id: CheckId("m1-03-fd"),
+        prompt: "What is the small integer the kernel hands back when you open something called? (two words, or the abbreviation)",
+        answers: ["file descriptor", "fd"],
+    ),
+    Choice(
+        id: CheckId("m1-03-stdout"),
+        prompt: "Which file descriptor is standard output?",
+        options: ["0", "1", "2"],
+        answer: 1,
+    ),
+    Short(
+        id: CheckId("m1-03-ioctl"),
+        prompt: "Which syscall handles device controls that do not fit read or write?",
+        answers: ["ioctl"],
+    ),
+
+    // --- Lesson 04: memory and mmap ---
+    Choice(
+        id: CheckId("m1-04-page"),
+        prompt: "What is the usual size of a memory page?",
+        options: ["512 bytes", "4096 bytes", "one megabyte"],
+        answer: 1,
+    ),
+    Short(
+        id: CheckId("m1-04-mmap"),
+        prompt: "Which syscall asks the kernel to map memory?",
+        answers: ["mmap"],
+    ),
+    Choice(
+        id: CheckId("m1-04-isolation"),
+        prompt: "Why can two programs both use address 0x1000 without colliding?",
+        options: [
+            "they take turns using it",
+            "each program has its own page tables",
+            "the processor zeroes it between programs",
+        ],
+        answer: 1,
+    ),
+
+    // --- Lesson 05: drivers ---
+    Choice(
+        id: CheckId("m1-05-driver"),
+        prompt: "What is a driver?",
+        options: [
+            "a user program that opens files",
+            "kernel code that speaks one device's specific language",
+            "a kind of memory",
+        ],
+        answer: 1,
+    ),
+    Short(
+        id: CheckId("m1-05-interrupt"),
+        prompt: "What does a device raise to get the processor's attention? (one word)",
+        answers: ["interrupt", "an interrupt"],
+    ),
+    Choice(
+        id: CheckId("m1-05-bus"),
+        prompt: "The display panel in this course is reached over which wire protocol?",
+        options: ["USB", "SPI", "Wi-Fi"],
+        answer: 1,
+    ),
+]

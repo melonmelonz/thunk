@@ -1,8 +1,8 @@
 //! The curriculum, baked into the binary at compile time. No files ship alongside.
 
-use kern_core::{Check, Lesson, LessonId, Module, ModuleId};
 use rust_embed::RustEmbed;
 use serde::Deserialize;
+use thunk_core::{Check, Lesson, LessonId, Module, ModuleId};
 
 #[derive(RustEmbed)]
 #[folder = "modules/"]
@@ -47,10 +47,18 @@ impl Curriculum {
             .map(|lid| {
                 let body = read(&format!("{dir}/{lid}.md"));
                 let title = title_of(&body, lid);
-                Lesson { id: LessonId(lid.clone()), title, body }
+                Lesson {
+                    id: LessonId(lid.clone()),
+                    title,
+                    body,
+                }
             })
             .collect();
-        Module { id: ModuleId(meta.id), title: meta.title, lessons }
+        Module {
+            id: ModuleId(meta.id),
+            title: meta.title,
+            lessons,
+        }
     }
 
     pub fn load_checks(dir: &str) -> Vec<Check> {
@@ -61,7 +69,7 @@ impl Curriculum {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use kern_core::Verdict;
+    use thunk_core::Verdict;
 
     #[test]
     fn loads_module_one() {
@@ -74,9 +82,17 @@ mod tests {
     #[test]
     fn every_check_canonical_answer_is_correct() {
         let checks = Curriculum::module_one_checks();
-        assert!(checks.len() >= 3, "module one should ship at least 3 checks");
+        assert!(
+            checks.len() >= 3,
+            "module one should ship at least 3 checks"
+        );
         for c in &checks {
-            assert_eq!(c.grade(&c.canonical_answer()), Verdict::Correct, "check {:?}", c.id());
+            assert_eq!(
+                c.grade(&c.canonical_answer()),
+                Verdict::Correct,
+                "check {:?}",
+                c.id()
+            );
         }
     }
 }

@@ -1,4 +1,4 @@
-# kern — Proposal
+# thunk — Proposal
 
 *A systems course for justice-impacted learners. Offline, from the ground up.*
 
@@ -12,8 +12,9 @@
 A small, self-contained course that teaches the low level of a computer to people like me, from true
 zero, on a machine that is not allowed to touch the internet. It is one offline Rust program. It
 teaches how a computer actually works, at your own pace, and it ends with DOOM booting on a screen
-the learner drove from the metal up. I am calling it **kern** for now, short for kernel. The name
-will probably change; the idea will not.
+the learner drove from the metal up. I am calling it **thunk** for now. A thunk is a piece of code that
+gets set aside and run later, not thrown away. That is about right for the people it is for. The name
+may change; the idea will not.
 
 ## Where this comes from
 
@@ -27,7 +28,7 @@ my work to local storage.
 Nobody handed me any of that. I assembled it out of what I was allowed to have. Later I became the
 assistant for the math GED, and the thing I wrote about it in my application still holds: it is
 something to behold when someone finally gets it. Not everyone learns at the same pace. And that is
-OK. kern is the course I did not have in that honor block.
+OK. thunk is the course I did not have in that honor block.
 
 ## The problem I keep seeing
 
@@ -46,7 +47,7 @@ usually needs hardware, and hardware does not clear facility review.
 
 ## The idea, and why it clears the wall
 
-kern is simulator-first. The SPI bus, the display panel, and the DOOM framebuffer are all modeled in
+thunk is simulator-first. The SPI bus, the display panel, and the DOOM framebuffer are all modeled in
 software, baked into the binary. A learner reaches the finale with no hardware at all. Because there
 is no hardware and no network, the exact thing that kept everyone else out is designed away. It is
 one static binary or one static web page on one locked-down PC. No installer, no admin rights, no
@@ -55,7 +56,7 @@ vocabulary, because this is engineering, not hacking, and it needs to read that 
 
 For people on the outside who can get a cheap single-board computer, an SPI display, and a logic
 analyzer, the same course drives the real hardware instead of the simulation. Simulated on the
-inside, real on the outside, one program either way. That one seam is what lets kern serve people
+inside, real on the outside, one program either way. That one seam is what lets thunk serve people
 still inside and people coming home with the same curriculum.
 
 It runs three ways from one source: a plain command line, a full terminal classroom, and a local web
@@ -81,11 +82,11 @@ is open.
 
 I am not proposing this from the sidelines. I am building the kernel capstone it teaches toward, right
 now, myself: an out-of-tree Rust driver for an SPI display with DOOM running on it, on a BeaglePlay,
-traced on a Saleae Logic 8. kern is the on-ramp to the exact work I am already doing.
+traced on a Saleae Logic 8. thunk is the on-ramp to the exact work I am already doing.
 
 ## Cost, and honesty about partners
 
-kern is free and open-source. I am not claiming money I do not have. Saleae, who makes the logic
+thunk is free and open-source. I am not claiming money I do not have. Saleae, who makes the logic
 analyzers, does not run a nonprofit or donation program that I can find; what they do offer is a
 student discount (a Logic 8 is about $249 instead of $499) and a flat $200 for a solid project
 writeup. That bounty is something I can actually collect and put toward hardware, and a larger

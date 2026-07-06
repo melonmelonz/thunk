@@ -1,4 +1,4 @@
-# kern
+# thunk
 
 *A systems course for justice-impacted learners. Offline, from the ground up.*
 
@@ -22,7 +22,7 @@ I could not find one prison or reentry program that teaches systems, embedded, o
 is a reason the space is empty: low-level work usually needs hardware, and hardware does not clear
 facility review.
 
-kern is one offline Rust program that fixes that. No network, no installer, runs on a stock
+thunk is one offline Rust program that fixes that. No network, no installer, runs on a stock
 locked-down machine. It teaches from true zero, at your own pace: programs and the kernel, Rust, the
 syscall boundary, the SPI bus, driving a display. It ends with DOOM booting on a screen you drove
 yourself from the metal up. The whole low-level stack is simulated in software, so a learner with no

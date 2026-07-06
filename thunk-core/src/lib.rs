@@ -1,4 +1,4 @@
-//! kern domain logic. Pure, offline, no I/O beyond what callers pass in.
+//! thunk domain logic. Pure, offline, no I/O beyond what callers pass in.
 
 pub mod check;
 pub mod content;

@@ -1,0 +1,15 @@
+[package]
+name = "thunk-cli"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "thunk command-line front-end."
+
+[[bin]]
+name = "thunk"
+path = "src/main.rs"
+
+[dependencies]
+thunk-content = { path = "../thunk-content" }
+thunk-sim = { path = "../thunk-sim" }
+clap = { workspace = true }

@@ -1,0 +1,11 @@
+(
+    id: "m1-kernel",
+    title: "The Kernel",
+    lessons: [
+        "01-programs-and-os",
+        "02-syscalls",
+        "03-files-and-devices",
+        "04-memory-and-mmap",
+        "05-drivers",
+    ],
+)

@@ -1,11 +1,15 @@
-//! `kern` command-line front-end. Renders the one content source to the terminal.
+//! `thunk` command-line front-end. Renders the one content source to the terminal.
 
 use clap::{Parser, Subcommand};
-use kern_content::Curriculum;
-use kern_sim::{boot::boot_splash, panel::Panel};
+use thunk_content::Curriculum;
+use thunk_sim::{boot::boot_splash, panel::Panel};
 
 #[derive(Parser)]
-#[command(name = "kern", version, about = "A systems course. Offline, from the ground up.")]
+#[command(
+    name = "thunk",
+    version,
+    about = "A systems course. Offline, from the ground up."
+)]
 struct Cli {
     #[command(subcommand)]
     cmd: Option<Cmd>,
@@ -35,11 +39,11 @@ fn main() {
 
 fn overview() -> String {
     let m = Curriculum::module_one();
-    let mut s = format!("kern - Module 1: {}\n\nLessons:\n", m.title);
+    let mut s = format!("thunk - Module 1: {}\n\nLessons:\n", m.title);
     for l in &m.lessons {
         s.push_str(&format!("  {}  {}\n", l.id.0, l.title));
     }
-    s.push_str("\nTry:  kern read   |   kern check   |   kern sim\n");
+    s.push_str("\nTry:  thunk read   |   thunk check   |   thunk sim\n");
     s
 }
 
@@ -65,13 +69,18 @@ fn checks() -> String {
 
 fn progress() -> String {
     let n = Curriculum::module_one_checks().len();
-    format!("Mastery of Module 1 = pass all {n} checks. Interactive tracking arrives with the TUI.\n")
+    format!(
+        "Mastery of Module 1 = pass all {n} checks. Interactive tracking arrives with the TUI.\n"
+    )
 }
 
 fn sim() -> String {
     let mut p = Panel::new(240, 320);
     boot_splash(&mut p);
-    format!("simulated panel - boot splash (color bars)\n\n{}", p.to_ascii(60, 24))
+    format!(
+        "simulated panel - boot splash (color bars)\n\n{}",
+        p.to_ascii(60, 24)
+    )
 }
 
 #[cfg(test)]

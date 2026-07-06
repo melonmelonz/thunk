@@ -1,0 +1,8 @@
+[package]
+name = "thunk-sim"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "thunk simulator: a deterministic pure-Rust SPI bus and display panel."
+
+[dependencies]

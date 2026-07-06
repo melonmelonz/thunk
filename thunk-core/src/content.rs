@@ -41,11 +41,22 @@ mod tests {
             id: ModuleId("m1-kernel".into()),
             title: "The Kernel".into(),
             lessons: vec![
-                Lesson { id: LessonId("01".into()), title: "Programs and the OS".into(), body: "text".into() },
-                Lesson { id: LessonId("02".into()), title: "Syscalls".into(), body: "text".into() },
+                Lesson {
+                    id: LessonId("01".into()),
+                    title: "Programs and the OS".into(),
+                    body: "text".into(),
+                },
+                Lesson {
+                    id: LessonId("02".into()),
+                    title: "Syscalls".into(),
+                    body: "text".into(),
+                },
             ],
         };
-        assert_eq!(m.lesson_ids(), vec![LessonId("01".into()), LessonId("02".into())]);
+        assert_eq!(
+            m.lesson_ids(),
+            vec![LessonId("01".into()), LessonId("02".into())]
+        );
         assert_eq!(m.lesson(&LessonId("02".into())).unwrap().title, "Syscalls");
         assert!(m.lesson(&LessonId("99".into())).is_none());
     }
