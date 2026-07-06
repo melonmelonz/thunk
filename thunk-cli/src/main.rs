@@ -17,6 +17,8 @@ struct Cli {
 
 #[derive(Subcommand)]
 enum Cmd {
+    /// Launch the terminal classroom (reader + checks + panel).
+    Tui,
     /// Print a lesson (defaults to the first lesson of Module 1).
     Read { lesson: Option<String> },
     /// List the checks for Module 1.
@@ -30,6 +32,12 @@ enum Cmd {
 fn main() {
     match Cli::parse().cmd {
         None => print!("{}", overview()),
+        Some(Cmd::Tui) => {
+            if let Err(e) = thunk_tui::run() {
+                eprintln!("thunk: could not start the classroom: {e}");
+                std::process::exit(1);
+            }
+        }
         Some(Cmd::Read { lesson }) => print!("{}", read(lesson.as_deref())),
         Some(Cmd::Check) => print!("{}", checks()),
         Some(Cmd::Progress) => print!("{}", progress()),
@@ -43,7 +51,7 @@ fn overview() -> String {
     for l in &m.lessons {
         s.push_str(&format!("  {}  {}\n", l.id.0, l.title));
     }
-    s.push_str("\nTry:  thunk read   |   thunk check   |   thunk sim\n");
+    s.push_str("\nTry:  thunk tui   |   thunk read   |   thunk check   |   thunk sim\n");
     s
 }
 

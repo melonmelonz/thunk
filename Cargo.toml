@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["thunk-core", "thunk-content", "thunk-sim", "thunk-cli"]
+members = ["thunk-core", "thunk-content", "thunk-sim", "thunk-tui", "thunk-cli"]
 
 [workspace.package]
 version = "0.1.0"

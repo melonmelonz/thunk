@@ -12,4 +12,5 @@ path = "src/main.rs"
 [dependencies]
 thunk-content = { path = "../thunk-content" }
 thunk-sim = { path = "../thunk-sim" }
+thunk-tui = { path = "../thunk-tui" }
 clap = { workspace = true }

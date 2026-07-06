@@ -1,0 +1,13 @@
+[package]
+name = "thunk-tui"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "thunk terminal classroom: lesson reader, checks, and the panel view."
+
+[dependencies]
+thunk-core = { path = "../thunk-core" }
+thunk-content = { path = "../thunk-content" }
+thunk-sim = { path = "../thunk-sim" }
+ratatui = { workspace = true, features = ["crossterm"] }
+crossterm = { workspace = true }

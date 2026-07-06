@@ -38,7 +38,7 @@ with DOOM on it, on a BeaglePlay, traced on a Saleae Logic 8.
 
 It is free and open-source. There is no sponsor yet. Saleae runs a student discount and pays $200
 for a project writeup; that is money I can actually collect and put toward hardware, and a bigger
-ask is a conversation I intend to start.
+ask is a conversation I intend to start. I have already completed most of this and intend to reach out to
+Kenyata as well to talk about potentially getting this into an actual facility.
 
-What I want is a yes and the room to build it, feedback where I am wrong, and an introduction where
-you have one.
+I have a much more detailed writeup if you would like but this is the elevator pitch.
