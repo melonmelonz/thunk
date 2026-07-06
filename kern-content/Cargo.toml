@@ -1,0 +1,12 @@
+[package]
+name = "kern-content"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "kern curriculum, embedded at compile time."
+
+[dependencies]
+kern-core = { path = "../kern-core" }
+serde = { workspace = true }
+ron = { workspace = true }
+rust-embed = { workspace = true }

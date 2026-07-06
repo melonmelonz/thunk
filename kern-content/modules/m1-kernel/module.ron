@@ -1,0 +1,7 @@
+(
+    id: "m1-kernel",
+    title: "The Kernel",
+    lessons: [
+        "01-programs-and-os",
+    ],
+)

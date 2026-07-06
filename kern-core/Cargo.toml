@@ -1,0 +1,9 @@
+[package]
+name = "kern-core"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "kern domain logic: content model, check evaluation, progress."
+
+[dependencies]
+serde = { workspace = true }
