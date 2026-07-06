@@ -16,6 +16,14 @@ the learner drove from the metal up. I am calling it **thunk** for now. A thunk 
 gets set aside and run later, not thrown away. That is about right for the people it is for. The name
 may change; the idea will not.
 
+## The timing
+
+The timing matters as much as the content. Reentry is the stretch right before someone gets out and
+the first months after, when a person has the least footing and the most to prove. That is exactly
+when this should reach someone. You learn the fundamentals inside, on a machine with no internet, and
+the week you get home you turn that into something real and public. The two builds are shaped around
+that: an air-gapped build for inside, and an open build for the day you walk out.
+
 ## Where this comes from
 
 On my birthdays in a maximum security prison my mom sent in a TI-84 Plus and a TI-89 Titanium. I
@@ -69,7 +77,8 @@ want one.
 
 Power On (what a computer even is, from nothing) → The Kernel (programs, syscalls, files and
 devices, mmap, drivers) → Rust for the Metal → The Bus (SPI) → The Panel (driving a display) → DOOM
-(it boots on the panel over the bus you built, then it decodes a real Rust driver).
+(it boots on the panel over the bus you built, then it decodes a real Rust driver). And once you are
+out: your first real contribution to open source.
 
 ## Why now, and why me
 
@@ -83,6 +92,23 @@ is open.
 I am not proposing this from the sidelines. I am building the kernel capstone it teaches toward, right
 now, myself: an out-of-tree Rust driver for an SPI display with DOOM running on it, on a BeaglePlay,
 traced on a Saleae Logic 8. thunk is the on-ramp to the exact work I am already doing.
+
+## Coming home: your first patch
+
+There is a piece I want to add for the outside, and it might be the most important part. Once someone
+can build the driver, I want to walk them into contributing to real open-source software: their first
+patch. For most people that starts small, a documentation fix or a bug in a project they already use.
+For the ones who go far it can be a Linux kernel patch, which is the thing I am working toward myself.
+
+This matters more for people coming home than it does for almost anyone else. A merged contribution
+is public and permanent. It is your name on real work that shipped, in a place that does not ask
+about your record. When a background check might quietly close a door, a history of open-source
+contributions is a door that is already open, and nobody can take it back. It is also how you meet
+people; the work introduces you.
+
+This part needs the internet, so it lives on the open build, not inside. That is the shape of the
+whole thing. You learn the fundamentals air-gapped on the inside, and you make your first real
+contribution the week you come home.
 
 ## Cost, and honesty about partners
 
@@ -104,11 +130,13 @@ that is wall to wall.
 
 - **Phase 1** — the skeleton and the spine: one content pipeline into the command line and the
   terminal classroom, the Kernel module authored end to end, and a first slice of the simulator that
-  boots something on a simulated panel. Demoable at the August Next Chapter demo.
+  boots a splash on a simulated panel. **This part is already built and passing tests** — you can
+  open the classroom and run it today. Ready for the August Next Chapter demo.
 - **Phase 2** — the full simulator, the trace view, the simulated-or-real seam, the web view, and the
   whole ladder from Power On to DOOM.
-- **Phase 3** — the facilitator kit, hardened inside and open builds, real outreach to Saleae and
-  others, a first outside cohort, and a first conversation with a facility.
+- **Phase 3** — the reentry bridge that guides learners into their first open-source contribution;
+  the facilitator kit; hardened inside and open builds; real outreach to Saleae and others; a first
+  outside cohort; and a first conversation with a facility.
 
 ## What I am asking for
 
