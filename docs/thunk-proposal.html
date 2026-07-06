@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>thunk — Proposal</title>
+<style>
+  :root{
+    --paper:#f7f5ef; --ink:#1b1b1a; --muted:#6c6a63; --rule:#ddd7ca;
+    --accent:#165c4f; --accent-soft:#e4efe9;
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+    --serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  body{
+    margin:0; background:var(--paper); color:var(--ink);
+    font-family:var(--serif); font-size:18px; line-height:1.62;
+  }
+  .page{max-width:760px; margin:0 auto; padding:64px 40px 96px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); margin:0 0 10px}
+  h1{font-family:var(--mono); font-weight:700; font-size:56px; letter-spacing:-.01em; margin:0 0 6px; line-height:1}
+  .sub{font-style:italic; color:var(--muted); font-size:19px; margin:0 0 22px}
+  .byline{font-family:var(--mono); font-size:12.5px; color:var(--muted); letter-spacing:.02em; margin:0}
+  .byline span{color:var(--ink)}
+  .lede{font-size:19.5px; margin:30px 0 8px}
+  hr.rule{border:0; border-top:1px solid var(--rule); margin:34px 0}
+  h2{font-family:var(--mono); font-size:14px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin:40px 0 14px; padding-bottom:8px; border-bottom:1px solid var(--rule)}
+  p{margin:0 0 16px}
+  em.term{font-style:italic}
+  .stats{display:flex; flex-wrap:wrap; gap:10px; margin:26px 0 6px}
+  .stat{flex:1 1 160px; background:#fff; border:1px solid var(--rule); border-radius:10px; padding:16px 16px 14px}
+  .stat .n{font-family:var(--mono); font-size:30px; font-weight:700; color:var(--accent); line-height:1; letter-spacing:-.02em}
+  .stat .c{font-size:13.5px; color:var(--muted); line-height:1.35; margin-top:8px}
+  ul{margin:6px 0 16px; padding-left:22px}
+  li{margin:0 0 9px}
+  .pull{font-family:var(--serif); font-style:italic; font-size:22px; line-height:1.5; color:var(--ink);
+    border-left:3px solid var(--accent); background:var(--accent-soft); padding:18px 22px; margin:26px 0; border-radius:0 8px 8px 0}
+  sup{font-family:var(--mono); font-size:10.5px; color:var(--accent); font-weight:700; padding-left:1px}
+  .sources{font-size:13.5px; color:var(--muted); line-height:1.5}
+  .sources h2{color:var(--muted)}
+  .sources ol{padding-left:26px; margin:8px 0 0}
+  .sources li{margin-bottom:7px}
+  .sources a{color:inherit}
+  @media (max-width:560px){ .page{padding:40px 22px 64px} h1{font-size:44px} }
+  @media print{
+    body{background:#fff; font-size:11pt}
+    .page{padding:0; max-width:none}
+    h2,.stats,.pull,.stat{break-inside:avoid}
+    a{color:inherit; text-decoration:none}
+    @page{margin:22mm}
+  }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <p class="eyebrow">Proposal · Next Chapter</p>
+  <h1>thunk</h1>
+  <p class="sub">A systems course for people coming home. Offline, from the ground up.</p>
+  <p class="byline"><span>Penn Porterfield</span> &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; working title &nbsp;·&nbsp; for my Next Chapter mentors</p>
+
+  <p class="lede">thunk is a small, self-contained course that teaches the low level of a computer, from true zero, on a machine that is not allowed to touch the internet. It is one offline Rust program. It teaches how a computer actually works, at your own pace, and it ends with DOOM booting on a screen the learner drove from the metal up. Below is the problem it answers, why I am the one to build it, and how it connects to reentry.</p>
+
+  <div class="stats">
+    <div class="stat"><div class="n">43%</div><div class="c">lower odds of returning to prison for people in correctional education<sup>1</sup></div></div>
+    <div class="stat"><div class="n">$4–$5</div><div class="c">saved for every $1 spent on prison education<sup>1</sup></div></div>
+    <div class="stat"><div class="n">27%</div><div class="c">unemployment for the formerly incarcerated, ~5&times; the general rate<sup>3</sup></div></div>
+    <div class="stat"><div class="n">83%</div><div class="c">of organizations weigh open-source contributions when hiring<sup>10</sup></div></div>
+  </div>
+
+  <hr class="rule">
+
+  <h2>The problem</h2>
+  <p>Every coding program for justice-impacted people teaches web development. The Last Mile teaches JavaScript and React. Persevere teaches full-stack. Justice Through Code teaches Python. These are good programs doing real good, and I respect them. But web development is the most crowded corner of the industry, the place everyone who did a bootcamp already stands, so it does little to set anyone apart. It is also the shrinking, lower-paid lane: web developers earn a median of $90,930 against $133,080 for software developers, a gap of about $42,000,<sup>6</sup> and entry-level software employment for people in their early twenties has fallen roughly 20% since 2022.<sup>7</sup> And teaching web dev inside a facility is a bit of a simulacrum. You cannot use the live internet, so the program mirrors a fake one in for you to practice against. You come out one step removed from the real thing.</p>
+  <p>Meanwhile I could not find one prison or reentry program that teaches systems, embedded, or kernel work. Not one. That is a real white space, and there is a plain reason it stayed empty: low-level work usually needs hardware, and hardware does not clear facility review. So the most durable, least crowded part of the field is the one part nobody is teaching to the people who could most use a way to stand out.</p>
+
+  <h2>Why I should build this</h2>
+  <p>Because I have lived exactly this, and I am already doing the hard part.</p>
+  <p>I taught myself on a graphing calculator in the honor block of a maximum security prison, then worked through the &ldquo;You Don&rsquo;t Know JavaScript&rdquo; series on a locked-down library browser because it was the only machine I could reach. I know what it is to want this and have to assemble it out of scraps. I spent time as the assistant for the math GED, too, and I know what it is to watch someone finally get it.</p>
+  <p>I am not proposing this from the sidelines. Right now I am building the capstone it teaches toward, myself: an out-of-tree Rust driver for an SPI display with DOOM running on it, on a BeaglePlay, traced on a Saleae logic analyzer. So I know the material is real and current. Rust became a first-class part of the Linux kernel in version 7.0 this year, and there is still no in-tree Rust SPI abstraction as of the 7.2 development kernel,<sup>9</sup> so this sits on a live frontier, not a history lesson. Rust is also the most admired language among developers, at 72%.<sup>8</sup></p>
+  <p>And it is buildable. The whole low-level stack is simulated in software, so it clears the wall the incumbents could not: one static binary, no network, no installer, and a check in the build that keeps the language engineering and not hacking. It is cheap, it is self-contained, and the first phase is already built and passing tests. I can open the classroom and show it running today.</p>
+
+  <h2>How it connects to reentry</h2>
+  <p>Reentry is the stretch right before you get out and the first months after, when you have the least footing and the most to prove. The stakes are not abstract. About 453,200 people were released from prison in 2023,<sup>5</sup> and within five years 76.6% of released people are rearrested.<sup>2</sup> A big part of why is work: the formerly incarcerated face about 27% unemployment, nearly five times the general rate,<sup>3</sup> and a criminal record alone cuts an applicant&rsquo;s callbacks roughly in half.<sup>4</sup></p>
+  <p>Education is one of the few things with hard evidence that it changes this. People who take part in correctional education have 43% lower odds of returning to prison, vocational training raises the odds of employment by 28%, and RAND estimates every dollar spent saves four to five in reincarceration costs.<sup>1</sup> The whole course is built around the reentry window: you learn the fundamentals inside, on a machine with no internet, and the week you get home you turn that into something real.</p>
+  <p>The point of reentry is walking out with something you can show, and this is where thunk is different from a web-dev course. It ends in tangible artifacts a person can put on a resume:</p>
+  <ul>
+    <li>a device driver they wrote, and DOOM running on a panel because of it;</li>
+    <li>and, once they are out, their first real contribution to open source: a documentation fix, a bug in a tool they use, and for the ones who go far, a Linux kernel patch, which is the path I am walking myself.</li>
+  </ul>
+  <p>That last one matters more for people coming home than for almost anyone else, and the numbers agree that it is real currency: 83% of organizations weigh open-source contributions when they hire,<sup>10</sup> and a developer&rsquo;s public contribution activity measurably rises when they are on the job market, because it works as a signal.<sup>10</sup> A merged contribution is public and permanent. It is your name on real work that shipped, in a place that does not ask about your record. When a background check might quietly close a door, a history of open-source contributions is a door that is already open, and nobody can take it back.</p>
+  <p>So I want to kindle a small community around this: a handful of people doing small, well-scoped kernel fixes together, plugged into the on-ramps that already exist for this (kernelnewbies, the Linux Kernel Mentorship Program, Outreachy) instead of reinventing them. What makes it fit our situation is the culture of the work itself.</p>
+
+  <p class="pull">Linux development is a meritocracy. The review judges the patch, not the person. Nobody on the mailing list asks about your record, and a correct patch gets merged with your name on it. The culture is exacting and often blunt, but it is blind to your past and ruthless only about your code. For people carrying a record, that is not a slogan. It is the mechanics.</p>
+
+  <p>So the arc matches the moment. Inside, you build the skill. At release, you build the record, together with a few other people who get it. Both are things you can point to when someone asks what you can do.</p>
+
+  <h2>What I am asking for</h2>
+  <p>A yes, and the room to build this as my justice-impacted work. Your feedback where I am wrong; I ship better code when someone tells me it is not up to snuff, and I have learned to take that well. And an introduction where you have one, to Next Chapter leadership, to The Last Mile, to Saleae.</p>
+
+  <div class="sources">
+    <h2>Sources</h2>
+    <p>Verified July 2026. Program-reported outcomes (e.g. The Last Mile, Persevere) are omitted here in favor of independent sources; a randomized evaluation of The Last Mile is underway but unpublished.</p>
+    <ol>
+      <li>RAND Corporation, <em>Evaluating the Effectiveness of Correctional Education: A Meta-Analysis</em> (Davis et al., RR-266), 2013. 43% lower odds of recidivism; 28% higher employment odds for vocational training; $1 &rarr; $4&ndash;$5 saved (break-even model). rand.org/pubs/research_reports/RR266.html</li>
+      <li>U.S. Bureau of Justice Statistics, <em>Recidivism of Prisoners Released in 30 States in 2005</em> (NCJ 244205), 2014. 67.8% rearrested within 3 years, 76.6% within 5. bjs.ojp.gov</li>
+      <li>Prison Policy Initiative, <em>Out of Prison &amp; Out of Work</em>, 2018. 27% unemployment (only national estimate; 2008 data). prisonpolicy.org/reports/outofwork.html</li>
+      <li>Devah Pager, &ldquo;The Mark of a Criminal Record,&rdquo; <em>American Journal of Sociology</em> 108(5), 2003. A record cut callbacks from 34% to 17%. Replicated since.</li>
+      <li>U.S. Bureau of Justice Statistics, <em>Prisoners in 2023 &mdash; Statistical Tables</em> (NCJ 310197), 2025. 453,200 released from state and federal prison. bjs.ojp.gov</li>
+      <li>U.S. Bureau of Labor Statistics, Occupational Employment &amp; Wage Statistics, May 2024. Software developers median $133,080; web developers $90,930. bls.gov/ooh</li>
+      <li>Stanford Digital Economy Lab, &ldquo;Canaries in the Coal Mine?&rdquo; (ADP payroll data), 2025. Employment for software developers ages 22&ndash;25 down ~20% from its 2022 peak.</li>
+      <li>Stack Overflow Developer Survey 2025. Rust the most-admired language, 72.4%. survey.stackoverflow.co/2025</li>
+      <li>LWN.net (Dec 2025) and kernel.org: Rust became a core part of the kernel in Linux 7.0 (2026); the official kernel Rust crate at v7.2-rc2 has no <em>spi</em> module. lwn.net/Articles/1049831 · rust.docs.kernel.org</li>
+      <li>2024 Open Source Software Funding Survey (GitHub, the Linux Foundation, and Harvard). 83% of organizations say open-source contribution is at least somewhat important for prospective hires; peer-reviewed labor research finds contribution activity rises during job search as a signal.</li>
+    </ol>
+  </div>
+
+</main>
+</body>
+</html>
