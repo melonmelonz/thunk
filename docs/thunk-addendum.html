@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>thunk — Market Realism, Accessibility, Retention</title>
+<style>
+  :root{
+    --paper:#f7f5ef; --ink:#1b1b1a; --muted:#6c6a63; --rule:#ddd7ca;
+    --accent:#165c4f; --accent-soft:#e4efe9;
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+    --serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--serif); font-size:18px; line-height:1.62}
+  .page{max-width:760px; margin:0 auto; padding:64px 40px 96px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); margin:0 0 10px}
+  h1{font-family:var(--mono); font-weight:700; font-size:40px; letter-spacing:-.01em; margin:0 0 6px; line-height:1.05}
+  .sub{font-style:italic; color:var(--muted); font-size:19px; margin:0 0 20px}
+  .byline{font-family:var(--mono); font-size:12.5px; color:var(--muted); margin:0}
+  .byline span{color:var(--ink)}
+  hr.rule{border:0; border-top:1px solid var(--rule); margin:30px 0}
+  h2{font-family:var(--mono); font-size:14px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin:38px 0 12px; padding-bottom:8px; border-bottom:1px solid var(--rule)}
+  p{margin:0 0 15px}
+  ul{margin:6px 0 15px; padding-left:22px}
+  li{margin:0 0 9px}
+  li b{font-weight:700}
+  .honest{background:#fff; border:1px solid var(--rule); border-left:3px solid var(--accent); border-radius:0 8px 8px 0; padding:12px 18px; margin:18px 0; font-size:16px}
+  .honest .lbl{font-family:var(--mono); font-size:11px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:4px}
+  sup{font-family:var(--mono); font-size:10.5px; color:var(--accent); font-weight:700}
+  .sources{font-size:13px; color:var(--muted); line-height:1.5; margin-top:30px}
+  .sources h2{color:var(--muted)}
+  .sources ol{padding-left:24px; margin:6px 0 0}
+  @media (max-width:560px){ .page{padding:40px 22px 64px} h1{font-size:32px} }
+  @media print{ body{background:#fff; font-size:11pt} .page{padding:0; max-width:none} h2,.honest{break-inside:avoid} @page{margin:22mm} }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <p class="eyebrow">Addendum · Next Chapter</p>
+  <h1>Three questions</h1>
+  <p class="sub">Market realism, accessibility, and keeping people from getting discouraged.</p>
+  <p class="byline"><span>Penn Porterfield</span> &nbsp;·&nbsp; 2026 &nbsp;·&nbsp; companion to the thunk proposal</p>
+
+  <p style="margin-top:26px">My mentor asked me to address three things head-on. Here they are, honestly, because the honest version is the stronger one.</p>
+
+  <hr class="rule">
+
+  <h2>1 · Market realism</h2>
+  <p>Is there a job at the end of this? The honest answer has two halves. The direction is real: entry-level web and software work is contracting, with employment for developers in their early twenties down about 20% since 2022<sup>2</sup>, while systems-adjacent engineering holds up and pays more. Web developers earn a median of $90,930 against $133,080 for software developers<sup>1</sup>, software-developer roles are still projected to grow ~18% through 2033<sup>1</sup>, and Rust just became a core part of the Linux kernel.</p>
+  <p>But I am not going to oversell it. Rust and kernel roles specifically are a smaller slice of the market than web, and no beginner lands a kernel job straight out of a course. So the realistic promise is not &ldquo;you will be a kernel developer.&rdquo; It is this: you come out differentiated, with fundamentals most bootcamp graduates do not have, and with tangible artifacts &mdash; a device driver you wrote, real open-source contributions &mdash; that open a range of roles: embedded, systems, QA, developer tooling, technical support, and general software, where understanding what is under the hood is rare and valued. Employers already treat open-source work as real currency; 83% weigh it when hiring<sup>3</sup>. The kernel is the ceiling, not the floor. And this does not compete with the web programs. It is a different lane for the people who want one.</p>
+
+  <h2>2 · Accessibility</h2>
+  <p>Who can actually use this, and where? It is built for the least-equipped setting on purpose.</p>
+  <ul>
+    <li><b>No prior programming.</b> It starts from true zero, self-paced and mastery-based, so nobody is rushed and nobody is locked out.</li>
+    <li><b>No internet, no install, no admin, no hardware.</b> It is one static binary, and the whole low-level stack is simulated in software, so it runs on the single locked-down laptop a facility already allows.</li>
+    <li><b>It clears review.</b> No network, no cryptography, no hacking language (a check in the build enforces that), so it fits the walled-garden laptops facilities are already deploying.</li>
+    <li><b>Free and open source.</b> No cost to a learner or a facility.</li>
+    <li><b>Two builds.</b> An air-gapped one for inside and an open one for reentry, so it reaches people on both sides of release.</li>
+  </ul>
+  <div class="honest"><span class="lbl">Honest gaps</span>The open-source part needs the internet, so it lives on the outside build only. And I still owe real work on screen-reader accessibility and, later, languages other than English. I would rather name those than pretend they are solved.</div>
+
+  <h2>3 · Keeping people from getting discouraged</h2>
+  <p>This is the real risk. Systems is hard, and beginners quit when it feels abstract, punishing, or lonely. The design fights all three on purpose.</p>
+  <ul>
+    <li><b>A visible payoff, early and often.</b> You are not staring at theory for months. You get something on the screen quickly, and the whole course aims at a reward you can see: a game booting on a panel you drove yourself.</li>
+    <li><b>It cannot get stuck.</b> Self-paced, help always on screen, no dead ends, no failing grade. A wrong answer just says &ldquo;not quite, try again.&rdquo; Not everyone learns at the same pace, and that is the rule here, not a slogan.</li>
+    <li><b>You are not alone.</b> The small community means you do your first hard things alongside a few other people, and someone who has already walked the path. Isolation is what kills reentry programs; peers are the fix.</li>
+    <li><b>The meritocracy reframe.</b> When your first patch gets picked apart, the community is judging the code, not you. Separating the work from the person takes the sting out of feedback, which is the exact muscle that keeps people going.</li>
+    <li><b>Momentum you can measure.</b> Checks passed, lessons done, a driver finished, a patch merged. Small, real wins stacked up, so progress is visible on the days motivation dips.</li>
+  </ul>
+  <div class="honest"><span class="lbl">Honest note</span>The kernel community can be blunt. I do not hide that; I prepare people for it and start them on tiny, well-scoped wins instead of the deep end. Bluntness about the code is survivable when it is clearly not about you.</div>
+
+  <p style="margin-top:24px">Short version: be honest about the market, remove every barrier to getting in, and make the wins visible and shared so people stay.</p>
+
+  <div class="sources">
+    <h2>Sources</h2>
+    <ol>
+      <li>U.S. Bureau of Labor Statistics, Occupational Outlook / OEWS, 2024: software developers median $133,080 and ~18% projected growth 2023&ndash;33; web developers median $90,930. bls.gov/ooh</li>
+      <li>Stanford Digital Economy Lab, &ldquo;Canaries in the Coal Mine?&rdquo; (ADP payroll data), 2025: employment for software developers ages 22&ndash;25 down ~20% from its 2022 peak.</li>
+      <li>2024 Open Source Software Funding Survey (GitHub, the Linux Foundation, Harvard): 83% of organizations weigh open-source contributions when hiring.</li>
+    </ol>
+  </div>
+
+</main>
+</body>
+</html>

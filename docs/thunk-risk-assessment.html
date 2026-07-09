@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>thunk — Software Project Risk Assessment</title>
+<style>
+  :root{
+    --paper:#f7f5ef; --ink:#1b1b1a; --muted:#6c6a63; --rule:#ddd7ca;
+    --accent:#165c4f; --accent-soft:#e4efe9;
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+    --serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--serif); font-size:17px; line-height:1.6}
+  .page{max-width:1000px; margin:0 auto; padding:56px 40px 90px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); margin:0 0 10px}
+  h1{font-family:var(--mono); font-weight:700; font-size:34px; letter-spacing:-.01em; margin:0 0 14px; line-height:1.05}
+  .meta{font-family:var(--mono); font-size:12.5px; color:var(--muted); margin:0 0 4px}
+  .meta b{color:var(--ink)}
+  .legend{font-family:var(--sans); font-size:12.5px; color:var(--muted); background:#fff; border:1px solid var(--rule); border-radius:8px; padding:12px 16px; margin:20px 0 26px; line-height:1.6}
+  .legend b{color:var(--ink)}
+  .chip{display:inline-block; font-family:var(--mono); font-weight:700; font-size:11px; padding:1px 6px; border-radius:4px; margin-right:2px}
+  .c-hi{background:#fbeae7; color:#b23b2e} .c-md{background:#fbf1dd; color:#9c6a14} .c-lo{background:#e4efe9; color:#2f7d5e}
+  .wrap{overflow-x:auto}
+  table{width:100%; border-collapse:collapse; font-family:var(--sans); font-size:12.5px; line-height:1.4}
+  th{background:var(--accent-soft); text-align:left; font-family:var(--mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--accent); padding:8px 9px; border:1px solid var(--rule); vertical-align:bottom}
+  td{padding:8px 9px; border:1px solid var(--rule); vertical-align:top}
+  tbody tr:nth-child(even){background:#fcfbf7}
+  .risk-name{font-weight:700; font-family:var(--serif); font-size:13.5px}
+  .dvf{font-family:var(--mono); font-weight:700; text-align:center; color:var(--accent)}
+  .score{text-align:center; white-space:nowrap}
+  .score .n{font-family:var(--mono); font-weight:700; font-size:16px; display:block; padding:2px 0; border-radius:4px}
+  .score .lc{font-family:var(--mono); font-size:9.5px; color:var(--muted)}
+  .n.hi{color:#b23b2e; background:#fbeae7} .n.md{color:#9c6a14; background:#fbf1dd} .n.lo{color:#2f7d5e; background:#e4efe9}
+  .note{font-size:15px; margin-top:22px}
+  @media print{ body{background:#fff; font-size:10pt} .page{padding:0; max-width:none} table{font-size:9pt} tr,thead{break-inside:avoid} @page{size:landscape; margin:14mm} }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <p class="eyebrow">Risk Assessment · Next Chapter</p>
+  <h1>thunk — Software Project Risk Assessment</h1>
+  <p class="meta"><b>Project / System:</b> thunk (offline systems course for the reentry population)</p>
+  <p class="meta"><b>Assessor:</b> Penn Porterfield &nbsp;·&nbsp; <b>Date:</b> 2026</p>
+
+  <div class="legend">
+    <b>D / V / F</b> = the dimension the risk threatens: <span class="chip c-lo">D</span> Desirability (do learners want / stay with it) &nbsp; <span class="chip c-lo">V</span> Viability (can it deploy and sustain) &nbsp; <span class="chip c-lo">F</span> Feasibility (can it be built). &nbsp; <b>L</b> = likelihood, <b>C</b> = consequence, each 1&ndash;5. &nbsp; <b>Risk = L &times; C</b> (max 25): <span class="chip c-hi">15&ndash;25 high</span> <span class="chip c-md">8&ndash;14 medium</span> <span class="chip c-lo">1&ndash;7 low</span>.
+  </div>
+
+  <div class="wrap">
+  <table>
+    <thead>
+      <tr>
+        <th style="width:15%">Risk</th>
+        <th style="width:17%">How could it hurt?</th>
+        <th>DVF</th>
+        <th>Initial</th>
+        <th style="width:20%">Existing controls</th>
+        <th style="width:20%">Additional mitigation</th>
+        <th>Final</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="risk-name">Curriculum scope unclear or underestimated</td>
+        <td>Scope creep, the Aug 2026 demo slips, burnout</td>
+        <td class="dvf">D</td>
+        <td class="score"><span class="n hi">16</span><span class="lc">4 &times; 4</span></td>
+        <td>Phased plan with documented non-goals; Phase 1 already built and passing tests</td>
+        <td>Freeze the demo to Phase 1; hold milestones; defer the web GUI, DOOM sim, and M6</td>
+        <td class="score"><span class="n lo">6</span><span class="lc">2 &times; 3</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">Facility review blocks the software inside</td>
+        <td>The primary channel (inside the wall) closes; can't reach the core audience</td>
+        <td class="dvf">V</td>
+        <td class="score"><span class="n hi">15</span><span class="lc">3 &times; 5</span></td>
+        <td>Air-gapped single static binary; no network, no crypto; vocab-lint gate; runs on the walled-garden laptops facilities already deploy</td>
+        <td>Get a DOC/facility reviewer to look early; ship a plain-language review packet; pilot with one facility</td>
+        <td class="score"><span class="n md">8</span><span class="lc">2 &times; 4</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">Simulator can't convincingly reach the DOOM finale</td>
+        <td>The payoff and differentiator weakens; late rework</td>
+        <td class="dvf">F</td>
+        <td class="score"><span class="n md">12</span><span class="lc">3 &times; 4</span></td>
+        <td>First sim slice built and tested (bus + panel + boot splash); SpiBus trait seam; doomgeneric is a known-portable target</td>
+        <td>Prototype DOOM-on-sim-panel as an early vertical slice; keep a simpler bootable demo as fallback</td>
+        <td class="score"><span class="n lo">6</span><span class="lc">2 &times; 3</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">Insufficient testing or content errors</td>
+        <td>Wrong teaching, lost credibility, support burden</td>
+        <td class="dvf">F</td>
+        <td class="score"><span class="n md">12</span><span class="lc">3 &times; 4</span></td>
+        <td>Unit tests across the workspace; self-validating check bank (tests assert every answer); fmt / clippy / vocab-lint in CI</td>
+        <td>Mentor / expert review of lessons; grow coverage; user-acceptance test with a pilot learner</td>
+        <td class="score"><span class="n lo">6</span><span class="lc">2 &times; 3</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">Learners get discouraged and drop out</td>
+        <td>Weak completion and outcomes undercut the whole case</td>
+        <td class="dvf">D</td>
+        <td class="score"><span class="n md">12</span><span class="lc">4 &times; 3</span></td>
+        <td>Self-paced and mastery-based; cannot get stuck; early visible payoff; progress is tracked</td>
+        <td>Small peer cohort plus a mentor; tiny early wins; measure completion in a pilot</td>
+        <td class="score"><span class="n lo">6</span><span class="lc">2 &times; 3</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">First-patch step overwhelms beginners; low-quality patches</td>
+        <td>Discouragement at the most important moment; reputational cost</td>
+        <td class="dvf">D</td>
+        <td class="score"><span class="n md">9</span><span class="lc">3 &times; 3</span></td>
+        <td>Start small (docs, staging); plug into kernelnewbies / LKMP / Outreachy; meritocracy framing</td>
+        <td>Internal review before any patch is sent; a scaffolded first-issue list; a buddy for each first patch</td>
+        <td class="score"><span class="n lo">4</span><span class="lc">2 &times; 2</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">No sponsor or funding to sustain / equip open-build learners</td>
+        <td>Hardware out of reach for outside learners; program longevity</td>
+        <td class="dvf">V</td>
+        <td class="score"><span class="n md">9</span><span class="lc">3 &times; 3</span></td>
+        <td>Free and open source; simulator-first means a zero-hardware floor; the $200 Saleae writeup bounty is collectable now</td>
+        <td>Apply for grants; Saleae and partner outreach; keep the course fully usable with no hardware at all</td>
+        <td class="score"><span class="n lo">4</span><span class="lc">2 &times; 2</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">Sole builder unavailable (key-person risk)</td>
+        <td>The project stalls; the lived-experience voice is lost</td>
+        <td class="dvf">F</td>
+        <td class="score"><span class="n md">8</span><span class="lc">2 &times; 4</span></td>
+        <td>Specs, plans, and code are open source and documented (MIT / Apache-2.0)</td>
+        <td>Grow co-maintainers out of the community; keep a written knowledge base</td>
+        <td class="score"><span class="n lo">6</span><span class="lc">2 &times; 3</span></td>
+      </tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p class="note"><b>Top residual risk:</b> facility review (final 8, medium) is the one worth active attention, because it is mostly outside my control. Everything else drops into the low band once the mitigations are in place. The single most load-bearing control is the design itself: an offline, no-network, no-hardware static binary that was built to clear review from day one, which is why most of these risks were already low before mitigation.</p>
+
+</main>
+</body>
+</html>
