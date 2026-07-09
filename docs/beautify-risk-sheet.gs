@@ -41,7 +41,7 @@ function beautifyRiskSheet() {
 
   // Map header text -> 1-based column indices.
   const headers = header.getValues()[0].map(function (h) {
-    return String(h).replace(/\s+/g, ' ').trim().toLowerCase();
+    return String(h).trim().toLowerCase();
   });
   function cols(needle) {
     const out = [];
