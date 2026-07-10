@@ -107,6 +107,14 @@ A yes, and the room to build this as my justice-impacted work. Your feedback whe
 better code when someone tells me it is not up to snuff, and I have learned to take that well. And an
 introduction where you have one, to Next Chapter leadership, to The Last Mile, to Saleae.
 
+## On the name
+
+thunk is a plain, slightly funny word. It sounds like something a kid would say for the past tense of
+think: I think, I thank, I thunk. I like that it does not take itself too seriously. It is also a real
+term in computer science. A thunk is a piece of work you set aside to run later, when it is finally
+needed. That is the part that stuck with me. It is a quiet match for the people this is for. The work
+is deferred, not thrown away, and one day it runs.
+
 ---
 
 ## Sources

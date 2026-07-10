@@ -10,8 +10,9 @@ project — deliberately **not** built on `~/dev/peek`.
 
 ## 1. Name
 
-**`thunk`** — in low-level code, a thunk is a small piece of deferred work: set aside now, run
-later. It fits the audience without editorializing. Working title; trivially renameable.
+**`thunk`** is a real term in low-level code: a small piece of deferred work, set aside now and run
+later, which fits the audience without editorializing. It also just sounds like a folk past tense of
+*think* (think, thank, thunk), which keeps a heavy subject unpretentious. Working title; renameable.
 
 ## 2. One-line summary
 
