@@ -31,6 +31,7 @@ open-source contributions.
 ## 3. Goals and non-goals
 
 **Goals**
+
 - Teach real systems fundamentals to true-zero beginners, self-paced, with no instructor required.
 - Run entirely offline on a single locked-down machine and clear facility review.
 - End every learner at a visible payoff (DOOM on a simulated panel) with zero hardware.
@@ -38,6 +39,7 @@ open-source contributions.
 - Serve both inside-the-wall and reentry audiences from one curriculum.
 
 **Non-goals (for now)**
+
 - Not a web-development course; not a competitor to existing programs, a complement.
 - Not a graded, cohort-locked, instructor-dependent program.
 - Not dependent on any network service, cloud, account, or telemetry.
@@ -54,6 +56,7 @@ open-source contributions.
 ## 5. Functional requirements (user stories)
 
 **Learning experience**
+
 - FR-1: A learner can read a lesson and move through a module at their own pace.
 - FR-2: A learner answers checks (multiple-choice and short-answer) and gets immediate feedback.
 - FR-3: The course is mastery-gated: passing a module's checks unlocks the next (competency gates).
@@ -62,27 +65,32 @@ open-source contributions.
 - FR-6: The experience cannot get stuck — help is always available, no dead ends, no failing grade.
 
 **Modes (one content source)**
+
 - FR-7: A command-line mode (read / check / progress / sim).
 - FR-8: A terminal classroom (TUI): reader, interactive checks, panel view, help.
 - FR-9: A local web GUI (offline; `serve` binds 127.0.0.1 only) — richest visual mode. *(Phase 2.)*
 
 **Simulator (the keystone)**
+
 - FR-10: A deterministic, pure-Rust model of an SPI bus that records a trace.
 - FR-11: A display-panel framebuffer the learner can drive; a boot splash renders over the bus.
 - FR-12: The finale boots DOOM on the simulated panel. *(Phase 2.)*
 - FR-13: The same interface (`SpiBus` trait) swaps to a real Saleae + panel on the open build.
 
 **Curriculum ladder**
+
 - FR-14: M0 Power On → M1 The Kernel → M2 Rust for the Metal → M3 The Bus → M4 The Panel → M5 DOOM →
   M6 Intro to Open Source → M7 First Patch.
 
 **Open-source track (open build)**
+
 - FR-15: M6 teaches what open source is: licenses, version control in the open, project/community
   norms, reading a diff, the culture of merit.
 - FR-16: M7 guides a first real contribution (docs/staging first, kernel patch as the ceiling), as a
   small peer community plugged into kernelnewbies / LKMP / Outreachy, with mentor pre-review.
 
 **Deployment**
+
 - FR-17: Two build profiles chosen at build time: an air-gapped inside build (no hardware/network
   code present) and an open build (adds the hardware seam and the open-source track).
 - FR-18: An optional facilitator kit (pacing, answer keys, cohort/progress view). *(Phase 3.)*
