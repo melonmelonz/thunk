@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>thunk — Value Proposition</title>
+<style>
+  :root{
+    --paper:#f7f5ef; --ink:#1b1b1a; --muted:#6c6a63; --rule:#ddd7ca;
+    --accent:#165c4f; --accent-soft:#e4efe9;
+    --mono: ui-monospace, "SF Mono", "SFMono-Regular", Menlo, Consolas, "Liberation Mono", monospace;
+    --serif: Georgia, "Iowan Old Style", "Palatino Linotype", "Times New Roman", serif;
+  }
+  *{box-sizing:border-box}
+  html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--serif); font-size:18px; line-height:1.62}
+  .page{max-width:760px; margin:0 auto; padding:64px 40px 96px}
+  .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); margin:0 0 12px}
+  h1{font-family:var(--mono); font-weight:700; font-size:38px; letter-spacing:-.01em; margin:0 0 8px; line-height:1.08}
+  .sub{font-style:italic; color:var(--muted); font-size:19px; margin:0 0 22px}
+  .lede{font-size:20px; margin:26px 0}
+  .lede b{color:var(--ink)}
+  hr.rule{border:0; border-top:1px solid var(--rule); margin:30px 0}
+  h2{font-family:var(--mono); font-size:13px; letter-spacing:.14em; text-transform:uppercase; color:var(--accent); margin:34px 0 12px}
+  p{margin:0 0 15px}
+  .oneliner{background:#fff; border:1px solid var(--rule); border-radius:10px; padding:16px 20px; font-size:17px; margin:8px 0 6px}
+  .oneliner b{color:var(--accent)}
+  .pillars{margin:10px 0}
+  .pillar{margin:0 0 16px}
+  .pillar .h{font-family:var(--mono); font-weight:700; font-size:15px; color:var(--ink)}
+  .pillar .h .n{color:var(--accent); margin-right:8px}
+  .pillar p{margin:4px 0 0; color:#33322e}
+  .pull{font-family:var(--serif); font-style:italic; font-size:22px; line-height:1.5; border-left:3px solid var(--accent); background:var(--accent-soft); padding:18px 22px; margin:26px 0; border-radius:0 8px 8px 0}
+  .close{font-size:20px; font-weight:600; margin:24px 0 0}
+  .src{font-size:13px; color:var(--muted); margin-top:26px}
+  @media (max-width:560px){ .page{padding:40px 22px 64px} h1{font-size:30px} }
+  @media print{ body{background:#fff; font-size:11pt} .page{padding:0; max-width:none} .pull,.pillar,.oneliner{break-inside:avoid} @page{margin:22mm} }
+</style>
+</head>
+<body>
+<main class="page">
+
+  <p class="eyebrow">Value Proposition · thunk</p>
+  <h1>Compiling a bright future through open source</h1>
+  <p class="sub">Turning what you learn into a public record no one can take back.</p>
+
+  <p class="lede"><b>thunk does not end with a certificate. It ends with a portfolio you can point to</b> &mdash; a device driver you wrote, and real, merged open-source contributions with your name on them. For someone rebuilding after prison, that is the difference between asking to be trusted and showing the proof.</p>
+
+  <div class="oneliner">For <b>justice-impacted people in the reentry window</b>, thunk is a systems course that ends in <b>real open-source contributions</b> &mdash; verifiable, public proof of skill &mdash; where a bootcamp hands you a certificate that only says you attended.</div>
+
+  <hr class="rule">
+
+  <h2>Why open source, for this audience</h2>
+  <div class="pillars">
+    <div class="pillar">
+      <div class="h"><span class="n">01</span>A record that does not ask about your past</div>
+      <p>In open source the review judges the patch, not the person. Contributions are public and merit-judged; nobody on the mailing list asks where you have been.</p>
+    </div>
+    <div class="pillar">
+      <div class="h"><span class="n">02</span>Proof you can point to</div>
+      <p>83% of organizations weigh open-source contributions when they hire. A merged patch outweighs a gap in your history, because it is evidence, not a claim.</p>
+    </div>
+    <div class="pillar">
+      <div class="h"><span class="n">03</span>A door, and a community</div>
+      <p>The work introduces you. Established on-ramps (kernelnewbies, the Linux Kernel Mentorship Program, Outreachy) mean you are not walking in alone.</p>
+    </div>
+  </div>
+
+  <p class="pull">A certificate says: I showed up. A merged patch says: I did this. It is in the code, my name is on it, and it is still there.</p>
+
+  <p class="close">You do not graduate with a promise. You graduate with a history.</p>
+
+  <p class="src">Source: 2024 Open Source Software Funding Survey (GitHub, the Linux Foundation, and Harvard): 83% of organizations say open-source contribution is at least somewhat important for prospective hires.</p>
+
+</main>
+</body>
+</html>
