@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>thunk — 3-Minute Pitch</title>
+<style>
+  :root{
+    --paper:#f7f5ef; --ink:#1b1b1a; --muted:#6c6a63; --rule:#ddd7ca;
+    --accent:#165c4f; --accent-soft:#e4efe9;
+    --mono: "SF Mono", Menlo, Consolas, "Liberation Mono", monospace;
+    --serif: Georgia, "Liberation Serif", "Times New Roman", serif;
+  }
+  @page{ margin:20mm; }
+  body{ margin:0; background:#fff; color:var(--ink); font-family:var(--serif); font-size:13pt; line-height:1.6; }
+  .page{ max-width:720px; margin:0 auto; padding:8px 4px; }
+  .eyebrow{ font-family:var(--mono); font-size:9pt; letter-spacing:.2em; text-transform:uppercase; color:var(--accent); margin:0 0 6px; }
+  h1{ font-family:var(--mono); font-weight:700; font-size:24pt; margin:0 0 4px; }
+  .sub{ font-style:italic; color:var(--muted); font-size:11pt; margin:0 0 18px; }
+  p{ margin:0 0 13px; }
+  hr{ border:0; border-top:1px solid var(--rule); margin:18px 0; }
+  .notes{ background:var(--accent-soft); border:1px solid var(--rule); border-radius:8px; padding:12px 16px; font-size:10.5pt; color:#33322e; }
+  .notes .lbl{ font-family:var(--mono); font-size:9pt; letter-spacing:.12em; text-transform:uppercase; color:var(--accent); display:block; margin-bottom:6px; }
+  .notes b{ color:var(--ink); }
+  .close{ font-weight:600; }
+</style>
+</head>
+<body>
+<div class="page">
+  <p class="eyebrow">3-Minute Pitch (spoken) · Penn Porterfield</p>
+  <h1>thunk</h1>
+  <p class="sub">About 420 words, roughly three minutes at a calm pace. Pause where the paragraphs break; do not rush the last line.</p>
+
+  <p>I taught myself to build a little RPG on a graphing calculator in the honor block of a maximum security prison. Later I worked through a whole JavaScript book on a locked-down library computer, because that was the only machine I was allowed to touch. Nobody handed me a curriculum. I put it together out of scraps. I want to build the thing that would have met me where I was.</p>
+
+  <p>Here is the problem. Almost every coding program for people like me teaches web development. The Last Mile teaches JavaScript. Justice Through Code teaches Python. Good programs, and I respect them. But web development is the most crowded corner of the whole industry, and it is shrinking. And I could not find a single prison or reentry program that teaches systems, or embedded, or kernel work. Not one. There is a reason it is empty: that kind of work usually needs hardware, and hardware does not clear a prison review.</p>
+
+  <p>So I am building thunk. It is one small program, written in Rust, that runs completely offline on a locked-down laptop. No internet, no install. It teaches how a computer actually works, from true zero, at your own pace. And it ends with DOOM, the game, booting on a screen you learned to drive from the bare metal up. The whole low-level stack is simulated in software, so you reach that finish line with no hardware at all. The thing that kept everyone else out, I designed around.</p>
+
+  <p>But here is the part that matters most for reentry. thunk does not end with a certificate. It ends with a portfolio you can actually point to. You write a real driver. And then, once you are home, you make your first real contribution to open source. That one is everything, because a merged contribution is public, it is permanent, and it does not ask about your record. When a background check might quietly close a door, open source is a door that is already open, and nobody can take it back. The review judges your code, not your past.</p>
+
+  <p>I am not pitching this from the sidelines. I am building the exact capstone it teaches toward, right now, myself, on real hardware. And the first phase is already built and passing tests. I can show it running today.</p>
+
+  <p class="close">What I am asking for is a yes, and the room to build it. Because this is what I believe we are actually doing here: compiling a bright future, through open source.</p>
+
+  <hr>
+  <div class="notes">
+    <span class="lbl">Delivery</span>
+    <b>0:00–0:30</b> the calculator / honor-block hook &mdash; slow, plain, let it sit. &nbsp;
+    <b>0:30–1:05</b> the problem &mdash; land &ldquo;Not one.&rdquo; &nbsp;
+    <b>1:05–1:50</b> what thunk is &mdash; the DOOM line is the hook; pause after it. &nbsp;
+    <b>1:50–2:35</b> reentry + open source &mdash; the heart; slow down on &ldquo;does not ask about your record.&rdquo; &nbsp;
+    <b>2:35–3:00</b> why me + the ask &mdash; end on the last line, add nothing after it.
+  </div>
+</div>
+</body>
+</html>
