@@ -47,7 +47,7 @@ TEMPLATE = ('<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">'
 
 def build(md_path, pdf_path, eyebrow=""):
     text = open(md_path, encoding="utf-8").read()
-    body = markdown.markdown(text, extensions=["tables", "fenced_code", "sane_lists"])
+    body = markdown.markdown(text, extensions=["tables", "fenced_code"])
     eb = '<p class="eyebrow">{}</p>'.format(eyebrow) if eyebrow else ""
     html = TEMPLATE.format(css=CSS, eyebrow=eb, body=body)
     weasyprint.HTML(string=html).write_pdf(pdf_path)
