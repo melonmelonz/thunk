@@ -15,28 +15,28 @@
   *{box-sizing:border-box}
   html{-webkit-print-color-adjust:exact; print-color-adjust:exact}
   body{margin:0; background:var(--paper); color:var(--ink); font-family:var(--serif); font-size:17px; line-height:1.6}
-  .page{max-width:1000px; margin:0 auto; padding:56px 40px 90px}
+  .page{max-width:1040px; margin:0 auto; padding:56px 36px 90px}
   .eyebrow{font-family:var(--mono); font-size:12px; letter-spacing:.22em; text-transform:uppercase; color:var(--accent); margin:0 0 10px}
-  h1{font-family:var(--mono); font-weight:700; font-size:34px; letter-spacing:-.01em; margin:0 0 14px; line-height:1.05}
+  h1{font-family:var(--mono); font-weight:700; font-size:32px; letter-spacing:-.01em; margin:0 0 14px; line-height:1.05}
   .meta{font-family:var(--mono); font-size:12.5px; color:var(--muted); margin:0 0 4px}
   .meta b{color:var(--ink)}
-  .legend{font-family:var(--sans); font-size:12.5px; color:var(--muted); background:#fff; border:1px solid var(--rule); border-radius:8px; padding:12px 16px; margin:20px 0 26px; line-height:1.6}
+  .legend{font-family:var(--sans); font-size:12.5px; color:var(--muted); background:#fff; border:1px solid var(--rule); border-radius:8px; padding:12px 16px; margin:20px 0 24px; line-height:1.6}
   .legend b{color:var(--ink)}
   .chip{display:inline-block; font-family:var(--mono); font-weight:700; font-size:11px; padding:1px 6px; border-radius:4px; margin-right:2px}
   .c-hi{background:#fbeae7; color:#b23b2e} .c-md{background:#fbf1dd; color:#9c6a14} .c-lo{background:#e4efe9; color:#2f7d5e}
   .wrap{overflow-x:auto}
-  table{width:100%; border-collapse:collapse; font-family:var(--sans); font-size:12.5px; line-height:1.4}
+  table{width:100%; border-collapse:collapse; font-family:var(--sans); font-size:12px; line-height:1.4}
   th{background:var(--accent-soft); text-align:left; font-family:var(--mono); font-size:10px; letter-spacing:.05em; text-transform:uppercase; color:var(--accent); padding:8px 9px; border:1px solid var(--rule); vertical-align:bottom}
   td{padding:8px 9px; border:1px solid var(--rule); vertical-align:top}
   tbody tr:nth-child(even){background:#fcfbf7}
-  .risk-name{font-weight:700; font-family:var(--serif); font-size:13.5px}
+  .risk-name{font-weight:700; font-family:var(--serif); font-size:13px}
   .dvf{font-family:var(--mono); font-weight:700; text-align:center; color:var(--accent)}
   .score{text-align:center; white-space:nowrap}
-  .score .n{font-family:var(--mono); font-weight:700; font-size:16px; display:block; padding:2px 0; border-radius:4px}
+  .score .n{font-family:var(--mono); font-weight:700; font-size:15px; display:block; padding:2px 0; border-radius:4px}
   .score .lc{font-family:var(--mono); font-size:9.5px; color:var(--muted)}
   .n.hi{color:#b23b2e; background:#fbeae7} .n.md{color:#9c6a14; background:#fbf1dd} .n.lo{color:#2f7d5e; background:#e4efe9}
   .note{font-size:15px; margin-top:22px}
-  @media print{ body{background:#fff; font-size:10pt} .page{padding:0; max-width:none} table{font-size:9pt} tr,thead{break-inside:avoid} @page{size:landscape; margin:14mm} }
+  @media print{ body{background:#fff; font-size:10pt} .page{padding:0; max-width:none} table{font-size:8.5pt} tr,thead{break-inside:avoid} @page{size:landscape; margin:12mm} }
 </style>
 </head>
 <body>
@@ -48,15 +48,15 @@
   <p class="meta"><b>Assessor:</b> Penn Porterfield &nbsp;·&nbsp; <b>Date:</b> 2026</p>
 
   <div class="legend">
-    <b>D / V / F</b> = the dimension the risk threatens: <span class="chip c-lo">D</span> Desirability (do learners want / stay with it) &nbsp; <span class="chip c-lo">V</span> Viability (can it deploy and sustain) &nbsp; <span class="chip c-lo">F</span> Feasibility (can it be built). &nbsp; <b>L</b> = likelihood, <b>C</b> = consequence, each 1&ndash;5. &nbsp; <b>Risk = L &times; C</b> (max 25): <span class="chip c-hi">15&ndash;25 high</span> <span class="chip c-md">8&ndash;14 medium</span> <span class="chip c-lo">1&ndash;7 low</span>.
+    <b>D / V / F</b> = the dimension the risk threatens: <span class="chip c-lo">D</span> Desirability &nbsp; <span class="chip c-lo">V</span> Viability &nbsp; <span class="chip c-lo">F</span> Feasibility. &nbsp; <b>L</b> = likelihood, <b>C</b> = consequence, each 1&ndash;5. &nbsp; <b>Risk = L &times; C</b> (max 25): <span class="chip c-hi">15&ndash;25 high</span> <span class="chip c-md">8&ndash;14 medium</span> <span class="chip c-lo">1&ndash;7 low</span>. Ordered by initial risk.
   </div>
 
   <div class="wrap">
   <table>
     <thead>
       <tr>
-        <th style="width:15%">Risk</th>
-        <th style="width:17%">How could it hurt?</th>
+        <th style="width:14%">Risk</th>
+        <th style="width:16%">How could it hurt?</th>
         <th>DVF</th>
         <th>Initial</th>
         <th style="width:20%">Existing controls</th>
@@ -67,81 +67,144 @@
     <tbody>
       <tr>
         <td class="risk-name">Curriculum scope unclear or underestimated</td>
-        <td>Scope creep, the Aug 2026 demo slips, burnout</td>
+        <td>Scope creep; the Aug 2026 demo slips; solo-builder burnout</td>
         <td class="dvf">D</td>
         <td class="score"><span class="n hi">16</span><span class="lc">4 &times; 4</span></td>
-        <td>Phased plan with documented non-goals; Phase 1 already built and passing tests</td>
-        <td>Freeze the demo to Phase 1; hold milestones; defer the web GUI, DOOM sim, and M6</td>
+        <td>Written spec and phased plan with explicit non-goals; Phase 1 already built and passing 24 tests; milestones tracked in-repo</td>
+        <td>Freeze the demo to Phase 1; defer the web GUI, DOOM sim, and the M6-M7 open-source track; validate estimates against the built slice</td>
         <td class="score"><span class="n lo">6</span><span class="lc">2 &times; 3</span></td>
       </tr>
       <tr>
         <td class="risk-name">Facility review blocks the software inside</td>
-        <td>The primary channel (inside the wall) closes; can't reach the core audience</td>
+        <td>The primary channel (inside the wall) closes; the core audience is unreachable</td>
         <td class="dvf">V</td>
         <td class="score"><span class="n hi">15</span><span class="lc">3 &times; 5</span></td>
-        <td>Air-gapped single static binary; no network, no crypto; vocab-lint gate; runs on the walled-garden laptops facilities already deploy</td>
-        <td>Get a DOC/facility reviewer to look early; ship a plain-language review packet; pilot with one facility</td>
+        <td>Offline by design: one static-musl binary, no network, no crypto, assets embedded at compile time; vocab-lint CI gate; targets the walled-garden laptops facilities already deploy</td>
+        <td>Early review by a DOC/facility contact; a plain-language security and review packet with a threat model; a single-facility pilot before scaling</td>
         <td class="score"><span class="n md">8</span><span class="lc">2 &times; 4</span></td>
       </tr>
       <tr>
-        <td class="risk-name">Simulator can't convincingly reach the DOOM finale</td>
-        <td>The payoff and differentiator weakens; late rework</td>
-        <td class="dvf">F</td>
+        <td class="risk-name">The DOOM finale reads as a game and trips facility review</td>
+        <td>A playable game is treated as entertainment or contraband and the course is rejected on that basis</td>
+        <td class="dvf">V</td>
+        <td class="score"><span class="n hi">15</span><span class="lc">3 &times; 5</span></td>
+        <td>The finale is framed and presented as an engineering demonstration - a real program on a display driven from the bare metal up, not entertainment</td>
+        <td>A non-game bootable demo (graphics/test pattern) as an alternate finale for strict facilities; make the finale configurable; document the framing in the review packet</td>
+        <td class="score"><span class="n md">8</span><span class="lc">2 &times; 4</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">Weak or misjudged labor-market demand (market realism)</td>
+        <td>Graduates cannot convert systems and Rust skills into work; the core promise fails</td>
+        <td class="dvf">V</td>
         <td class="score"><span class="n md">12</span><span class="lc">3 &times; 4</span></td>
-        <td>First sim slice built and tested (bus + panel + boot splash); SpiBus trait seam; doomgeneric is a known-portable target</td>
-        <td>Prototype DOOM-on-sim-panel as an early vertical slice; keep a simpler bootable demo as fallback</td>
+        <td>A verified underserved niche; portable public artifacts that signal skill across many roles, not only kernel jobs (83% of orgs weigh open-source contributions)</td>
+        <td>Position outcomes for a range of roles, not only kernel work; set honest expectations - differentiation, not a guaranteed kernel job; track placement in a pilot</td>
         <td class="score"><span class="n lo">6</span><span class="lc">2 &times; 3</span></td>
       </tr>
       <tr>
-        <td class="risk-name">Insufficient testing or content errors</td>
-        <td>Wrong teaching, lost credibility, support burden</td>
+        <td class="risk-name">Simulator cannot convincingly reach the DOOM finale</td>
+        <td>The payoff and the core differentiator weaken; costly late rework</td>
         <td class="dvf">F</td>
         <td class="score"><span class="n md">12</span><span class="lc">3 &times; 4</span></td>
-        <td>Unit tests across the workspace; self-validating check bank (tests assert every answer); fmt / clippy / vocab-lint in CI</td>
-        <td>Mentor / expert review of lessons; grow coverage; user-acceptance test with a pilot learner</td>
+        <td>First simulator slice built and tested (bus + panel + boot splash); an SpiBus trait gives the sim-or-real seam; doomgeneric is proven-portable</td>
+        <td>Build a DOOM-on-sim-panel vertical slice early to de-risk it; keep a simpler bootable demo as a fallback finale</td>
         <td class="score"><span class="n lo">6</span><span class="lc">2 &times; 3</span></td>
       </tr>
       <tr>
-        <td class="risk-name">Learners get discouraged and drop out</td>
-        <td>Weak completion and outcomes undercut the whole case</td>
+        <td class="risk-name">Insufficient testing or inaccurate content</td>
+        <td>Learners are taught something wrong; credibility and trust are lost; support burden rises</td>
+        <td class="dvf">F</td>
+        <td class="score"><span class="n md">12</span><span class="lc">3 &times; 4</span></td>
+        <td>24 passing tests; a self-validating content loader (asserts every check's answer grades correct); CI runs fmt, clippy (deny warnings), tests, and vocab-lint</td>
+        <td>Mentor/expert review of every lesson before release; grow coverage on the simulator and content; user-acceptance testing with a pilot learner</td>
+        <td class="score"><span class="n lo">6</span><span class="lc">2 &times; 3</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">Learners get discouraged and drop out (retention)</td>
+        <td>Low completion undercuts outcomes and the whole case for the program</td>
         <td class="dvf">D</td>
         <td class="score"><span class="n md">12</span><span class="lc">4 &times; 3</span></td>
-        <td>Self-paced and mastery-based; cannot get stuck; early visible payoff; progress is tracked</td>
-        <td>Small peer cohort plus a mentor; tiny early wins; measure completion in a pilot</td>
+        <td>Self-paced and mastery-based, no failing grade; cannot get stuck (help always on, no dead ends); early visible payoff; tracked progress</td>
+        <td>A small peer cohort plus a mentor who has walked the path; tiny early wins before hard material; measure completion in a pilot</td>
         <td class="score"><span class="n lo">6</span><span class="lc">2 &times; 3</span></td>
       </tr>
       <tr>
-        <td class="risk-name">First-patch step overwhelms beginners; low-quality patches</td>
-        <td>Discouragement at the most important moment; reputational cost</td>
+        <td class="risk-name">Built but not adopted - no facility or org deploys it</td>
+        <td>The course clears review and is free, yet never reaches learners; the effort is wasted</td>
+        <td class="dvf">D</td>
+        <td class="score"><span class="n md">12</span><span class="lc">3 &times; 4</span></td>
+        <td>Next Chapter as first cohort and champion; free with zero infrastructure lowers adoption cost; complements, not competes with, existing programs</td>
+        <td>Land one lighthouse facility pilot and publish outcomes; partner with an org that already has facility delivery rails; onboarding is a single copied binary</td>
+        <td class="score"><span class="n md">8</span><span class="lc">2 &times; 4</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">Privacy breach of a vulnerable population's data</td>
+        <td>Exposed progress, answers, or typed input could harm a learner's standing inside or on release</td>
+        <td class="dvf">D</td>
+        <td class="score"><span class="n md">10</span><span class="lc">2 &times; 5</span></td>
+        <td>Offline and local-only: no accounts, no network, no telemetry, no tracking; minimal data (a local progress file); nothing leaves the machine</td>
+        <td>Per-user state isolation and an easy wipe on shared machines; store no more free text than a check needs; document data handling; least-privilege file access</td>
+        <td class="score"><span class="n lo">4</span><span class="lc">1 &times; 4</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">Open-source first-patch step overwhelms beginners</td>
+        <td>Discouragement at the most important moment; wasted maintainer time and reputational cost</td>
         <td class="dvf">D</td>
         <td class="score"><span class="n md">9</span><span class="lc">3 &times; 3</span></td>
-        <td>Start small (docs, staging); plug into kernelnewbies / LKMP / Outreachy; meritocracy framing</td>
-        <td>Internal review before any patch is sent; a scaffolded first-issue list; a buddy for each first patch</td>
+        <td>Scope kept small (docs, staging fixes); established on-ramps (kernelnewbies, LKMP, Outreachy); meritocracy framing separates code critique from the person</td>
+        <td>Internal review of every patch before it is sent; a scaffolded first-issue list; a buddy for each first submission</td>
         <td class="score"><span class="n lo">4</span><span class="lc">2 &times; 2</span></td>
       </tr>
       <tr>
         <td class="risk-name">No sponsor or funding to sustain / equip open-build learners</td>
-        <td>Hardware out of reach for outside learners; program longevity</td>
+        <td>Hardware out of reach for outside learners; long-term sustainability at risk</td>
         <td class="dvf">V</td>
         <td class="score"><span class="n md">9</span><span class="lc">3 &times; 3</span></td>
         <td>Free and open source; simulator-first means a zero-hardware floor; the $200 Saleae writeup bounty is collectable now</td>
-        <td>Apply for grants; Saleae and partner outreach; keep the course fully usable with no hardware at all</td>
+        <td>Apply for education and reentry grants; Saleae and hardware-partner outreach; keep every outcome reachable with no hardware at all</td>
         <td class="score"><span class="n lo">4</span><span class="lc">2 &times; 2</span></td>
       </tr>
       <tr>
-        <td class="risk-name">Sole builder unavailable (key-person risk)</td>
-        <td>The project stalls; the lived-experience voice is lost</td>
+        <td class="risk-name">Curriculum drifts out of date as the kernel and Rust evolve</td>
+        <td>Version-specific claims age; content loses accuracy and credibility</td>
+        <td class="dvf">F</td>
+        <td class="score"><span class="n md">9</span><span class="lc">3 &times; 3</span></td>
+        <td>Time-sensitive claims are date-stamped and sourced; content is plain markdown, cheap to revise; the core concepts (syscalls, mmap, SPI) are stable</td>
+        <td>A review cadence on version-specific claims; keep current-state facts in one place, separate from durable concepts; re-verify each cycle</td>
+        <td class="score"><span class="n lo">4</span><span class="lc">2 &times; 2</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">The market gap closes or the differentiator is overtaken</td>
+        <td>An existing program adds systems, or the Rust SPI abstraction lands upstream, eroding the novelty claim</td>
+        <td class="dvf">V</td>
+        <td class="score"><span class="n md">9</span><span class="lc">3 &times; 3</span></td>
+        <td>The differentiator is verified and date-stamped; the durable value (a portfolio and a public record) survives a crowded niche; first-mover plus lived experience is defensible</td>
+        <td>Re-verify the landscape each cycle; lead with durable value, not novelty; if Rust SPI lands upstream, pivot the capstone to the next unfilled area (e.g. GPIO)</td>
+        <td class="score"><span class="n lo">6</span><span class="lc">2 &times; 3</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">Dependency on external communities and the host org</td>
+        <td>Maintainers reject the cohort's patches, or a partner deprioritizes; the payoff or reach weakens</td>
+        <td class="dvf">V</td>
+        <td class="score"><span class="n md">9</span><span class="lc">3 &times; 3</span></td>
+        <td>Start with low-bar, high-acceptance contributions; multiple on-ramps, not one; mentor pre-review raises acceptance odds; the course stands alone without any single partner</td>
+        <td>Cultivate a friendly-maintainer and first-issue list; diversify host and partner relationships; keep the curriculum partner-independent</td>
+        <td class="score"><span class="n lo">4</span><span class="lc">2 &times; 2</span></td>
+      </tr>
+      <tr>
+        <td class="risk-name">Solo maintainer unavailable (key-person risk)</td>
+        <td>Knowledge loss; the project stalls; the lived-experience voice is lost</td>
         <td class="dvf">F</td>
         <td class="score"><span class="n md">8</span><span class="lc">2 &times; 4</span></td>
-        <td>Specs, plans, and code are open source and documented (MIT / Apache-2.0)</td>
-        <td>Grow co-maintainers out of the community; keep a written knowledge base</td>
+        <td>Specs, plans, curriculum, and code are open source and documented in-repo (PRD, design spec, phase plan, README); CI encodes the quality bar</td>
+        <td>Grow co-maintainers out of the community; write an onboarding and contributor guide; identify a backup content reviewer</td>
         <td class="score"><span class="n lo">6</span><span class="lc">2 &times; 3</span></td>
       </tr>
     </tbody>
   </table>
   </div>
 
-  <p class="note"><b>Top residual risk:</b> facility review (final 8, medium) is the one worth active attention, because it is mostly outside my control. Everything else drops into the low band once the mitigations are in place. The single most load-bearing control is the design itself: an offline, no-network, no-hardware static binary that was built to clear review from day one, which is why most of these risks were already low before mitigation.</p>
+  <p class="note"><b>Reading the residuals.</b> Three risks are deliberately left at <span class="chip c-md">medium</span> after mitigation &mdash; <b>facility review</b>, the <b>game-perception of the DOOM finale</b>, and <b>adoption</b> &mdash; because each depends on a decision partly outside the team's control (a reviewer's call, an organization's choice to deploy). They are the active watch-list. The rest fall to low once mitigations are in place, largely by construction: an offline, no-network, no-hardware, review-safe design keeps most of these risks low to begin with. The highest-consequence items (a rejected build, a privacy exposure) are met with the strongest controls, which is where the effort belongs.</p>
 
 </main>
 </body>

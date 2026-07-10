@@ -31,10 +31,12 @@ cargo test --workspace               # all tests
 
 ## Docs
 
-- [`docs/PITCH.md`](docs/PITCH.md) — one-page pitch, for teachers and sponsors.
-- [`docs/PROPOSAL.md`](docs/PROPOSAL.md) — full proposal (Next Chapter mentors).
-- [`docs/superpowers/plans/`](docs/superpowers/plans/) — implementation plans.
-- North-star design spec: `~/docs/superpowers/specs/2026-07-06-thunk-design.md`.
+Full index: [`docs/README.md`](docs/README.md). Highlights:
+- [`docs/PRD.md`](docs/PRD.md) — product requirements.
+- [`docs/DESIGN-SPEC.md`](docs/DESIGN-SPEC.md) — north-star design and architecture.
+- [`docs/PROPOSAL.md`](docs/PROPOSAL.md) · [`docs/PITCH-3min.md`](docs/PITCH-3min.md) — the pitch, in Penn's voice.
+- [`docs/thunk-risk-assessment.html`](docs/thunk-risk-assessment.html) — risk register (D/V/F, L×C).
+- [`docs/pdf/`](docs/pdf/) — print-ready PDFs of every designed document.
 
 ## Status
 
