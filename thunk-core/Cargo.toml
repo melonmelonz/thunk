@@ -7,3 +7,4 @@ description = "thunk domain logic: content model, check evaluation, progress."
 
 [dependencies]
 serde = { workspace = true }
+ron = { workspace = true }
