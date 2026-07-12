@@ -24,11 +24,11 @@
         id: CheckId("m2-01-fit"),
         prompt: "Why does Rust fit kernels and small machines?",
         options: [
-            "it trades speed for safety, which kernels prefer",
             "memory comes back predictably, with no collector pauses",
+            "it trades speed for safety, which kernels prefer",
             "the kernel runs a garbage collector on Rust's behalf",
         ],
-        answer: 1,
+        answer: 0,
     ),
 
     // --- Lesson 02: ownership ---
@@ -47,10 +47,10 @@
         prompt: "After `let b = a;` moves a String out of `a`, what can `a` still be used for?",
         options: [
             "reading the value, but not changing it",
-            "nothing; the old name can no longer be used",
             "anything; both names now share the value",
+            "nothing; the old name can no longer be used",
         ],
-        answer: 1,
+        answer: 2,
     ),
     Short(
         id: CheckId("m2-02-drop"),
@@ -63,11 +63,11 @@
         id: CheckId("m2-03-rule"),
         prompt: "At any moment, which borrows may a single value have?",
         options: [
-            "any number of readers, or exactly one writer, never both",
             "exactly one reader and one writer, so they can hand off",
+            "any number of readers, or exactly one writer, never both",
             "any number of readers and writers, if the code is careful",
         ],
-        answer: 0,
+        answer: 1,
     ),
     Short(
         id: CheckId("m2-03-borrow"),
@@ -106,19 +106,19 @@
     Choice(
         id: CheckId("m2-05-u8"),
         prompt: "What numbers can a u8 hold?",
-        options: ["0 through 255", "0 through 256", "-128 through 127"],
-        answer: 0,
+        options: ["-128 through 127", "0 through 256", "0 through 255"],
+        answer: 2,
     ),
     Choice(
         id: CheckId("m2-05-u16"),
         prompt: "How many bytes is a u16?",
-        options: ["one", "two", "four"],
-        answer: 1,
+        options: ["one", "four", "two"],
+        answer: 2,
     ),
     Choice(
         id: CheckId("m2-05-color"),
         prompt: "An RGB565 color fits in which type?",
-        options: ["u8", "u16", "u32"],
-        answer: 1,
+        options: ["u16", "u8", "u32"],
+        answer: 0,
     ),
 ]

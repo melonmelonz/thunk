@@ -15,20 +15,20 @@
         prompt: "Engineers have ported DOOM to printers, oscilloscopes, and test equipment. What made all of that porting possible?",
         options: [
             "the engine detects whatever machine it is on and adjusts itself automatically",
-            "those machines are all secretly ordinary PCs inside, so no changes were needed",
             "id Software released the engine's source code, so anyone could read it and adapt it",
+            "those machines are all secretly ordinary PCs inside, so no changes were needed",
         ],
-        answer: 2,
+        answer: 1,
     ),
     Choice(
         id: CheckId("m5-01-needs"),
         prompt: "What does a port have to supply to the DOOM engine?",
         options: [
-            "a complete rewrite of the engine in the new machine's own language",
             "somewhere to draw, a way to keep time, and input; the engine carries everything else",
+            "a complete rewrite of the engine in the new machine's own language",
             "an exact copy of a 1993 office computer, simulated down to the chip",
         ],
-        answer: 1,
+        answer: 0,
     ),
 
     // --- Lesson 02: frames to the panel ---
@@ -41,21 +41,21 @@
         id: CheckId("m5-02-budget"),
         prompt: "How many bytes is one full frame on this course's panel?",
         options: [
-            "76,800 bytes",
             "153,600 bytes",
+            "76,800 bytes",
             "4,608,000 bytes",
         ],
-        answer: 1,
+        answer: 0,
     ),
     Choice(
         id: CheckId("m5-02-path"),
         prompt: "What path does each frame take, in order?",
         options: [
-            "the engine computes it into the framebuffer, the driver moves it over the bus, the panel shows it",
             "the panel requests it from the bus, the driver computes it, the framebuffer displays it",
+            "the engine computes it into the framebuffer, the driver moves it over the bus, the panel shows it",
             "the driver computes it into the panel, the engine moves it over the bus, the framebuffer shows it",
         ],
-        answer: 0,
+        answer: 1,
     ),
 
     // --- Lesson 03: the whole stack ---
@@ -84,9 +84,9 @@
         prompt: "After walking a frame down every layer of the stack, what should you conclude?",
         options: [
             "the lowest layers are too complicated to understand and must be taken on faith",
-            "no layer is magic; every one can be seen, named, and understood",
             "only the program layer matters, and the rest is best left hidden",
+            "no layer is magic; every one can be seen, named, and understood",
         ],
-        answer: 1,
+        answer: 2,
     ),
 ]

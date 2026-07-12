@@ -4,31 +4,31 @@
         id: CheckId("m3-01-high"),
         prompt: "A wire between two chips is carrying a high voltage. How is that read?",
         options: [
-            "as a 1",
             "as a 0",
+            "as a 1",
             "as the end of a byte",
         ],
-        answer: 0,
+        answer: 1,
     ),
     Choice(
         id: CheckId("m3-01-serial"),
         prompt: "What does it mean to send a byte serially?",
         options: [
             "all eight bits travel at once, one wire per bit",
-            "the eight bits travel one at a time over one wire",
             "the byte travels as one higher voltage level",
+            "the eight bits travel one at a time over one wire",
         ],
-        answer: 1,
+        answer: 2,
     ),
     Choice(
         id: CheckId("m3-01-spi"),
         prompt: "How does SPI reach a device like a display?",
         options: [
-            "over eight data wires, one for each bit of a byte",
-            "over one wire that carries clock and data together",
             "over a small handful of wires, classically four signals",
+            "over one wire that carries clock and data together",
+            "over eight data wires, one for each bit of a byte",
         ],
-        answer: 2,
+        answer: 0,
     ),
 
     // --- Lesson 02: clock and data ---
@@ -37,16 +37,16 @@
         prompt: "What does the clock wire tell the receiving device?",
         options: [
             "what time of day it is",
-            "when to read the data wire",
             "which device is being spoken to",
+            "when to read the data wire",
         ],
-        answer: 1,
+        answer: 2,
     ),
     Choice(
         id: CheckId("m3-02-perbyte"),
         prompt: "How many clock ticks does it take to move one byte?",
-        options: ["one", "eight", "sixteen"],
-        answer: 1,
+        options: ["one", "sixteen", "eight"],
+        answer: 2,
     ),
     Short(
         id: CheckId("m3-02-msb"),
@@ -106,11 +106,11 @@
         id: CheckId("m3-04-decode"),
         prompt: "How do you decode a byte out of a trace?",
         options: [
-            "read the data line at each clock tick",
             "measure exactly how high the data line goes",
+            "read the data line at each clock tick",
             "count the number of edges on the select line",
         ],
-        answer: 0,
+        answer: 1,
     ),
     Choice(
         id: CheckId("m3-04-trace"),

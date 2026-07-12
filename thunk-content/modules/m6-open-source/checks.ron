@@ -4,27 +4,27 @@
         id: CheckId("m6-01-means"),
         prompt: "What makes a program open source?",
         options: [
-            "its program file can be downloaded from the internet at no cost",
             "its source code is public and licensed so anyone may use, study, change, and share it",
+            "its program file can be downloaded from the internet at no cost",
             "it was written by unpaid volunteers rather than a company's engineers",
         ],
-        answer: 1,
+        answer: 0,
     ),
     Choice(
         id: CheckId("m6-01-free"),
         prompt: "In the name \"free software\", what does \"free\" refer to?",
-        options: ["price", "freedom", "free of charge for companies only"],
-        answer: 1,
+        options: ["freedom", "price", "free of charge for companies only"],
+        answer: 0,
     ),
     Choice(
         id: CheckId("m6-01-used"),
         prompt: "Which of the software you used in this course is open source?",
         options: [
-            "only Linux",
-            "only the Rust toolchain",
             "Linux, the Rust toolchain, and thunk itself",
+            "only the Rust toolchain",
+            "only Linux",
         ],
-        answer: 2,
+        answer: 0,
     ),
 
     // --- Lesson 02: licenses ---
@@ -37,11 +37,11 @@
         id: CheckId("m6-02-mit"),
         prompt: "In one sentence, what does the MIT license say?",
         options: [
-            "use this for anything, and keep the copyright notice attached",
-            "if you ship a changed version, you must publish your changes",
             "you may read the code but not change it",
+            "if you ship a changed version, you must publish your changes",
+            "use this for anything, and keep the copyright notice attached",
         ],
-        answer: 0,
+        answer: 2,
     ),
     Choice(
         id: CheckId("m6-02-gpl"),
@@ -69,11 +69,11 @@
         id: CheckId("m6-03-fork"),
         prompt: "What is a fork?",
         options: [
-            "a commit that broke the build",
             "your own complete copy of a project, to work in freely",
+            "a commit that broke the build",
             "the list of a project's maintainers",
         ],
-        answer: 1,
+        answer: 0,
     ),
 
     // --- Lesson 04: reading a diff ---
@@ -82,10 +82,10 @@
         prompt: "In a diff, what does a line starting with + mean?",
         options: [
             "the line was removed",
-            "the line was added",
             "the line is unchanged context",
+            "the line was added",
         ],
-        answer: 1,
+        answer: 2,
     ),
     Short(
         id: CheckId("m6-04-hunk"),
@@ -95,8 +95,8 @@
     Choice(
         id: CheckId("m6-04-unit"),
         prompt: "Reviews, disagreements, and approvals in open source all happen on what?",
-        options: ["the diff", "the project's website", "a video call"],
-        answer: 0,
+        options: ["the project's website", "the diff", "a video call"],
+        answer: 1,
     ),
 
     // --- Lesson 05: the culture of merit ---
@@ -126,9 +126,9 @@
         prompt: "Why is a contribution history a work record unlike a resume line?",
         options: [
             "it is written by the project's maintainers for you",
-            "it is public and anyone can verify it at the source, diff by diff",
             "it expires after a few years",
+            "it is public and anyone can verify it at the source, diff by diff",
         ],
-        answer: 1,
+        answer: 2,
     ),
 ]

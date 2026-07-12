@@ -3,18 +3,18 @@
     Choice(
         id: CheckId("m0-01-processor"),
         prompt: "Which part of the machine steps through instructions, one after another?",
-        options: ["the processor", "storage", "memory"],
-        answer: 0,
+        options: ["storage", "the processor", "memory"],
+        answer: 1,
     ),
     Choice(
         id: CheckId("m0-01-memory"),
         prompt: "What is memory?",
         options: [
             "the slow shelf that remembers even with the power off",
-            "the fast workspace that forgets everything when the power goes off",
             "the part that follows instructions",
+            "the fast workspace that forgets everything when the power goes off",
         ],
-        answer: 1,
+        answer: 2,
     ),
     Short(
         id: CheckId("m0-01-switch"),
@@ -37,8 +37,8 @@
     Choice(
         id: CheckId("m0-02-range"),
         prompt: "What is the largest number one byte can hold?",
-        options: ["100", "255", "256"],
-        answer: 1,
+        options: ["255", "100", "256"],
+        answer: 0,
     ),
 
     // --- Lesson 03: what a program is ---
@@ -47,30 +47,30 @@
         prompt: "What is a program?",
         options: [
             "a machine that thinks for itself",
-            "a list of instructions, stored as bytes like everything else",
             "a special kind of memory that never forgets",
+            "a list of instructions, stored as bytes like everything else",
         ],
-        answer: 1,
+        answer: 2,
     ),
     Choice(
         id: CheckId("m0-03-step"),
         prompt: "How does the processor work through a program's instructions?",
         options: [
             "all of them at once",
-            "one at a time, very fast",
             "only the ones it understands, skipping the rest",
+            "one at a time, very fast",
         ],
-        answer: 1,
+        answer: 2,
     ),
     Choice(
         id: CheckId("m0-03-same"),
         prompt: "Where do a program's instructions live compared to the data it works on?",
         options: [
-            "in the same memory",
             "in a special section of memory that only holds instructions",
+            "in the same memory",
             "instructions never sit in memory",
         ],
-        answer: 0,
+        answer: 1,
     ),
 
     // --- Lesson 04: what code is ---
@@ -87,8 +87,8 @@
     Choice(
         id: CheckId("m0-04-language"),
         prompt: "Which programming language does this course use?",
-        options: ["Python", "Rust", "C"],
-        answer: 1,
+        options: ["Rust", "Python", "C"],
+        answer: 0,
     ),
 
     // --- Lesson 05: running a program ---

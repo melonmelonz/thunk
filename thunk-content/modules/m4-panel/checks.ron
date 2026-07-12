@@ -19,35 +19,35 @@
         id: CheckId("m4-01-size"),
         prompt: "How big is this course's panel?",
         options: [
-            "240 pixels wide by 320 tall",
-            "320 pixels wide by 240 tall",
             "640 pixels wide by 480 tall",
+            "320 pixels wide by 240 tall",
+            "240 pixels wide by 320 tall",
         ],
-        answer: 0,
+        answer: 2,
     ),
 
     // --- Lesson 02: color in sixteen bits ---
     Choice(
         id: CheckId("m4-02-bits"),
         prompt: "How many bits does one RGB565 color take in total?",
-        options: ["8", "16", "24"],
-        answer: 1,
+        options: ["16", "8", "24"],
+        answer: 0,
     ),
     Choice(
         id: CheckId("m4-02-green"),
         prompt: "Which channel gets six bits, and why?",
         options: [
-            "red, because it sits in the top bits of the u16",
             "green, because human eyes distinguish greens best",
+            "red, because it sits in the top bits of the u16",
             "blue, because blue needs the most shades to look smooth",
         ],
-        answer: 1,
+        answer: 0,
     ),
     Choice(
         id: CheckId("m4-02-red"),
         prompt: "Which RGB565 value is pure red?",
-        options: ["0xF800", "0x07E0", "0x001F"],
-        answer: 0,
+        options: ["0x07E0", "0xF800", "0x001F"],
+        answer: 1,
     ),
 
     // --- Lesson 03: the framebuffer ---
@@ -61,16 +61,16 @@
         prompt: "In row-major order, at which index does pixel (x, y) live?",
         options: [
             "x * height + y",
-            "y * width + x",
             "x + y",
+            "y * width + x",
         ],
-        answer: 1,
+        answer: 2,
     ),
     Choice(
         id: CheckId("m4-03-bytes"),
         prompt: "How many bytes is one full frame on this panel?",
-        options: ["76,800", "153,600", "307,200"],
-        answer: 1,
+        options: ["76,800", "307,200", "153,600"],
+        answer: 2,
     ),
 
     // --- Lesson 04: commands and data ---

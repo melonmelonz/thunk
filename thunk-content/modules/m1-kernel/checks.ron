@@ -3,8 +3,8 @@
     Choice(
         id: CheckId("m1-01-privilege"),
         prompt: "Which processor mode is allowed to change page tables and talk to devices directly?",
-        options: ["user mode", "kernel mode"],
-        answer: 1,
+        options: ["kernel mode", "user mode"],
+        answer: 0,
     ),
     Short(
         id: CheckId("m1-01-syscall"),
@@ -15,19 +15,19 @@
         id: CheckId("m1-01-owns"),
         prompt: "Which of these does the kernel own and manage?",
         options: [
-            "the color theme of your text editor",
             "the scheduler and the page tables",
+            "the color theme of your text editor",
             "the contents of a program's source file",
         ],
-        answer: 1,
+        answer: 0,
     ),
 
     // --- Lesson 02: syscalls ---
     Choice(
         id: CheckId("m1-02-register"),
         prompt: "On x86-64, which register holds the syscall number?",
-        options: ["rdi", "rax", "rsp"],
-        answer: 1,
+        options: ["rdi", "rsp", "rax"],
+        answer: 2,
     ),
     Short(
         id: CheckId("m1-02-negative"),
@@ -50,8 +50,8 @@
     Choice(
         id: CheckId("m1-03-stdout"),
         prompt: "Which file descriptor is standard output?",
-        options: ["0", "1", "2"],
-        answer: 1,
+        options: ["0", "2", "1"],
+        answer: 2,
     ),
     Short(
         id: CheckId("m1-03-ioctl"),
@@ -63,8 +63,8 @@
     Choice(
         id: CheckId("m1-04-page"),
         prompt: "What is the usual size of a memory page?",
-        options: ["512 bytes", "4096 bytes", "one megabyte"],
-        answer: 1,
+        options: ["4096 bytes", "512 bytes", "one megabyte"],
+        answer: 0,
     ),
     Short(
         id: CheckId("m1-04-mmap"),
