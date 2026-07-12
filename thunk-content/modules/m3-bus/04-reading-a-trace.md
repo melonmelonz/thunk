@@ -8,9 +8,9 @@ same one you built in the last two lessons, applied to a picture.
 
 ## How to decode
 
-The method never changes:
+To **decode** a trace is to turn the drawing back into bytes. The method never changes:
 
-1. Find where select drops low. The transaction starts there.
+1. Find where select drops low. The **transaction** starts there.
 2. At each clock tick, read the data row: high is 1, low is 0.
 3. Eight reads make a byte, most significant bit first.
 4. Repeat until select rises. The transaction is over.
