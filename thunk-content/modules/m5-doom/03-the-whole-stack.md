@@ -16,15 +16,15 @@ The word for this arrangement is the **stack**: hardware and software in layers,
 on the one below it and serving the one above. A **layer** does one job and offers it upward.
 Memory offers bytes. The language offers a safe way to compute with them. The kernel offers the
 doorway. The bus offers delivery. The panel offers light. No layer needs to understand the whole;
-each one only needs to keep its own promise. Stand at the top and the frame simply appears. Walk
-down, as you just did, and there is a reason at every step.
+each one only needs to keep its own promise. From the top you only see the result, a frame
+appearing on the glass. The walk you just took is everything that happens underneath.
 
 ## Simulated and real
 
-On this build, the finale renders on the **simulated panel**: thunk draws the panel as a picture
-on your screen, and the display driver you studied writes to it byte for byte as it would write
-to hardware. The same window commands, the same RAMWR, the same two bytes per pixel, high byte
-first.
+This course ends with a **finale**: a rendered scene, drawn by the same display driver you
+studied. On this build it renders on the **simulated panel**: thunk draws the panel as a picture
+on your screen, and the driver writes to it byte for byte as it would write to hardware. The same
+window commands, the same RAMWR, the same two bytes per pixel, high byte first.
 
 The driver cannot tell the difference, because the simulated panel and the real one sit behind
 the same **interface**: the agreed set of operations one layer offers the layer above. The driver
@@ -37,8 +37,8 @@ above it do not have to care what stands below.
 
 Here is what this module was for. A frame of DOOM crossing this stack is not magic at any layer.
 It is numbers, a program, a doorway, a clock, and a chip that keeps its promise. You have now
-looked inside every one of those. When a screen does something that seems impossible, you know it
-is this same ladder underneath, and you know how to climb down it.
+looked inside every one of those. When a screen does something that seems impossible, the same
+stack is underneath, and you can trace a frame down through it the way you just did.
 
 One thread is still loose. Lesson one said the porting never stopped because id Software shared
 the engine's source code, and people who had never met built on it together. Code like the driver

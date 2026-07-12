@@ -24,9 +24,13 @@ second.
 
 And M3 told you how the bus carries them: one bit per clock tick. To deliver 37 million bits in a
 second, the clock has to tick about 37 million times in that second, and that is just for pixel
-data, before a single command byte. The bus is the **bottleneck**: the slowest stage in the loop,
-the one that sets the pace for all the others. The engine can compute frames as fast as it
-likes; the panel shows them no faster than the wires deliver them.
+data, before a single command byte. The other stages have room to spare: a modern processor
+finishes a frame's arithmetic in a small fraction of that thirtieth of a second, while the serial
+wires can never move a byte faster than one bit per tick. That makes the bus the **bottleneck**:
+the slowest stage in the loop, the one that sets the pace for all the others. The engine can
+compute frames as fast as it likes; the panel shows them no faster than the wires deliver them.
+It was not always so. On the machines of 1993, the engine's arithmetic was the slow stage; the
+bottleneck moves with the hardware.
 
 ## Spending it well
 
@@ -40,9 +44,9 @@ the last. Aiming costs a few bytes per frame instead of a few bytes per pixel, a
 tick of that 37-million-tick second carries picture.
 
 This is real engineering: a budget, a bottleneck, and a design that fits inside it. The clock
-rate decides how many bits can move. The window trick decides how few bits are wasted. Get both
-right and the loop closes thirty times a second. The last lesson follows one frame through that
-loop, all the way down.
+rate decides how many bits can move, up to the ceiling the panel sets. The window trick decides
+how few bits are wasted. Get both right and the loop closes thirty times a second. What remains
+is to watch one frame make that trip, down through every layer you have learned.
 
 ## Key terms
 

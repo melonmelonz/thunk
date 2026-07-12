@@ -21,8 +21,7 @@ into something more useful: a standing proof that a machine's whole stack works.
 Consider what has to be true for DOOM to run. The processor has to execute the engine's code fast
 enough. The memory has to hold the world and the frame being drawn. The display path has to carry
 every finished frame to a screen. The timing has to hold steady, frame after frame, without
-drifting. If DOOM runs, all of those layers are working, and working together, under real
-pressure. It tests every part at once, and it tests them as a system.
+drifting. If DOOM runs, all of those layers are working together, under real pressure.
 
 ## Why anyone can port it
 

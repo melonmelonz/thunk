@@ -74,7 +74,7 @@
         prompt: "How does the simulated panel relate to real display hardware?",
         options: [
             "both sit behind the same interface, so the same driver code works against either one",
-            "the simulation is a rough sketch that shares nothing with how real hardware behaves",
+            "the simulation and the hardware share an interface but need separately written drivers",
             "real hardware requires a completely different program written from scratch",
         ],
         answer: 0,
