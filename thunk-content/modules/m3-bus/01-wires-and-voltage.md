@@ -6,9 +6,9 @@ with a single wire.
 
 ## A bit in flight
 
-A wire between two chips is either carrying **voltage** or it is not. The sender connects the
-wire to power, or it connects it to ground. The receiver measures which. That is the entire
-signal: two states, nothing in between that anyone agrees to care about.
+A wire between two chips is held at one of two **voltage** levels. The sender connects the
+wire to power, making it high, or to ground, making it low. The receiver measures which. That
+is the entire signal: two states, nothing in between that anyone agrees to care about.
 
 By convention, a **high** voltage on the wire is read as a 1, and a **low** voltage is read as
 a 0. You have seen this before. M0 said a bit is a switch that is on or off. A wire under

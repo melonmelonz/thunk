@@ -19,15 +19,17 @@ peripherals means three select wires, and never more than one asserted at a time
 ## Active low
 
 Select is usually **active low**: the wire idles high, and the controller pulls it low to
-speak to the device. That sounds backwards until you ask what happens when things fail. A
-broken or unconnected wire carries no drive at all, and select inputs are built to rest at
-the idle level when nothing drives them. With active low, idle means "not selected", so a
-loose wire leaves the device silent instead of listening to traffic meant for someone else.
-The failure lands on the safe side.
+speak to the device. That sounds backwards until you ask what happens when things fail. An
+undriven select line does not sit at some random level; a small resistor, called a
+**pull-up**, holds it high whenever nothing is driving it. So designers made high mean "not
+selected". A broken or unconnected select wire then reads as not-selected, and the device
+stays silent instead of listening to traffic meant for someone else. The failure lands on
+the safe side.
 
 ## Controller and peripheral
 
-The two roles on the bus now have names. The device that drives the clock, and the select
+The last lesson used the names for the two bus roles in passing; now pin them down. The
+device that drives the clock, and the select
 wires with it, is the **controller**. In this course that is the computer running your code.
 The device being spoken to is the **peripheral**: the display, the sensor, the memory chip.
 The controller starts every conversation; a peripheral never ticks the clock and never speaks
@@ -53,6 +55,7 @@ The next lesson records those wires over time and teaches you to read the pictur
 
 - **chip select** — the per-device wire that tells one peripheral it is being addressed.
 - **active low** — asserted by pulling the wire low; idle is high, so a dead wire means "not selected".
+- **pull-up** — a small resistor that holds a line high whenever nothing is driving it.
 - **controller** — the device that drives the clock and the select wires, and starts every transaction.
 - **peripheral** — the device spoken to; it never drives the clock.
 - **transaction** — select pulled low, bytes clocked out, select raised high.

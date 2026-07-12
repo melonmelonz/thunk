@@ -55,11 +55,11 @@ makes on the simulated bus is captured as a trace: select edges, every clocked b
 order. When you drive the display panel in M4, its trace view is where you will check your
 work.
 
-That matters because of what a trace settles. When the picture on the panel comes out wrong,
-there are two suspects: your code sent the wrong bytes, or it sent the right bytes and the
-drawing logic is wrong. Read the trace. If the bytes on the bus are wrong, the bug is on the
-sending side, in your code. If the bytes are right and the picture is still wrong, the bug is
-in what you chose to send. The trace is the **ground truth** between the two.
+That matters because of what a trace settles. The trace shows what actually crossed the bus;
+you know what you meant to send. When the picture on the panel comes out wrong, compare the
+two. If they differ, the bug is in how you send: your code put the wrong bytes on the wire.
+If they match and the picture is still wrong, the bug is in what you decided to send. The
+trace is the **ground truth**: not what your code meant, but what happened.
 
 ## Key terms
 

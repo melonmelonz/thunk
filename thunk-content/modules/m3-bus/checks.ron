@@ -6,7 +6,7 @@
         options: [
             "as a 1",
             "as a 0",
-            "as a sign the wire is broken",
+            "as the end of a byte",
         ],
         answer: 0,
     ),
@@ -25,7 +25,7 @@
         prompt: "How does SPI reach a device like a display?",
         options: [
             "over eight data wires, one for each bit of a byte",
-            "over a radio link between the two chips",
+            "over one wire that carries clock and data together",
             "over a small handful of wires, classically four signals",
         ],
         answer: 2,
@@ -57,6 +57,9 @@
             "msb",
             "the most significant bit",
             "the msb",
+            "bit 7",
+            "the high bit",
+            "high bit",
         ],
     ),
 
