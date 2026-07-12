@@ -40,7 +40,11 @@ pub struct SimSpi {
 
 impl Default for SimSpi {
     fn default() -> Self {
-        Self { trace: Vec::new(), dc: Dc::Command, selected: false }
+        Self {
+            trace: Vec::new(),
+            dc: Dc::Command,
+            selected: false,
+        }
     }
 }
 
@@ -96,9 +100,18 @@ mod tests {
             bus.trace(),
             &[
                 TraceEvent::SelectLow,
-                TraceEvent::Byte { value: 0x2C, dc: Dc::Command },
-                TraceEvent::Byte { value: 0xF8, dc: Dc::Data },
-                TraceEvent::Byte { value: 0x00, dc: Dc::Data },
+                TraceEvent::Byte {
+                    value: 0x2C,
+                    dc: Dc::Command
+                },
+                TraceEvent::Byte {
+                    value: 0xF8,
+                    dc: Dc::Data
+                },
+                TraceEvent::Byte {
+                    value: 0x00,
+                    dc: Dc::Data
+                },
                 TraceEvent::SelectHigh,
             ]
         );

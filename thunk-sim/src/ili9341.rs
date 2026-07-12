@@ -95,7 +95,11 @@ impl Ili9341 {
             DISPOFF => self.on = false,
             COLMOD => self.expecting = Expecting::PixelFormat,
             CASET | PASET => {
-                self.expecting = Expecting::WindowParams { cmd: c, got: [0; 4], n: 0 }
+                self.expecting = Expecting::WindowParams {
+                    cmd: c,
+                    got: [0; 4],
+                    n: 0,
+                }
             }
             RAMWR => {
                 self.cursor = (self.col.0, self.page.0);
@@ -211,5 +215,61 @@ mod tests {
         cmd(&mut p, 0x2A);
         data(&mut p, &[0x00, 0x00, 0x00, 0x01]);
         assert_eq!(p.window(), ((0, 0), (1, 319))); // decoder state undamaged
+    }
+
+    #[test]
+    fn ramwr_writes_pixels_into_the_window() {
+        let mut p = Ili9341::new(240, 320);
+        cmd(&mut p, 0x2A);
+        data(&mut p, &[0x00, 0x02, 0x00, 0x03]); // columns 2..=3
+        cmd(&mut p, 0x2B);
+        data(&mut p, &[0x00, 0x05, 0x00, 0x06]); // pages 5..=6
+        cmd(&mut p, 0x2C); // RAMWR
+                           // four pixels, high byte first: red, green, blue, white
+        data(&mut p, &[0xF8, 0x00, 0x07, 0xE0, 0x00, 0x1F, 0xFF, 0xFF]);
+        let fb = p.framebuffer();
+        assert_eq!(fb.get_pixel(2, 5), 0xF800);
+        assert_eq!(fb.get_pixel(3, 5), 0x07E0); // wrapped column
+        assert_eq!(fb.get_pixel(2, 6), 0x001F); // wrapped to next page
+        assert_eq!(fb.get_pixel(3, 6), 0xFFFF);
+        assert_eq!(fb.get_pixel(0, 0), 0x0000); // outside window untouched
+    }
+
+    #[test]
+    fn overflowing_the_window_wraps_to_its_start() {
+        let mut p = Ili9341::new(240, 320);
+        cmd(&mut p, 0x2A);
+        data(&mut p, &[0x00, 0x00, 0x00, 0x00]); // single column 0
+        cmd(&mut p, 0x2B);
+        data(&mut p, &[0x00, 0x00, 0x00, 0x00]); // single page 0
+        cmd(&mut p, 0x2C);
+        data(&mut p, &[0xF8, 0x00, 0x07, 0xE0]); // two pixels into a one-pixel window
+        assert_eq!(p.framebuffer().get_pixel(0, 0), 0x07E0); // second overwrote first
+    }
+
+    #[test]
+    fn a_new_command_ends_the_pixel_stream() {
+        let mut p = Ili9341::new(240, 320);
+        cmd(&mut p, 0x2C);
+        data(&mut p, &[0xF8, 0x00]);
+        cmd(&mut p, 0x28); // DISPOFF interrupts
+        data(&mut p, &[0x07, 0xE0]); // stray data, no active command: discarded
+        assert_eq!(p.framebuffer().get_pixel(0, 0), 0xF800);
+        assert_eq!(p.framebuffer().get_pixel(1, 0), 0x0000);
+    }
+
+    #[test]
+    fn replay_rebuilds_state_from_a_trace() {
+        use crate::spi::{SimSpi, SpiBus};
+        let mut bus = SimSpi::new();
+        bus.select();
+        bus.set_dc(Dc::Command);
+        bus.write(&[0x2C]);
+        bus.set_dc(Dc::Data);
+        bus.write(&[0xF8, 0x00]);
+        bus.deselect();
+        let mut p = Ili9341::new(240, 320);
+        p.replay(bus.trace());
+        assert_eq!(p.framebuffer().get_pixel(0, 0), 0xF800);
     }
 }
