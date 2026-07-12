@@ -2,7 +2,7 @@
 
 use clap::{Parser, Subcommand};
 use thunk_content::Curriculum;
-use thunk_sim::{boot::boot_splash_via_display, Ili9341, SimSpi};
+use thunk_sim::{boot::boot_splash_via_display, boot_finale, Ili9341, SimSpi};
 
 #[derive(Parser)]
 #[command(
@@ -26,7 +26,11 @@ enum Cmd {
     /// Show what mastery requires.
     Progress,
     /// Boot the simulated panel and print it as ASCII.
-    Sim,
+    Sim {
+        /// Show the boot splash (color bars) instead of the finale.
+        #[arg(long)]
+        splash: bool,
+    },
 }
 
 fn main() {
@@ -41,7 +45,7 @@ fn main() {
         Some(Cmd::Read { lesson }) => print!("{}", read(lesson.as_deref())),
         Some(Cmd::Check) => print!("{}", checks()),
         Some(Cmd::Progress) => print!("{}", progress()),
-        Some(Cmd::Sim) => print!("{}", sim()),
+        Some(Cmd::Sim { splash }) => print!("{}", sim(splash)),
     }
 }
 
@@ -107,14 +111,20 @@ fn progress() -> String {
     format!("Mastery = pass every check in a module to unlock the next. {total} checks across the course.\n")
 }
 
-fn sim() -> String {
+fn sim(splash: bool) -> String {
     let mut bus = SimSpi::new();
-    boot_splash_via_display(&mut bus, 240, 320);
+    let what = if splash {
+        boot_splash_via_display(&mut bus, 240, 320);
+        "boot splash (color bars)"
+    } else {
+        boot_finale(&mut bus, 240, 320);
+        "the finale: a rendered corridor, drawn by the display driver"
+    };
     let mut panel = Ili9341::new(240, 320);
     panel.replay(bus.trace());
     let events = bus.trace().len();
     format!(
-        "simulated panel - boot splash drawn over the bus\n\
+        "simulated panel - {what}\n\
          {events} bus events: init (SWRESET, SLPOUT, COLMOD, DISPON), \
          window (CASET, PASET), then RAMWR + pixel data\n\n{}",
         panel.framebuffer().to_ascii(60, 24)
@@ -161,15 +171,16 @@ mod tests {
     }
 
     #[test]
-    fn sim_renders_ascii_rows() {
-        assert!(sim().lines().count() > 20);
+    fn sim_boots_the_finale_by_default() {
+        let s = sim(false);
+        assert!(s.lines().count() > 20);
+        assert!(s.contains("finale"), "names the scene:\n{s}");
+        assert!(s.contains("bus events"), "reports the traffic:\n{s}");
     }
 
     #[test]
-    fn sim_output_mentions_the_protocol_traffic() {
-        let s = sim();
-        assert!(s.lines().count() > 20, "still renders the panel");
-        assert!(s.contains("bus events"), "reports the trace size:\n{s}");
-        assert!(s.contains("RAMWR"), "names the write command:\n{s}");
+    fn sim_splash_flag_keeps_the_color_bars() {
+        let s = sim(true);
+        assert!(s.contains("color bars"), "splash still available:\n{s}");
     }
 }
