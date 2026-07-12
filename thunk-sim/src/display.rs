@@ -1,0 +1,137 @@
+//! The display driver a learner studies: it does nothing but speak the
+//! protocol M4 teaches - init, set a window, stream pixels.
+
+use crate::spi::{Dc, SpiBus};
+
+const SWRESET: u8 = 0x01;
+const SLPOUT: u8 = 0x11;
+const DISPON: u8 = 0x29;
+const CASET: u8 = 0x2A;
+const PASET: u8 = 0x2B;
+const RAMWR: u8 = 0x2C;
+const COLMOD: u8 = 0x3A;
+const COLMOD_16BPP: u8 = 0x55;
+
+/// Drives an ILI9341-class panel over any `SpiBus`. On the inside build the
+/// bus is simulated; on the open build the same code drives real wires.
+pub struct Display<'b, B: SpiBus> {
+    bus: &'b mut B,
+    pub w: u16,
+    pub h: u16,
+}
+
+impl<'b, B: SpiBus> Display<'b, B> {
+    pub fn new(bus: &'b mut B, w: u16, h: u16) -> Self {
+        Self { bus, w, h }
+    }
+
+    fn command(&mut self, c: u8) {
+        self.bus.set_dc(Dc::Command);
+        self.bus.write(&[c]);
+    }
+    fn data(&mut self, bytes: &[u8]) {
+        self.bus.set_dc(Dc::Data);
+        self.bus.write(bytes);
+    }
+
+    /// Wake the panel and set 16-bit color: the sequence M4 describes.
+    pub fn init(&mut self) {
+        self.bus.select();
+        self.command(SWRESET);
+        self.command(SLPOUT);
+        self.command(COLMOD);
+        self.data(&[COLMOD_16BPP]);
+        self.command(DISPON);
+        self.bus.deselect();
+    }
+
+    /// Aim: first and last column, first and last row, inclusive.
+    fn set_window(&mut self, x0: u16, y0: u16, x1: u16, y1: u16) {
+        self.command(CASET);
+        self.data(&[(x0 >> 8) as u8, x0 as u8, (x1 >> 8) as u8, x1 as u8]);
+        self.command(PASET);
+        self.data(&[(y0 >> 8) as u8, y0 as u8, (y1 >> 8) as u8, y1 as u8]);
+    }
+
+    /// Write: RAMWR, then two bytes per pixel, high byte first.
+    pub fn blit_rect(&mut self, x: u16, y: u16, w: u16, h: u16, pixels: &[u16]) {
+        debug_assert_eq!(pixels.len(), w as usize * h as usize);
+        self.bus.select();
+        self.set_window(x, y, x + w - 1, y + h - 1);
+        self.command(RAMWR);
+        self.bus.set_dc(Dc::Data);
+        for &px in pixels {
+            self.bus.write(&[(px >> 8) as u8, px as u8]);
+        }
+        self.bus.deselect();
+    }
+
+    /// One color, edge to edge.
+    pub fn fill(&mut self, color: u16) {
+        let n = self.w as usize * self.h as usize;
+        let frame = vec![color; n];
+        self.blit_rect(0, 0, self.w, self.h, &frame);
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ili9341::Ili9341;
+    use crate::spi::{Dc, SimSpi, TraceEvent};
+
+    #[test]
+    fn init_speaks_the_documented_sequence() {
+        let mut bus = SimSpi::new();
+        let mut d = Display::new(&mut bus, 240, 320);
+        d.init();
+        let t = bus.trace();
+        assert_eq!(t.first(), Some(&TraceEvent::SelectLow));
+        assert_eq!(t.last(), Some(&TraceEvent::SelectHigh));
+        let bytes: Vec<(u8, Dc)> = t
+            .iter()
+            .filter_map(|e| match e {
+                TraceEvent::Byte { value, dc } => Some((*value, *dc)),
+                _ => None,
+            })
+            .collect();
+        assert_eq!(
+            bytes,
+            vec![
+                (0x01, Dc::Command), // SWRESET
+                (0x11, Dc::Command), // SLPOUT
+                (0x3A, Dc::Command), // COLMOD
+                (0x55, Dc::Data),    // 16 bits per pixel
+                (0x29, Dc::Command), // DISPON
+            ]
+        );
+    }
+
+    #[test]
+    fn blit_draws_a_frame_through_the_protocol() {
+        let mut bus = SimSpi::new();
+        let mut d = Display::new(&mut bus, 240, 320);
+        d.init();
+        // a 2x2 frame in the top-left corner
+        d.blit_rect(0, 0, 2, 2, &[0xF800, 0x07E0, 0x001F, 0xFFFF]);
+        let mut panel = Ili9341::new(240, 320);
+        panel.replay(bus.trace());
+        assert!(panel.is_on());
+        assert_eq!(panel.framebuffer().get_pixel(0, 0), 0xF800);
+        assert_eq!(panel.framebuffer().get_pixel(1, 0), 0x07E0);
+        assert_eq!(panel.framebuffer().get_pixel(0, 1), 0x001F);
+        assert_eq!(panel.framebuffer().get_pixel(1, 1), 0xFFFF);
+    }
+
+    #[test]
+    fn fill_covers_the_whole_panel() {
+        let mut bus = SimSpi::new();
+        let mut d = Display::new(&mut bus, 4, 4);
+        d.init();
+        d.fill(0xF800);
+        let mut panel = Ili9341::new(4, 4);
+        panel.replay(bus.trace());
+        assert_eq!(panel.framebuffer().get_pixel(0, 0), 0xF800);
+        assert_eq!(panel.framebuffer().get_pixel(3, 3), 0xF800);
+    }
+}
