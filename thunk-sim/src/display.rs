@@ -55,14 +55,26 @@ impl<'b, B: SpiBus> Display<'b, B> {
 
     /// Write: RAMWR, then two bytes per pixel, high byte first.
     pub fn blit_rect(&mut self, x: u16, y: u16, w: u16, h: u16, pixels: &[u16]) {
-        debug_assert_eq!(pixels.len(), w as usize * h as usize);
+        if w == 0 || h == 0 {
+            return; // an empty rectangle puts nothing on the wires
+        }
+        assert_eq!(
+            pixels.len(),
+            w as usize * h as usize,
+            "blit_rect: pixel count must match the rectangle exactly"
+        );
         self.bus.select();
         self.set_window(x, y, x + w - 1, y + h - 1);
         self.command(RAMWR);
         self.bus.set_dc(Dc::Data);
+        // One batched write, as a real spidev driver must do: the panel sees
+        // the same byte stream either way, but the wires like big transfers.
+        let mut buf = Vec::with_capacity(pixels.len() * 2);
         for &px in pixels {
-            self.bus.write(&[(px >> 8) as u8, px as u8]);
+            buf.push((px >> 8) as u8);
+            buf.push(px as u8);
         }
+        self.bus.write(&buf);
         self.bus.deselect();
     }
 
@@ -121,6 +133,20 @@ mod tests {
         assert_eq!(panel.framebuffer().get_pixel(1, 0), 0x07E0);
         assert_eq!(panel.framebuffer().get_pixel(0, 1), 0x001F);
         assert_eq!(panel.framebuffer().get_pixel(1, 1), 0xFFFF);
+    }
+
+    #[test]
+    fn blit_rect_with_empty_dimensions_is_a_no_op() {
+        let mut bus = SimSpi::new();
+        {
+            let mut d = Display::new(&mut bus, 240, 320);
+            d.init();
+        }
+        let after_init = bus.trace().len();
+        assert!(after_init > 0); // init really spoke
+        let mut d = Display::new(&mut bus, 240, 320);
+        d.blit_rect(0, 0, 0, 0, &[]); // nothing to draw, nothing on the wires
+        assert_eq!(bus.trace().len(), after_init);
     }
 
     #[test]

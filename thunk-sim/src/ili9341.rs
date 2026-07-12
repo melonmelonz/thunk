@@ -17,9 +17,15 @@ const COLMOD: u8 = 0x3A;
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum Expecting {
     Nothing,
-    WindowParams { cmd: u8, got: [u8; 4], n: usize },
+    WindowParams {
+        cmd: u8,
+        bytes: [u8; 4],
+        count: usize,
+    },
     PixelFormat,
-    Pixels { high: Option<u8> },
+    Pixels {
+        high: Option<u8>,
+    },
 }
 
 pub struct Ili9341 {
@@ -28,18 +34,21 @@ pub struct Ili9341 {
     col: (u16, u16),
     page: (u16, u16),
     cursor: (u16, u16),
+    pixel_format: u8,
     awake: bool,
     on: bool,
 }
 
 impl Ili9341 {
     pub fn new(w: usize, h: usize) -> Self {
+        assert!(w > 0 && h > 0, "panel dimensions must be nonzero");
         let mut p = Self {
             fb: Panel::new(w, h),
             expecting: Expecting::Nothing,
             col: (0, 0),
             page: (0, 0),
             cursor: (0, 0),
+            pixel_format: 0x55,
             awake: false,
             on: false,
         };
@@ -52,6 +61,7 @@ impl Ili9341 {
         self.col = (0, self.fb.w as u16 - 1);
         self.page = (0, self.fb.h as u16 - 1);
         self.cursor = (self.col.0, self.page.0);
+        self.pixel_format = 0x55;
         self.awake = false;
         self.on = false;
     }
@@ -64,6 +74,10 @@ impl Ili9341 {
     }
     pub fn is_awake(&self) -> bool {
         self.awake
+    }
+    /// The COLMOD format byte last written (0x55 = 16 bpp, the reset default).
+    pub fn pixel_format(&self) -> u8 {
+        self.pixel_format
     }
     pub fn is_on(&self) -> bool {
         self.on
@@ -97,8 +111,8 @@ impl Ili9341 {
             CASET | PASET => {
                 self.expecting = Expecting::WindowParams {
                     cmd: c,
-                    got: [0; 4],
-                    n: 0,
+                    bytes: [0; 4],
+                    count: 0,
                 }
             }
             RAMWR => {
@@ -111,16 +125,24 @@ impl Ili9341 {
 
     fn data(&mut self, b: u8) {
         match self.expecting {
-            Expecting::Nothing | Expecting::PixelFormat => {
-                // COLMOD data is accepted (0x55 = 16bpp, the only mode modeled);
-                // stray data with no command is discarded, as real silicon does.
+            Expecting::Nothing => {
+                // Stray data with no command is discarded, as real silicon does.
+            }
+            Expecting::PixelFormat => {
+                // COLMOD's parameter: remember the format byte (0x55 = 16 bpp
+                // is the only mode the pixel path models, but we store any).
+                self.pixel_format = b;
                 self.expecting = Expecting::Nothing;
             }
-            Expecting::WindowParams { cmd, mut got, n } => {
-                got[n] = b;
-                if n == 3 {
-                    let start = u16::from_be_bytes([got[0], got[1]]);
-                    let end = u16::from_be_bytes([got[2], got[3]]);
+            Expecting::WindowParams {
+                cmd,
+                mut bytes,
+                count,
+            } => {
+                bytes[count] = b;
+                if count == 3 {
+                    let start = u16::from_be_bytes([bytes[0], bytes[1]]);
+                    let end = u16::from_be_bytes([bytes[2], bytes[3]]);
                     if cmd == CASET {
                         self.col = (start, end);
                     } else {
@@ -129,7 +151,11 @@ impl Ili9341 {
                     self.cursor = (self.col.0, self.page.0);
                     self.expecting = Expecting::Nothing;
                 } else {
-                    self.expecting = Expecting::WindowParams { cmd, got, n: n + 1 };
+                    self.expecting = Expecting::WindowParams {
+                        cmd,
+                        bytes,
+                        count: count + 1,
+                    };
                 }
             }
             Expecting::Pixels { high } => match high {
@@ -256,6 +282,38 @@ mod tests {
         data(&mut p, &[0x07, 0xE0]); // stray data, no active command: discarded
         assert_eq!(p.framebuffer().get_pixel(0, 0), 0xF800);
         assert_eq!(p.framebuffer().get_pixel(1, 0), 0x0000);
+    }
+
+    #[test]
+    fn a_dangling_high_byte_is_discarded_by_the_next_command() {
+        let mut p = Ili9341::new(240, 320);
+        cmd(&mut p, 0x2C); // RAMWR
+        data(&mut p, &[0xF8]); // odd byte count: a pixel left half-arrived
+        cmd(&mut p, 0x28); // DISPOFF: the dangling high byte dies here
+        cmd(&mut p, 0x2C); // RAMWR again, cursor back to window start
+        data(&mut p, &[0x07, 0xE0]);
+        assert_eq!(p.framebuffer().get_pixel(0, 0), 0x07E0);
+        assert_eq!(p.framebuffer().get_pixel(1, 0), 0x0000); // nothing else written
+    }
+
+    #[test]
+    fn window_params_interrupted_mid_collection_are_discarded() {
+        let mut p = Ili9341::new(240, 320);
+        cmd(&mut p, 0x2A); // CASET
+        data(&mut p, &[0x00, 0x0A]); // only half the parameters arrive
+        cmd(&mut p, 0x2B); // PASET interrupts the collection
+        data(&mut p, &[0x00, 0x02, 0x00, 0x04]);
+        // column window unchanged from reset; page window set
+        assert_eq!(p.window(), ((0, 2), (239, 4)));
+    }
+
+    #[test]
+    fn colmod_value_is_stored() {
+        let mut p = Ili9341::new(240, 320);
+        assert_eq!(p.pixel_format(), 0x55); // reset default: 16 bpp
+        cmd(&mut p, 0x3A); // COLMOD
+        data(&mut p, &[0x66]); // 18 bpp
+        assert_eq!(p.pixel_format(), 0x66);
     }
 
     #[test]
