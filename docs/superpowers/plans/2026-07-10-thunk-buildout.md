@@ -75,6 +75,15 @@ for the record:
 **TDD:** the frame source produces deterministic frames; frames reach the panel over the bus.
 **Acceptance:** `thunk sim` boots the finale on the sim panel; inside build ships the non-game version.
 
+**Design notes inherited from the M-C review (address in the M-D plan):**
+- `SimSpi` trace growth is unbounded (~300 KB per full frame). Animation needs a drain-style API
+  (`take_trace()` or a consumed cursor); `Ili9341::replay` is already incremental-friendly.
+- `Display<'b, B>` borrows its bus; persistent animation state will fight the lifetime. A blanket
+  `impl<B: SpiBus + ?Sized> SpiBus for &mut B` lets `Display<B>` own the bus generically.
+- Seam policy decision for the open build: `SpiBus` is infallible and timeless by design (real
+  impl wraps errors/delays outside the trait) - document it, or grow the trait before a second
+  implementor exists. SWRESET/SLPOUT settle delays live outside the sim.
+
 ## M-E · Trace view (the Saleae echo)
 
 Render the `TraceEvent` stream as a logic-analyzer-style view (TUI first, then web).
