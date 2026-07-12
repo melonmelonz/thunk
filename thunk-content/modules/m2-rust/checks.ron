@@ -1,0 +1,124 @@
+[
+    // --- Lesson 01: why Rust, down here ---
+    Choice(
+        id: CheckId("m2-01-catch"),
+        prompt: "When does Rust catch the classic memory mistakes, like using memory after giving it back?",
+        options: [
+            "at runtime, the moment the mistake happens",
+            "at compile time, before the program exists",
+            "only when the program finally crashes",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m2-01-gc"),
+        prompt: "Rust has no garbage collector. So when does a value's memory come back?",
+        options: [
+            "the instant its owner is done with it",
+            "whenever the runtime finds a spare moment",
+            "when the program exits",
+        ],
+        answer: 0,
+    ),
+    Choice(
+        id: CheckId("m2-01-fit"),
+        prompt: "Why does Rust fit kernels and small machines?",
+        options: [
+            "it trades speed for safety, which kernels prefer",
+            "memory comes back predictably, with no collector pauses",
+            "the kernel runs a garbage collector on Rust's behalf",
+        ],
+        answer: 1,
+    ),
+
+    // --- Lesson 02: ownership ---
+    Choice(
+        id: CheckId("m2-02-owner"),
+        prompt: "How many owners does a value have at any moment?",
+        options: [
+            "exactly one",
+            "one per reference to it",
+            "as many as have been assigned to it",
+        ],
+        answer: 0,
+    ),
+    Choice(
+        id: CheckId("m2-02-move"),
+        prompt: "After `let b = a;` moves a String out of `a`, what can `a` still be used for?",
+        options: [
+            "reading the value, but not changing it",
+            "nothing; the old name can no longer be used",
+            "anything; both names now share the value",
+        ],
+        answer: 1,
+    ),
+    Short(
+        id: CheckId("m2-02-drop"),
+        prompt: "When the owner goes out of scope, what happens to the value? (one word is fine)",
+        answers: ["dropped", "freed", "returned", "dropped and freed"],
+    ),
+
+    // --- Lesson 03: borrowing ---
+    Choice(
+        id: CheckId("m2-03-rule"),
+        prompt: "At any moment, which borrows may a single value have?",
+        options: [
+            "any number of readers, or exactly one writer, never both",
+            "exactly one reader and one writer, so they can hand off",
+            "any number of readers and writers, if the code is careful",
+        ],
+        answer: 0,
+    ),
+    Short(
+        id: CheckId("m2-03-borrow"),
+        prompt: "What is it called when you lend access to a value without giving up ownership? (one word)",
+        answers: ["borrow", "borrowing", "a borrow", "reference", "a reference"],
+    ),
+    Short(
+        id: CheckId("m2-03-checker"),
+        prompt: "Which part of the compiler enforces the readers-or-one-writer rule? (two words)",
+        answers: ["borrow checker", "the borrow checker"],
+    ),
+
+    // --- Lesson 04: no_std ---
+    Choice(
+        id: CheckId("m2-04-std"),
+        prompt: "What does Rust's standard library quietly assume?",
+        options: [
+            "that the machine has plenty of memory",
+            "that a kernel is underneath to answer syscalls",
+            "that the program never runs more than one thread",
+        ],
+        answer: 1,
+    ),
+    Short(
+        id: CheckId("m2-04-attr"),
+        prompt: "Which attribute builds a program without the standard library?",
+        answers: ["no_std", "#![no_std]", "no std"],
+    ),
+    Short(
+        id: CheckId("m2-04-core"),
+        prompt: "Drop the standard library and one library remains, the part that needs nothing beneath it. What is it called?",
+        answers: ["core", "the core library", "core library"],
+    ),
+
+    // --- Lesson 05: bits in types ---
+    Choice(
+        id: CheckId("m2-05-u8"),
+        prompt: "What numbers can a u8 hold?",
+        options: ["0 through 255", "0 through 256", "-128 through 127"],
+        answer: 0,
+    ),
+    Choice(
+        id: CheckId("m2-05-u16"),
+        prompt: "How many bytes is a u16?",
+        options: ["one", "two", "four"],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m2-05-color"),
+        prompt: "An RGB565 color fits in which type?",
+        options: ["u8", "u16", "u32"],
+        answer: 1,
+    ),
+]

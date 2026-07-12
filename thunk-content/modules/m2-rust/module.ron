@@ -1,0 +1,11 @@
+(
+    id: "m2-rust",
+    title: "Rust for the Metal",
+    lessons: [
+        "01-why-rust",
+        "02-ownership",
+        "03-borrowing",
+        "04-no-std",
+        "05-bits-in-types",
+    ],
+)
