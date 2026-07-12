@@ -2,6 +2,9 @@
 
 use clap::{Parser, Subcommand};
 use thunk_content::Curriculum;
+use thunk_core::{
+    ladder_state, progress_from_ron, state_path, CheckId, ModuleId, ModuleStatus, Progress,
+};
 use thunk_sim::{boot::boot_splash_via_display, boot_finale, Ili9341, SimSpi};
 
 #[derive(Parser)]
@@ -103,12 +106,67 @@ fn checks() -> String {
     s
 }
 
-fn progress() -> String {
-    let total: usize = Curriculum::all()
+/// Every module paired with the check ids that must all pass to master it,
+/// in ladder order - the shape `ladder_state` expects.
+fn ladder() -> Vec<(ModuleId, Vec<CheckId>)> {
+    Curriculum::all()
         .iter()
-        .map(|m| Curriculum::load_checks(&m.id.0).len())
-        .sum();
-    format!("Mastery = pass every check in a module to unlock the next. {total} checks across the course.\n")
+        .map(|m| {
+            let ids = Curriculum::load_checks(&m.id.0)
+                .iter()
+                .map(|c| c.id().clone())
+                .collect();
+            (m.id.clone(), ids)
+        })
+        .collect()
+}
+
+/// Render the gated ladder for the given progress. Pure - no env, no I/O -
+/// so it is fully unit-testable; `progress()` below is the thin disk-reading
+/// wrapper around it.
+fn progress_with(progress: &Progress) -> String {
+    let modules = Curriculum::all();
+    let ladder = ladder();
+    let statuses = ladder_state(&ladder, progress);
+    let mut s = String::from("Mastery ladder - pass every check in a module to unlock the next:\n\n");
+    for ((m, (_, checks)), status) in modules.iter().zip(ladder.iter()).zip(statuses.iter()) {
+        let word = match status {
+            ModuleStatus::Mastered => "mastered",
+            ModuleStatus::Unlocked => "unlocked",
+            ModuleStatus::Locked => "locked",
+        };
+        s.push_str(&format!(
+            "  {:3} {:24} {}",
+            ladder_tag(&m.id.0),
+            m.title,
+            word
+        ));
+        if *status == ModuleStatus::Unlocked {
+            let passed = checks
+                .iter()
+                .filter(|c| progress.checks_passed.contains(c))
+                .count();
+            s.push_str(&format!("  ({passed}/{} checks)", checks.len()));
+        }
+        s.push('\n');
+    }
+    s
+}
+
+/// The real entry point: loads saved progress from the environment-resolved
+/// state file (a fresh start when there is none) and prints the ladder.
+fn progress() -> String {
+    let state_dir = std::env::var("THUNK_STATE_DIR").ok();
+    let xdg = std::env::var("XDG_DATA_HOME").ok();
+    let home = std::env::var("HOME").ok();
+    let path = state_path(state_dir.as_deref(), xdg.as_deref(), home.as_deref());
+    let saved = std::fs::read_to_string(&path)
+        .ok()
+        .and_then(|s| progress_from_ron(&s))
+        .unwrap_or_default();
+    let mut s = progress_with(&saved);
+    s.push_str(&format!("\nProgress saved to {}\n", path.display()));
+    s
 }
 
 fn sim(splash: bool) -> String {
@@ -182,5 +240,15 @@ mod tests {
     fn sim_splash_flag_keeps_the_color_bars() {
         let s = sim(true);
         assert!(s.contains("color bars"), "splash still available:\n{s}");
+    }
+
+    #[test]
+    fn progress_prints_the_ladder_with_status() {
+        // Pure and hermetic: a fresh default Progress (M0 unlocked, the rest
+        // locked) exercises both status words without touching env or disk.
+        let s = progress_with(&thunk_core::Progress::default());
+        for needle in ["M0", "M6", "unlocked", "locked"] {
+            assert!(s.contains(needle), "missing {needle:?}:\n{s}");
+        }
     }
 }

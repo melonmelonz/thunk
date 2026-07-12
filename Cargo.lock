@@ -701,6 +701,7 @@ version = "0.1.0"
 dependencies = [
  "clap",
  "thunk-content",
+ "thunk-core",
  "thunk-sim",
  "thunk-tui",
 ]
