@@ -170,6 +170,17 @@ mod tests {
         app.checks.iter().position(|c| c.id().0 == id).unwrap()
     }
 
+    /// The correct option index and option count of a Choice check, read from
+    /// the data so tests survive answer-position rebalancing.
+    fn choice_shape(app: &App, id: &str) -> (usize, usize) {
+        match &app.checks[idx_of(app, id)] {
+            Check::Choice {
+                answer, options, ..
+            } => (*answer, options.len()),
+            other => panic!("expected {id} to be a Choice, got {other:?}"),
+        }
+    }
+
     #[test]
     fn new_marks_first_lesson_read() {
         let app = App::new();
@@ -182,10 +193,12 @@ mod tests {
     #[test]
     fn choice_submit_correct_records_progress() {
         let mut app = App::new();
-        app.check_idx = idx_of(&app, "m1-01-privilege"); // Choice, answer = 1
+        let (answer, _) = choice_shape(&app, "m1-01-privilege");
         app.update(Action::OpenChecks); // resets, but keep index
         app.check_idx = idx_of(&app, "m1-01-privilege");
-        app.update(Action::SelectNext); // 0 -> 1
+        for _ in 0..answer {
+            app.update(Action::SelectNext);
+        }
         app.update(Action::Submit);
         assert_eq!(app.last_verdict, Some(Verdict::Correct));
         assert_eq!(app.passed_count(), 1);
@@ -194,8 +207,11 @@ mod tests {
     #[test]
     fn choice_submit_wrong_does_not_pass() {
         let mut app = App::new();
-        app.check_idx = idx_of(&app, "m1-01-privilege"); // answer = 1
-                                                         // leave selected at 0 (wrong)
+        let (answer, len) = choice_shape(&app, "m1-01-privilege");
+        app.check_idx = idx_of(&app, "m1-01-privilege");
+        for _ in 0..(answer + 1) % len {
+            app.update(Action::SelectNext); // land on a wrong option
+        }
         app.update(Action::Submit);
         assert_eq!(app.last_verdict, Some(Verdict::Incorrect));
         assert_eq!(app.passed_count(), 0);

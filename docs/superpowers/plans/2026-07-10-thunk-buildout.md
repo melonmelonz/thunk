@@ -36,6 +36,8 @@ gates are satisfiable by the authored content (no unreachable modules).
 **Acceptance:** `thunk` lists M0-M6; all checks self-validate; `cargo test --workspace` green;
 vocab-lint clean.
 
+**Status: DONE 2026-07-12.** M0-M6 authored (7 modules, 31 lessons, 93 checks); validation suite (ladder order, self-validating checks, per-lesson coverage, unique ids, orphan detection, gate satisfiability); CLI spans the ladder; workspace at 32 tests, clippy and vocab-lint clean. AdvanceGate note: no such type existed; per-module counts are data-driven via load_checks(); gating itself is M-B.
+
 ## M-B · Competency gates + placement
 
 - `thunk-core`: module ordering and gating (module N unlocks when module N-1 is mastered). Reuse

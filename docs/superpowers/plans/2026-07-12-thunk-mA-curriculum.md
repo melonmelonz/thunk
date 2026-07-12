@@ -7,6 +7,8 @@ exact shape of Module 1, with a validation suite that proves every module loads,
 self-grades, every lesson is covered by checks, and every module gate is satisfiable; the `thunk`
 CLI lists the whole M0-M6 ladder.
 
+**Status: executed 2026-07-12; all 9 tasks done.**
+
 **Architecture:** Pure content build on the existing pipeline. `thunk-content` gains a `LADDER`
 const (course order) and `Curriculum::all()`; a data-driven validation suite runs over the ladder so
 each newly authored module is guarded automatically the moment its directory is added. No new
