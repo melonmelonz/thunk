@@ -2,7 +2,7 @@
 
 use thunk_content::Curriculum;
 use thunk_core::{Answer, Check, Lesson, Module, Progress, Verdict};
-use thunk_sim::{boot_splash, Panel};
+use thunk_sim::{boot_splash_via_display, Ili9341, SimSpi};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Scene {
@@ -43,7 +43,8 @@ pub struct App {
     pub input: String,
     pub last_verdict: Option<Verdict>,
     pub should_quit: bool,
-    pub panel: Panel,
+    /// The simulated panel, its state decoded from the recorded bus trace.
+    pub panel: Ili9341,
 }
 
 impl Default for App {
@@ -56,8 +57,10 @@ impl App {
     pub fn new() -> Self {
         let module = Curriculum::module_one();
         let checks = Curriculum::module_one_checks();
-        let mut panel = Panel::new(240, 320);
-        boot_splash(&mut panel);
+        let mut bus = SimSpi::new();
+        boot_splash_via_display(&mut bus, 240, 320);
+        let mut panel = Ili9341::new(240, 320);
+        panel.replay(bus.trace());
         let mut app = Self {
             module,
             checks,
@@ -179,6 +182,14 @@ mod tests {
             } => (*answer, options.len()),
             other => panic!("expected {id} to be a Choice, got {other:?}"),
         }
+    }
+
+    #[test]
+    fn panel_is_decoded_from_the_bus_trace() {
+        let app = App::new();
+        assert!(app.panel.is_on(), "protocol init turned the panel on");
+        // red bar on the left edge of the splash, decoded from RAMWR bytes
+        assert_eq!(app.panel.framebuffer().get_pixel(0, 160), 0xF800);
     }
 
     #[test]

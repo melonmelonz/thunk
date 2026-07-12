@@ -2,7 +2,7 @@
 
 use clap::{Parser, Subcommand};
 use thunk_content::Curriculum;
-use thunk_sim::{boot::boot_splash, panel::Panel};
+use thunk_sim::{boot::boot_splash_via_display, Ili9341, SimSpi};
 
 #[derive(Parser)]
 #[command(
@@ -108,11 +108,16 @@ fn progress() -> String {
 }
 
 fn sim() -> String {
-    let mut p = Panel::new(240, 320);
-    boot_splash(&mut p);
+    let mut bus = SimSpi::new();
+    boot_splash_via_display(&mut bus, 240, 320);
+    let mut panel = Ili9341::new(240, 320);
+    panel.replay(bus.trace());
+    let events = bus.trace().len();
     format!(
-        "simulated panel - boot splash (color bars)\n\n{}",
-        p.to_ascii(60, 24)
+        "simulated panel - boot splash drawn over the bus\n\
+         {events} bus events: init (SWRESET, SLPOUT, COLMOD, DISPON), \
+         window (CASET, PASET), then RAMWR + pixel data\n\n{}",
+        panel.framebuffer().to_ascii(60, 24)
     )
 }
 
@@ -158,5 +163,13 @@ mod tests {
     #[test]
     fn sim_renders_ascii_rows() {
         assert!(sim().lines().count() > 20);
+    }
+
+    #[test]
+    fn sim_output_mentions_the_protocol_traffic() {
+        let s = sim();
+        assert!(s.lines().count() > 20, "still renders the panel");
+        assert!(s.contains("bus events"), "reports the trace size:\n{s}");
+        assert!(s.contains("RAMWR"), "names the write command:\n{s}");
     }
 }

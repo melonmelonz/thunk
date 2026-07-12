@@ -139,13 +139,14 @@ fn render_panel(f: &mut Frame, area: Rect, app: &App) {
     if cols == 0 || rows == 0 {
         return;
     }
+    let fb = app.panel.framebuffer();
     let mut lines: Vec<Line> = Vec::with_capacity(rows);
     for ry in 0..rows {
         let mut spans: Vec<Span> = Vec::with_capacity(cols);
         for rx in 0..cols {
-            let x = rx * app.panel.w / cols;
-            let y = ry * app.panel.h / rows;
-            let (r, g, b) = rgb565(app.panel.get_pixel(x, y));
+            let x = rx * fb.w / cols;
+            let y = ry * fb.h / rows;
+            let (r, g, b) = rgb565(fb.get_pixel(x, y));
             spans.push(Span::styled(
                 "\u{2588}",
                 Style::default().fg(Color::Rgb(r, g, b)),
