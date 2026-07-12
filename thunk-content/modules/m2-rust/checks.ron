@@ -2,7 +2,7 @@
     // --- Lesson 01: why Rust, down here ---
     Choice(
         id: CheckId("m2-01-catch"),
-        prompt: "When does Rust catch the classic memory mistakes, like using memory after giving it back?",
+        prompt: "When does Rust catch the mistake of using memory after giving it back?",
         options: [
             "at runtime, the moment the mistake happens",
             "at compile time, before the program exists",
@@ -55,7 +55,7 @@
     Short(
         id: CheckId("m2-02-drop"),
         prompt: "When the owner goes out of scope, what happens to the value? (one word is fine)",
-        answers: ["dropped", "freed", "returned", "dropped and freed"],
+        answers: ["dropped", "drop", "freed", "returned", "dropped and freed", "deallocated"],
     ),
 
     // --- Lesson 03: borrowing ---

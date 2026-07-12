@@ -8,6 +8,15 @@ The answer is that you can lend a value without giving it away. The loan is call
 and the thing you hand over is a **reference**: not the value itself, just permission to reach it.
 The owner stays the owner. When the borrow ends, the owner carries on as before.
 
+Here is that printing function, done right:
+
+```rust
+fn show(s: &String) { println!("{s}"); }   // borrows the text, reads it, hands it back
+```
+
+Calling `show(&text)` lends the value for the length of the call; when `show` returns, the borrow
+is over and the caller still owns `text`.
+
 ## Two kinds of loan
 
 Rust has two kinds of reference, and the difference is what the holder may do:
@@ -33,7 +42,7 @@ last line means "the value the reference points at", so `*w += 1` adds one to `c
 Here is the law that governs every borrow. At any moment, a value may have any number of readers,
 or exactly one writer. Never both at once, and never two writers.
 
-Sit with why. If someone is writing while others read, the readers can see the value half-changed.
+If someone is writing while others read, the readers can see the value half-changed.
 If two are writing, they trample each other. Rust does not ask you to be careful about this. It
 makes the overlap a compile error. Take a shared reference to a value and then try to change that
 value while the reference is still in use, and the program does not build.

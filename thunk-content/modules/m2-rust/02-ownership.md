@@ -11,9 +11,11 @@ it is still alive.
 
 ## Moves
 
-What happens when you assign one variable to another? For a value of any real size, Rust does not
-copy it. Ownership **moves**. The new variable becomes the owner, and the old name is dead. Here it
-is with `String`, Rust's owned text type:
+What happens when you assign one variable to another? Look at what the value is made of. A
+`String`, Rust's owned text type, does not keep its text inside the variable. The variable is a
+small handle that owns text living elsewhere in memory. Copy the handle and there would be two
+owners of that one piece of memory, which is exactly what ownership forbids. So Rust does not copy
+it. Ownership **moves**. The new variable becomes the owner, and the old name is dead:
 
 ```rust
 fn main() {
@@ -30,9 +32,11 @@ whole point. In an older language, two names for one piece of memory is exactly 
 back twice, or use it after it is gone. Rust makes the situation unrepresentable: after a move, the
 old name cannot be used at all.
 
-One footnote so the rule does not surprise you: small fixed-size values, like plain numbers, are
-copied on assignment instead of moved, because copying a few bytes is free and harmless. The move
-rule is for everything bigger.
+One footnote so the rule does not surprise you: a self-contained value, like a plain number, is
+copied on assignment instead of moved. The copy is a complete, independent value that shares
+nothing with the original, so two of them break no rule. Moving is for values that own memory
+elsewhere, where copying the handle would mean two owners of one piece of memory, and that memory
+being given back twice.
 
 ## Drop
 

@@ -17,7 +17,8 @@ The `u` means unsigned, no negative values, and the number is the count of bits.
 byte; sixteen bits, two bytes; thirty-two bits, four.
 
 Compound types are the same idea, continued. A **struct** is several named values laid out as bytes
-side by side. A struct holding a `u16` and two `u8`s is, in memory, just those four bytes in a row.
+side by side. A struct holding a `u16` and two `u8`s is, in memory, just those four bytes packed together (the
+compiler decides the exact arrangement).
 The type is the map that says which bytes are which.
 
 ## One type you should meet early

@@ -13,20 +13,25 @@ bytes, uses them, and gives them back. Three mistakes show up over and over in t
 - two threads writing the same bytes at once, each trampling the other's work.
 
 In older systems languages, nothing stops you from writing any of these. The program compiles
-cleanly, ships, and runs. The mistake surfaces later, at runtime, as a crash or as quietly
+cleanly, ships, and runs. The mistake surfaces later, at **runtime**, as a crash or as quietly
 corrupted data. Sometimes it surfaces years later, on a machine you will never see, in a way you
 cannot reproduce. Whole careers have been spent chasing bugs of exactly this shape.
 
 ## Rust's bet
 
-Rust makes a different bet: catch these mistakes at **compile time**, before the program even
-exists. The compiler is given enough information about who owns each piece of memory and who is
-allowed to touch it that it can prove the three mistakes above are absent, or refuse to build the
-program. A Rust program that compiles has already passed that proof. The bug never gets the chance
-to run.
+Rust makes a different bet: none of these mistakes gets to corrupt a running program. The first and
+third die at **compile time**, before the program even exists. The compiler is given enough
+information about who owns each piece of memory and who is allowed to touch it that it can prove
+memory is never used after it is given back, and that two threads never write the same bytes at
+once, or it refuses to build the program. Those bugs never get the chance to run.
 
-The next two lessons cover the two ideas that make the proof possible: ownership and borrowing.
-They are rules you write your code within, and the compiler holds you to them.
+The buffer mistake is handled differently, because which position a program reads can depend on
+input no compiler will ever see. So Rust checks every buffer access as it happens, at runtime, and
+if the position is past the end it stops the program cold rather than let it read bytes it does not
+own. A stopped program is loud and easy to find. Quietly corrupted data still cannot ship.
+
+The next two lessons cover the two ideas that make the compile-time proof possible: ownership and
+borrowing. They are rules you write your code within, and the compiler holds you to them.
 
 ## No garbage collector
 
@@ -51,7 +56,7 @@ code written in Rust alongside its C.
 
 ## Key terms
 
-- **Rust** — a systems language that catches memory mistakes at compile time.
+- **Rust** — a systems language built to stop memory mistakes before they corrupt anything.
 - **compile time** — while the compiler builds the program, before it ever runs.
 - **runtime** — while the program is actually running.
 - **garbage collector** — a runtime helper that reclaims unused memory, at the cost of pauses; Rust does not have one.
