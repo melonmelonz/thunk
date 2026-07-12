@@ -1,0 +1,92 @@
+[
+    // --- Lesson 01: why DOOM ---
+    Choice(
+        id: CheckId("m5-01-proof"),
+        prompt: "Why did \"will it run DOOM\" become a standing proof that a machine works?",
+        options: [
+            "DOOM is the most demanding program ever written, so it stresses the processor more than anything else could",
+            "if DOOM runs, the processor, memory, display path, and timing are all working together under real pressure",
+            "DOOM refuses to start unless the machine passes a built-in self-test of all its parts first",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m5-01-source"),
+        prompt: "Engineers have ported DOOM to printers, oscilloscopes, and test equipment. What made all of that porting possible?",
+        options: [
+            "the engine detects whatever machine it is on and adjusts itself automatically",
+            "those machines are all secretly ordinary PCs inside, so no changes were needed",
+            "id Software released the engine's source code, so anyone could read it and adapt it",
+        ],
+        answer: 2,
+    ),
+    Choice(
+        id: CheckId("m5-01-needs"),
+        prompt: "What does a port have to supply to the DOOM engine?",
+        options: [
+            "a complete rewrite of the engine in the new machine's own language",
+            "somewhere to draw, a way to keep time, and input; the engine carries everything else",
+            "an exact copy of a 1993 office computer, simulated down to the chip",
+        ],
+        answer: 1,
+    ),
+
+    // --- Lesson 02: frames to the panel ---
+    Short(
+        id: CheckId("m5-02-frame"),
+        prompt: "What is one still picture in a moving sequence called? (one word)",
+        answers: ["frame", "a frame", "the frame"],
+    ),
+    Choice(
+        id: CheckId("m5-02-budget"),
+        prompt: "How many bytes is one full frame on this course's panel?",
+        options: [
+            "76,800 bytes",
+            "153,600 bytes",
+            "4,608,000 bytes",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m5-02-path"),
+        prompt: "What path does each frame take, in order?",
+        options: [
+            "the engine computes it into the framebuffer, the driver moves it over the bus, the panel shows it",
+            "the panel requests it from the bus, the driver computes it, the framebuffer displays it",
+            "the driver computes it into the panel, the engine moves it over the bus, the framebuffer shows it",
+        ],
+        answer: 0,
+    ),
+
+    // --- Lesson 03: the whole stack ---
+    Choice(
+        id: CheckId("m5-03-layers"),
+        prompt: "Following one frame from computation to glass, which order is correct?",
+        options: [
+            "driver, then program, then panel controller, then bus",
+            "panel controller, then bus, then driver, then program",
+            "program, then driver, then bus, then panel controller",
+        ],
+        answer: 2,
+    ),
+    Choice(
+        id: CheckId("m5-03-same"),
+        prompt: "How does the simulated panel relate to real display hardware?",
+        options: [
+            "both sit behind the same interface, so the same driver code works against either one",
+            "the simulation is a rough sketch that shares nothing with how real hardware behaves",
+            "real hardware requires a completely different program written from scratch",
+        ],
+        answer: 0,
+    ),
+    Choice(
+        id: CheckId("m5-03-magic"),
+        prompt: "After walking a frame down every layer of the stack, what should you conclude?",
+        options: [
+            "the lowest layers are too complicated to understand and must be taken on faith",
+            "no layer is magic; every one can be seen, named, and understood",
+            "only the program layer matters, and the rest is best left hidden",
+        ],
+        answer: 1,
+    ),
+]

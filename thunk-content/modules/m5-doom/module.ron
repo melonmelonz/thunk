@@ -1,0 +1,9 @@
+(
+    id: "m5-doom",
+    title: "DOOM",
+    lessons: [
+        "01-why-doom",
+        "02-frames-to-the-panel",
+        "03-the-whole-stack",
+    ],
+)
