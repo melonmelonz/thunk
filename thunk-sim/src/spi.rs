@@ -55,6 +55,28 @@ impl SimSpi {
     pub fn trace(&self) -> &[TraceEvent] {
         &self.trace
     }
+    /// Take everything recorded so far, leaving the recorder empty but the
+    /// line state (select, DC) intact. Animation drains per frame.
+    pub fn take_trace(&mut self) -> Vec<TraceEvent> {
+        std::mem::take(&mut self.trace)
+    }
+}
+
+/// A `&mut B` speaks the bus protocol too, so a `Display` can be built over a
+/// borrowed bus for one frame and dropped without taking the bus with it.
+impl<B: SpiBus + ?Sized> SpiBus for &mut B {
+    fn select(&mut self) {
+        (**self).select()
+    }
+    fn deselect(&mut self) {
+        (**self).deselect()
+    }
+    fn set_dc(&mut self, dc: Dc) {
+        (**self).set_dc(dc)
+    }
+    fn write(&mut self, bytes: &[u8]) {
+        (**self).write(bytes)
+    }
 }
 
 impl SpiBus for SimSpi {
@@ -123,5 +145,32 @@ mod tests {
         bus.set_dc(Dc::Data);
         bus.write(&[0xAA]); // nothing selected; a real peripheral would not hear this
         assert!(bus.trace().is_empty());
+    }
+
+    #[test]
+    fn take_trace_drains_the_recorder() {
+        let mut bus = SimSpi::new();
+        bus.select();
+        bus.set_dc(Dc::Data);
+        bus.write(&[0x01]);
+        let first = bus.take_trace();
+        assert_eq!(first.len(), 2); // SelectLow + one byte
+        assert!(bus.trace().is_empty(), "drained");
+        bus.write(&[0x02]);
+        assert_eq!(bus.take_trace().len(), 1, "select state survives the drain");
+    }
+
+    #[test]
+    fn a_mutable_reference_is_also_a_bus() {
+        fn drive(bus: impl SpiBus) {
+            let mut bus = bus;
+            bus.select();
+            bus.set_dc(Dc::Command);
+            bus.write(&[0x2C]);
+            bus.deselect();
+        }
+        let mut bus = SimSpi::new();
+        drive(&mut bus); // compiles only with the blanket impl
+        assert_eq!(bus.trace().len(), 3);
     }
 }
