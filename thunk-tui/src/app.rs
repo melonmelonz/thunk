@@ -2,7 +2,7 @@
 
 use thunk_content::Curriculum;
 use thunk_core::{Answer, Check, Lesson, Module, Progress, Verdict};
-use thunk_sim::{boot_splash_via_display, Ili9341, SimSpi};
+use thunk_sim::{boot_finale, finale_tick, Ili9341, SimSpi};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Scene {
@@ -29,6 +29,7 @@ pub enum Action {
     Backspace,
     Submit,
     NextCheck,
+    Tick,
 }
 
 pub struct App {
@@ -45,6 +46,10 @@ pub struct App {
     pub should_quit: bool,
     /// The simulated panel, its state decoded from the recorded bus trace.
     pub panel: Ili9341,
+    /// The bus the finale is drawn over; its trace is drained per frame.
+    pub bus: SimSpi,
+    /// The finale's current frame number.
+    pub frame_t: u32,
 }
 
 impl Default for App {
@@ -58,9 +63,9 @@ impl App {
         let module = Curriculum::module_one();
         let checks = Curriculum::module_one_checks();
         let mut bus = SimSpi::new();
-        boot_splash_via_display(&mut bus, 240, 320);
+        boot_finale(&mut bus, 240, 320);
         let mut panel = Ili9341::new(240, 320);
-        panel.replay(bus.trace());
+        panel.replay(&bus.take_trace());
         let mut app = Self {
             module,
             checks,
@@ -74,6 +79,8 @@ impl App {
             last_verdict: None,
             should_quit: false,
             panel,
+            bus,
+            frame_t: 0,
         };
         app.mark_current_read();
         app
@@ -153,6 +160,13 @@ impl App {
                     self.reset_check_input();
                 }
             }
+            Action::Tick => {
+                if self.scene == Scene::Panel {
+                    self.frame_t += 1;
+                    finale_tick(&mut self.bus, 240, 320, self.frame_t);
+                    self.panel.replay(&self.bus.take_trace());
+                }
+            }
         }
     }
 
@@ -188,8 +202,40 @@ mod tests {
     fn panel_is_decoded_from_the_bus_trace() {
         let app = App::new();
         assert!(app.panel.is_on(), "protocol init turned the panel on");
-        // red bar on the left edge of the splash, decoded from RAMWR bytes
-        assert_eq!(app.panel.framebuffer().get_pixel(0, 160), 0xF800);
+        // the finale's frame 0, decoded from RAMWR bytes
+        let expected = thunk_sim::finale::frame(240, 320, 0);
+        assert_eq!(
+            app.panel.framebuffer().get_pixel(0, 160),
+            expected[160 * 240]
+        );
+        assert_eq!(
+            app.panel.framebuffer().get_pixel(120, 160),
+            expected[160 * 240 + 120]
+        );
+    }
+
+    #[test]
+    fn ticks_animate_the_panel_scene() {
+        let mut app = App::new();
+        app.update(Action::OpenPanel);
+        let before: Vec<u16> = (0..240)
+            .map(|x| app.panel.framebuffer().get_pixel(x, 160))
+            .collect();
+        for _ in 0..8 {
+            app.update(Action::Tick);
+        }
+        let after: Vec<u16> = (0..240)
+            .map(|x| app.panel.framebuffer().get_pixel(x, 160))
+            .collect();
+        assert_ne!(before, after, "the corridor bands moved");
+    }
+
+    #[test]
+    fn ticks_outside_the_panel_scene_do_nothing() {
+        let mut app = App::new();
+        let frame_before = app.frame_t;
+        app.update(Action::Tick); // Reader scene
+        assert_eq!(app.frame_t, frame_before);
     }
 
     #[test]

@@ -13,6 +13,7 @@ use crossterm::terminal::{
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 use std::io::{self, Stdout};
+use std::time::Duration;
 
 /// Launch the classroom. Restores the terminal on the way out, even on error.
 pub fn run() -> io::Result<()> {
@@ -33,13 +34,17 @@ pub fn run() -> io::Result<()> {
 fn event_loop(terminal: &mut Terminal<CrosstermBackend<Stdout>>, app: &mut App) -> io::Result<()> {
     while !app.should_quit {
         terminal.draw(|f| ui::draw(f, app))?;
-        if let Event::Key(key) = event::read()? {
-            if key.kind != KeyEventKind::Press {
-                continue;
+        if event::poll(Duration::from_millis(60))? {
+            if let Event::Key(key) = event::read()? {
+                if key.kind != KeyEventKind::Press {
+                    continue;
+                }
+                if let Some(action) = map_key(app, key.code) {
+                    app.update(action);
+                }
             }
-            if let Some(action) = map_key(app, key.code) {
-                app.update(action);
-            }
+        } else {
+            app.update(Action::Tick);
         }
     }
     Ok(())
