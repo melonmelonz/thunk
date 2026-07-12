@@ -1,7 +1,7 @@
 # Bits and Bytes
 
-The last lesson said the machine is built from switches that are on or off. Now give those two
-states names. A switch that is off is a **0**. A switch that is on is a **1**. One of these digits,
+The last lesson said the machine is built from switches, and that engineers write those two states
+as digits. A switch that is off is a **0**. A switch that is on is a **1**. One of these digits,
 a single 0 or 1, is called a **bit**. A bit is the smallest piece of information the machine can
 hold.
 

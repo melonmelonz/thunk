@@ -5,9 +5,10 @@ is the whole definition. It does not think, it does not understand, it does not 
 takes one instruction, does it, and moves to the next.
 
 The machine runs on electricity. Inside it, everything comes down to tiny electrical **switches**.
-A switch is either on or off, current flowing or not flowing. There are billions of these switches
-inside the box in front of you, and every single thing the machine does is built out of them being
-flipped on and off, very fast.
+A switch is either on or off, current flowing or not flowing. Engineers write these two states as
+digits: a switch that is off is a 0, and a switch that is on is a 1. There are billions of these
+switches inside the box in front of you, and every single thing the machine does is built out of
+them being flipped on and off, very fast.
 
 That can sound impossible. How do you get a screen full of words out of switches? The answer takes
 this whole course to give properly, and giving it is what the course is for. For now, hold on to
