@@ -5,6 +5,7 @@
 
 pub mod boot;
 pub mod display;
+pub mod finale;
 pub mod ili9341;
 pub mod panel;
 pub mod spi;
