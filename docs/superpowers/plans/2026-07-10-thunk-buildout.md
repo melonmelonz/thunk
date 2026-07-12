@@ -62,6 +62,12 @@ deterministic; the trace records the protocol. Seed-driven where randomness is i
 **Acceptance:** driving the sim through the SPI command protocol yields the expected framebuffer;
 `SimSpi` trace shows the real protocol traffic.
 
+**Status: DONE 2026-07-12.** Bus models select edges + DC (trace-complete); `Ili9341` decodes the
+byte stream (SWRESET/SLPOUT/DISPON/DISPOFF/CASET/PASET/RAMWR/COLMOD, window wrap, replay);
+learner-facing `Display` speaks init/window/RAMWR with batched writes; splash renders end-to-end
+through the protocol; CLI `sim` reports the traffic (153,620 events); TUI panel decodes from the
+trace. Workspace at 50 tests, clippy + vocab-lint clean.
+
 ## M-D · DOOM on the simulated panel  *(design decision — surface to Penn)*
 
 The finale renders moving frames to the framebuffer via the `Display` driver over the sim bus.
