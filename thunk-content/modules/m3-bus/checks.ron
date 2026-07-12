@@ -1,0 +1,122 @@
+[
+    // --- Lesson 01: wires and voltage ---
+    Choice(
+        id: CheckId("m3-01-high"),
+        prompt: "A wire between two chips is carrying a high voltage. How is that read?",
+        options: [
+            "as a 1",
+            "as a 0",
+            "as a sign the wire is broken",
+        ],
+        answer: 0,
+    ),
+    Choice(
+        id: CheckId("m3-01-serial"),
+        prompt: "What does it mean to send a byte serially?",
+        options: [
+            "all eight bits travel at once, one wire per bit",
+            "the eight bits travel one at a time over one wire",
+            "the byte travels as one higher voltage level",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m3-01-spi"),
+        prompt: "How does SPI reach a device like a display?",
+        options: [
+            "over eight data wires, one for each bit of a byte",
+            "over a radio link between the two chips",
+            "over a small handful of wires, classically four signals",
+        ],
+        answer: 2,
+    ),
+
+    // --- Lesson 02: clock and data ---
+    Choice(
+        id: CheckId("m3-02-clock"),
+        prompt: "What does the clock wire tell the receiving device?",
+        options: [
+            "what time of day it is",
+            "when to read the data wire",
+            "which device is being spoken to",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m3-02-perbyte"),
+        prompt: "How many clock ticks does it take to move one byte?",
+        options: ["one", "eight", "sixteen"],
+        answer: 1,
+    ),
+    Short(
+        id: CheckId("m3-02-msb"),
+        prompt: "By convention, which bit of the byte is sent first on SPI? (name it, or use the abbreviation)",
+        answers: [
+            "most significant",
+            "most significant bit",
+            "msb",
+            "the most significant bit",
+            "the msb",
+        ],
+    ),
+
+    // --- Lesson 03: chip select ---
+    Choice(
+        id: CheckId("m3-03-select"),
+        prompt: "What does a chip select wire do?",
+        options: [
+            "it tells one device that the bus traffic is for it",
+            "it carries the data bits out to the device",
+            "it sets how fast the clock is allowed to tick",
+        ],
+        answer: 0,
+    ),
+    Short(
+        id: CheckId("m3-03-controller"),
+        prompt: "What is the device that drives the clock called? (one word)",
+        answers: ["controller", "the controller"],
+    ),
+    Choice(
+        id: CheckId("m3-03-low"),
+        prompt: "Chip select is usually active low. What does that mean?",
+        options: [
+            "the wire is pulled low to speak to the device",
+            "the wire is pulled high to speak to the device",
+            "the device only listens at low clock speeds",
+        ],
+        answer: 0,
+    ),
+
+    // --- Lesson 04: reading a trace ---
+    Short(
+        id: CheckId("m3-04-analyzer"),
+        prompt: "What instrument records the wires over time and draws them as rows? (two words)",
+        answers: [
+            "logic analyzer",
+            "a logic analyzer",
+            "analyzer",
+            "logic analyser",
+            "a logic analyser",
+        ],
+    ),
+    Choice(
+        id: CheckId("m3-04-decode"),
+        prompt: "How do you decode a byte out of a trace?",
+        options: [
+            "read the data line at each clock tick",
+            "measure exactly how high the data line goes",
+            "count the number of edges on the select line",
+        ],
+        answer: 0,
+    ),
+    Choice(
+        id: CheckId("m3-04-trace"),
+        prompt: "How does thunk's simulator record what your code puts on the bus?",
+        options: [
+            "as a screenshot of the panel",
+            "as a trace of the bus traffic",
+            "as a copy of your Rust source code",
+        ],
+        answer: 1,
+    ),
+]

@@ -30,7 +30,7 @@ fn title_of(body: &str, fallback: &str) -> String {
 
 /// The course ladder, in order. Grows as modules are authored (M-A);
 /// completeness is pinned by `the_ladder_is_complete` once M0-M6 land.
-pub const LADDER: &[&str] = &["m0-power-on", "m1-kernel", "m2-rust"];
+pub const LADDER: &[&str] = &["m0-power-on", "m1-kernel", "m2-rust", "m3-bus"];
 
 pub struct Curriculum;
 

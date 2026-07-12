@@ -1,0 +1,10 @@
+(
+    id: "m3-bus",
+    title: "The Bus",
+    lessons: [
+        "01-wires-and-voltage",
+        "02-clock-and-data",
+        "03-chip-select",
+        "04-reading-a-trace",
+    ],
+)
