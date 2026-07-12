@@ -131,7 +131,7 @@ fn render_checks(f: &mut Frame, area: Rect, app: &App) {
 fn render_panel(f: &mut Frame, area: Rect, app: &App) {
     let block = Block::default()
         .borders(Borders::ALL)
-        .title(" simulated panel - boot splash ");
+        .title(" simulated panel - the finale ");
     let inner = block.inner(area);
     f.render_widget(block, area);
     let cols = inner.width as usize;

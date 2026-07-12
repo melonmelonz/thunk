@@ -34,17 +34,30 @@ pub fn run() -> io::Result<()> {
 fn event_loop(terminal: &mut Terminal<CrosstermBackend<Stdout>>, app: &mut App) -> io::Result<()> {
     while !app.should_quit {
         terminal.draw(|f| ui::draw(f, app))?;
-        if event::poll(Duration::from_millis(60))? {
-            if let Event::Key(key) = event::read()? {
-                if key.kind != KeyEventKind::Press {
-                    continue;
+        // Only the animated panel scene needs a Tick clock; everywhere else,
+        // block on the next key so the classroom is not redrawn at ~16Hz for
+        // nothing. Note: a held key makes poll() always true, so Tick never
+        // fires while a key is being held down - accepted.
+        if app.scene == Scene::Panel {
+            if event::poll(Duration::from_millis(60))? {
+                if let Event::Key(key) = event::read()? {
+                    if key.kind != KeyEventKind::Press {
+                        continue;
+                    }
+                    if let Some(action) = map_key(app, key.code) {
+                        app.update(action);
+                    }
                 }
-                if let Some(action) = map_key(app, key.code) {
-                    app.update(action);
-                }
+            } else {
+                app.update(Action::Tick);
             }
-        } else {
-            app.update(Action::Tick);
+        } else if let Event::Key(key) = event::read()? {
+            if key.kind != KeyEventKind::Press {
+                continue;
+            }
+            if let Some(action) = map_key(app, key.code) {
+                app.update(action);
+            }
         }
     }
     Ok(())

@@ -36,10 +36,14 @@ pub fn frame(w: u16, h: u16, t: u32) -> Vec<u16> {
             let m = nx.max(ny).clamp(1, 256);
             // Perspective depth: far (center) is large, near (edge) is small.
             let depth = (256 * 32 / m).clamp(1, 4096);
-            // Bands travel toward the viewer as t grows.
-            let band = ((depth as u32 + t * 4) / 32) % 2;
-            // Brightness falls off as the inverse of depth (nearest depth is
-            // 32, so the near edge is full bright); bands modulate it.
+            // Bands travel toward the viewer as t grows. `t` is a frame
+            // counter that only ever grows; make the wraparound explicit
+            // rather than let a debug build panic once t >= 2^30.
+            let band = ((depth as u32 + t.wrapping_mul(4)) / 32) % 2;
+            // Brightness falls off as the inverse of depth: the nearest
+            // clamped depth is 32, and 992 = 31 * 32 (full shade x nearest
+            // depth), so at depth 32 this divides out to shade 31 - the near
+            // edge is full bright; bands modulate it from there.
             let mut shade = (992 / depth.max(32)).min(31) as u16;
             if band == 0 {
                 shade = shade.saturating_sub(6);
@@ -70,7 +74,11 @@ mod tests {
 
     #[test]
     fn frames_change_over_time() {
-        assert_ne!(frame(240, 320, 0), frame(240, 320, 1));
+        // Band period is 16; sweep a full period-and-a-half so no phase is
+        // ever a stall (t=0..=32 covers two full periods).
+        for t in 0..32 {
+            assert_ne!(frame(240, 320, t), frame(240, 320, t + 1), "stalled at {t}");
+        }
     }
 
     #[test]

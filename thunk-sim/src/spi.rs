@@ -62,8 +62,10 @@ impl SimSpi {
     }
 }
 
-/// A `&mut B` speaks the bus protocol too, so a `Display` can be built over a
-/// borrowed bus for one frame and dropped without taking the bus with it.
+/// A `&mut B` speaks the bus protocol too. This is the same convenience the
+/// standard library gives `io::Write`: it lets `&mut bus` be passed to an API
+/// that takes `impl SpiBus` by value, instead of requiring the caller's own
+/// binding to be `move`d in.
 impl<B: SpiBus + ?Sized> SpiBus for &mut B {
     fn select(&mut self) {
         (**self).select()
