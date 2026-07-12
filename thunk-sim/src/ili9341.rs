@@ -1,0 +1,215 @@
+//! An ILI9341-class panel model: builds framebuffer state by decoding the
+//! command/data byte stream, exactly as the course teaches the protocol.
+
+use crate::panel::Panel;
+use crate::spi::{Dc, TraceEvent};
+
+const SWRESET: u8 = 0x01;
+const SLPOUT: u8 = 0x11;
+const DISPOFF: u8 = 0x28;
+const DISPON: u8 = 0x29;
+const CASET: u8 = 0x2A;
+const PASET: u8 = 0x2B;
+const RAMWR: u8 = 0x2C;
+const COLMOD: u8 = 0x3A;
+
+/// What the panel is currently collecting data bytes for.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+enum Expecting {
+    Nothing,
+    WindowParams { cmd: u8, got: [u8; 4], n: usize },
+    PixelFormat,
+    Pixels { high: Option<u8> },
+}
+
+pub struct Ili9341 {
+    fb: Panel,
+    expecting: Expecting,
+    col: (u16, u16),
+    page: (u16, u16),
+    cursor: (u16, u16),
+    awake: bool,
+    on: bool,
+}
+
+impl Ili9341 {
+    pub fn new(w: usize, h: usize) -> Self {
+        let mut p = Self {
+            fb: Panel::new(w, h),
+            expecting: Expecting::Nothing,
+            col: (0, 0),
+            page: (0, 0),
+            cursor: (0, 0),
+            awake: false,
+            on: false,
+        };
+        p.reset();
+        p
+    }
+
+    fn reset(&mut self) {
+        self.expecting = Expecting::Nothing;
+        self.col = (0, self.fb.w as u16 - 1);
+        self.page = (0, self.fb.h as u16 - 1);
+        self.cursor = (self.col.0, self.page.0);
+        self.awake = false;
+        self.on = false;
+    }
+
+    pub fn framebuffer(&self) -> &Panel {
+        &self.fb
+    }
+    pub fn window(&self) -> ((u16, u16), (u16, u16)) {
+        ((self.col.0, self.page.0), (self.col.1, self.page.1))
+    }
+    pub fn is_awake(&self) -> bool {
+        self.awake
+    }
+    pub fn is_on(&self) -> bool {
+        self.on
+    }
+
+    /// One byte arrives off the bus, with the DC level it carried.
+    pub fn receive(&mut self, dc: Dc, byte: u8) {
+        match dc {
+            Dc::Command => self.command(byte),
+            Dc::Data => self.data(byte),
+        }
+    }
+
+    /// Rebuild state from a recorded trace: the panel decodes the bus.
+    pub fn replay(&mut self, trace: &[TraceEvent]) {
+        for e in trace {
+            if let TraceEvent::Byte { value, dc } = e {
+                self.receive(*dc, *value);
+            }
+        }
+    }
+
+    fn command(&mut self, c: u8) {
+        self.expecting = Expecting::Nothing;
+        match c {
+            SWRESET => self.reset(),
+            SLPOUT => self.awake = true,
+            DISPON => self.on = true,
+            DISPOFF => self.on = false,
+            COLMOD => self.expecting = Expecting::PixelFormat,
+            CASET | PASET => {
+                self.expecting = Expecting::WindowParams { cmd: c, got: [0; 4], n: 0 }
+            }
+            RAMWR => {
+                self.cursor = (self.col.0, self.page.0);
+                self.expecting = Expecting::Pixels { high: None };
+            }
+            _ => {} // unmodeled commands: ignored, parameters discarded
+        }
+    }
+
+    fn data(&mut self, b: u8) {
+        match self.expecting {
+            Expecting::Nothing | Expecting::PixelFormat => {
+                // COLMOD data is accepted (0x55 = 16bpp, the only mode modeled);
+                // stray data with no command is discarded, as real silicon does.
+                self.expecting = Expecting::Nothing;
+            }
+            Expecting::WindowParams { cmd, mut got, n } => {
+                got[n] = b;
+                if n == 3 {
+                    let start = u16::from_be_bytes([got[0], got[1]]);
+                    let end = u16::from_be_bytes([got[2], got[3]]);
+                    if cmd == CASET {
+                        self.col = (start, end);
+                    } else {
+                        self.page = (start, end);
+                    }
+                    self.cursor = (self.col.0, self.page.0);
+                    self.expecting = Expecting::Nothing;
+                } else {
+                    self.expecting = Expecting::WindowParams { cmd, got, n: n + 1 };
+                }
+            }
+            Expecting::Pixels { high } => match high {
+                None => self.expecting = Expecting::Pixels { high: Some(b) },
+                Some(hi) => {
+                    let color = u16::from_be_bytes([hi, b]);
+                    self.write_pixel(color);
+                    self.expecting = Expecting::Pixels { high: None };
+                }
+            },
+        }
+    }
+
+    fn write_pixel(&mut self, color: u16) {
+        let (x, y) = self.cursor;
+        self.fb.set_pixel(x as usize, y as usize, color);
+        // Advance within the window; wrap columns, then pages; wrap the whole
+        // window when it is full, as the real controller does.
+        if x < self.col.1 {
+            self.cursor = (x + 1, y);
+        } else if y < self.page.1 {
+            self.cursor = (self.col.0, y + 1);
+        } else {
+            self.cursor = (self.col.0, self.page.0);
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::spi::Dc;
+
+    fn cmd(p: &mut Ili9341, c: u8) {
+        p.receive(Dc::Command, c);
+    }
+    fn data(p: &mut Ili9341, bytes: &[u8]) {
+        for &b in bytes {
+            p.receive(Dc::Data, b);
+        }
+    }
+
+    #[test]
+    fn caset_and_paset_set_the_window() {
+        let mut p = Ili9341::new(240, 320);
+        cmd(&mut p, 0x2A); // CASET
+        data(&mut p, &[0x00, 0x0A, 0x00, 0x14]); // columns 10..=20
+        cmd(&mut p, 0x2B); // PASET
+        data(&mut p, &[0x00, 0x02, 0x00, 0x04]); // pages 2..=4
+        assert_eq!(p.window(), ((10, 2), (20, 4)));
+    }
+
+    #[test]
+    fn init_sequence_wakes_and_turns_on() {
+        let mut p = Ili9341::new(240, 320);
+        assert!(!p.is_on());
+        cmd(&mut p, 0x01); // SWRESET
+        cmd(&mut p, 0x11); // SLPOUT
+        cmd(&mut p, 0x3A); // COLMOD
+        data(&mut p, &[0x55]); // 16 bits per pixel
+        cmd(&mut p, 0x29); // DISPON
+        assert!(p.is_awake());
+        assert!(p.is_on());
+        cmd(&mut p, 0x28); // DISPOFF
+        assert!(!p.is_on());
+    }
+
+    #[test]
+    fn swreset_restores_the_full_window() {
+        let mut p = Ili9341::new(240, 320);
+        cmd(&mut p, 0x2A);
+        data(&mut p, &[0x00, 0x0A, 0x00, 0x14]);
+        cmd(&mut p, 0x01); // SWRESET
+        assert_eq!(p.window(), ((0, 0), (239, 319)));
+        assert!(!p.is_on());
+    }
+
+    #[test]
+    fn unknown_commands_are_ignored() {
+        let mut p = Ili9341::new(240, 320);
+        cmd(&mut p, 0xD9); // not modeled
+        data(&mut p, &[0x01, 0x02]);
+        cmd(&mut p, 0x2A);
+        data(&mut p, &[0x00, 0x00, 0x00, 0x01]);
+        assert_eq!(p.window(), ((0, 0), (1, 319))); // decoder state undamaged
+    }
+}
