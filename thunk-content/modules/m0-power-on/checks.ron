@@ -1,0 +1,116 @@
+[
+    // --- Lesson 01: the machine ---
+    Choice(
+        id: CheckId("m0-01-processor"),
+        prompt: "Which part of the machine steps through instructions, one after another?",
+        options: ["the processor", "storage", "the screen"],
+        answer: 0,
+    ),
+    Choice(
+        id: CheckId("m0-01-memory"),
+        prompt: "What is memory?",
+        options: [
+            "the slow shelf that remembers even with the power off",
+            "the fast workspace that forgets everything when the power goes off",
+            "the part that follows instructions",
+        ],
+        answer: 1,
+    ),
+    Short(
+        id: CheckId("m0-01-switch"),
+        prompt: "A switch that is on stores which digit?",
+        answers: ["1", "one"],
+    ),
+
+    // --- Lesson 02: bits and bytes ---
+    Short(
+        id: CheckId("m0-02-bit"),
+        prompt: "What is a single 0 or 1 called? (one word)",
+        answers: ["bit", "a bit"],
+    ),
+    Choice(
+        id: CheckId("m0-02-byte"),
+        prompt: "How many bits are in a byte?",
+        options: ["2", "8", "10"],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m0-02-range"),
+        prompt: "What is the largest number one byte can hold?",
+        options: ["100", "255", "1000"],
+        answer: 1,
+    ),
+
+    // --- Lesson 03: what a program is ---
+    Choice(
+        id: CheckId("m0-03-program"),
+        prompt: "What is a program?",
+        options: [
+            "a machine that thinks for itself",
+            "a list of instructions, stored as bytes like everything else",
+            "a special kind of memory that never forgets",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m0-03-step"),
+        prompt: "How does the processor work through a program's instructions?",
+        options: [
+            "all of them at once",
+            "one at a time, very fast",
+            "only the ones it understands, skipping the rest",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m0-03-same"),
+        prompt: "Where do a program's instructions live compared to the data it works on?",
+        options: [
+            "in the same memory",
+            "in a special section of memory that only holds instructions",
+            "instructions never sit in memory",
+        ],
+        answer: 0,
+    ),
+
+    // --- Lesson 04: what code is ---
+    Short(
+        id: CheckId("m0-04-source"),
+        prompt: "What is the human-readable text of a program called?",
+        answers: ["source code", "code", "source"],
+    ),
+    Short(
+        id: CheckId("m0-04-compiler"),
+        prompt: "What translates source code into the processor's instructions? (one word)",
+        answers: ["compiler", "a compiler", "the compiler"],
+    ),
+    Choice(
+        id: CheckId("m0-04-language"),
+        prompt: "Which programming language does this course use?",
+        options: ["English", "Rust", "Morse"],
+        answer: 1,
+    ),
+
+    // --- Lesson 05: running a program ---
+    Short(
+        id: CheckId("m0-05-terminal"),
+        prompt: "What is the program called where you type commands and press enter?",
+        answers: ["terminal", "the terminal", "command line", "the command line", "shell", "console"],
+    ),
+    Choice(
+        id: CheckId("m0-05-run"),
+        prompt: "What happens when a program runs?",
+        options: [
+            "its instructions are copied from storage into memory and the processor steps through them",
+            "it is printed on the screen so you can read it",
+            "the machine turns off and on again",
+        ],
+        answer: 0,
+    ),
+    Choice(
+        id: CheckId("m0-05-exit"),
+        prompt: "What does a program do when it is finished?",
+        options: ["it exits", "it stays in memory forever", "it deletes itself from storage"],
+        answer: 0,
+    ),
+]

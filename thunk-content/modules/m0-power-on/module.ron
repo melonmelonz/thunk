@@ -1,0 +1,11 @@
+(
+    id: "m0-power-on",
+    title: "Power On",
+    lessons: [
+        "01-the-machine",
+        "02-bits-and-bytes",
+        "03-what-is-a-program",
+        "04-what-is-code",
+        "05-running-a-program",
+    ],
+)
