@@ -128,7 +128,8 @@ fn progress_with(progress: &Progress) -> String {
     let modules = Curriculum::all();
     let ladder = ladder();
     let statuses = ladder_state(&ladder, progress);
-    let mut s = String::from("Mastery ladder - pass every check in a module to unlock the next:\n\n");
+    let mut s =
+        String::from("Mastery ladder - pass every check in a module to unlock the next:\n\n");
     for ((m, (_, checks)), status) in modules.iter().zip(ladder.iter()).zip(statuses.iter()) {
         let word = match status {
             ModuleStatus::Mastered => "mastered",

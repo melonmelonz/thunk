@@ -48,6 +48,12 @@ vocab-lint clean.
 which modules are marked mastered). No I/O in the tests.
 **Acceptance:** gating + placement unit-tested; the TUI shows locked/unlocked state.
 
+**Status: DONE 2026-07-12.** Gating (`ladder_state`) + placement (`evaluate_placement`, a 21-item
+diagnostic drawn from existing banks) pure and unit-tested in `thunk-core`; progress persists to a
+local RON state file (`THUNK_STATE_DIR`/XDG override, no I/O in core); the TUI home is the gated
+module ladder with a placement scene; `thunk progress` prints the gated ladder. Workspace at 77+
+tests.
+
 ## M-C · The full simulator (the keystone)
 
 Grow `thunk-sim` from "direct set_pixel" to a real protocol model.

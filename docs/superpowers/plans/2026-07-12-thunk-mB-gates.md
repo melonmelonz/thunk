@@ -1,5 +1,7 @@
 # thunk M-B: Competency Gates + Placement Implementation Plan
 
+**Status: executed 2026-07-12; all 6 tasks done.**
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Mastery gating (module N unlocks when N-1 is mastered), a placement diagnostic that lets
