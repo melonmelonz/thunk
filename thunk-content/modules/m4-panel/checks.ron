@@ -1,0 +1,102 @@
+[
+    // --- Lesson 01: pixels and grids ---
+    Short(
+        id: CheckId("m4-01-pixel"),
+        prompt: "What is one dot on the screen called? (one word)",
+        answers: ["pixel", "a pixel"],
+    ),
+    Choice(
+        id: CheckId("m4-01-coords"),
+        prompt: "How is a single pixel named?",
+        options: [
+            "by an (x, y) pair counted from the bottom left, like a graph in math class",
+            "by an (x, y) pair counted from the top left, starting at zero",
+            "by its distance from the center of the screen",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m4-01-size"),
+        prompt: "How big is this course's panel?",
+        options: [
+            "240 pixels wide by 320 tall",
+            "320 pixels wide by 240 tall",
+            "640 pixels wide by 480 tall",
+        ],
+        answer: 0,
+    ),
+
+    // --- Lesson 02: color in sixteen bits ---
+    Choice(
+        id: CheckId("m4-02-bits"),
+        prompt: "How many bits does one RGB565 color take in total?",
+        options: ["8", "16", "24"],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m4-02-green"),
+        prompt: "Which channel gets six bits, and why?",
+        options: [
+            "red, because it sits in the top bits of the u16",
+            "green, because human eyes distinguish greens best",
+            "blue, because blue needs the most shades to look smooth",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m4-02-red"),
+        prompt: "Which RGB565 value is pure red?",
+        options: ["0xF800", "0x07E0", "0x001F"],
+        answer: 0,
+    ),
+
+    // --- Lesson 03: the framebuffer ---
+    Short(
+        id: CheckId("m4-03-fb"),
+        prompt: "What is the block of memory that holds the whole picture called? (one word)",
+        answers: ["framebuffer", "the framebuffer", "frame buffer"],
+    ),
+    Choice(
+        id: CheckId("m4-03-index"),
+        prompt: "In row-major order, at which index does pixel (x, y) live?",
+        options: [
+            "x * height + y",
+            "y * width + x",
+            "x + y",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m4-03-bytes"),
+        prompt: "How many bytes is one full frame on this panel?",
+        options: ["76,800", "153,600", "307,200"],
+        answer: 1,
+    ),
+
+    // --- Lesson 04: commands and data ---
+    Choice(
+        id: CheckId("m4-04-dc"),
+        prompt: "What does the DC wire tell the controller about a byte clocking in?",
+        options: [
+            "which of several chips should listen to it",
+            "whether it is a command or data",
+            "whether it arrived without errors",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m4-04-window"),
+        prompt: "What do you set before streaming pixel data to the panel?",
+        options: [
+            "the column and page address windows",
+            "the coordinates of each pixel, one pair per pixel",
+            "the clock speed of the bus",
+        ],
+        answer: 0,
+    ),
+    Short(
+        id: CheckId("m4-04-ramwr"),
+        prompt: "Which command starts the pixel write into the panel's memory? (its name or its byte)",
+        answers: ["ramwr", "0x2c", "2c", "ram write", "memory write"],
+    ),
+]

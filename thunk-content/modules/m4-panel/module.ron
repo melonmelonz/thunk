@@ -1,0 +1,10 @@
+(
+    id: "m4-panel",
+    title: "The Panel",
+    lessons: [
+        "01-pixels-and-grids",
+        "02-color-in-sixteen-bits",
+        "03-the-framebuffer",
+        "04-commands-and-data",
+    ],
+)
