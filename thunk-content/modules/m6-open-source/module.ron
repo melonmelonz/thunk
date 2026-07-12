@@ -1,0 +1,11 @@
+(
+    id: "m6-open-source",
+    title: "Intro to Open Source",
+    lessons: [
+        "01-what-open-source-is",
+        "02-licenses-in-plain-terms",
+        "03-version-control-in-the-open",
+        "04-reading-a-diff",
+        "05-the-culture-of-merit",
+    ],
+)

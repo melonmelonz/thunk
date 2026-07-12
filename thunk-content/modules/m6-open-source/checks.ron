@@ -1,0 +1,134 @@
+[
+    // --- Lesson 01: what open source is ---
+    Choice(
+        id: CheckId("m6-01-means"),
+        prompt: "What makes a program open source?",
+        options: [
+            "its program file can be downloaded from the internet at no cost",
+            "its source code is public and licensed so anyone may use, study, change, and share it",
+            "it was written by unpaid volunteers rather than a company's engineers",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m6-01-free"),
+        prompt: "In the name \"free software\", what does \"free\" refer to?",
+        options: ["price", "freedom", "advertising"],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m6-01-used"),
+        prompt: "Which of the software you used in this course is open source?",
+        options: [
+            "only Linux",
+            "only the Rust toolchain",
+            "Linux, the Rust toolchain, and thunk itself",
+        ],
+        answer: 2,
+    ),
+
+    // --- Lesson 02: licenses ---
+    Short(
+        id: CheckId("m6-02-license"),
+        prompt: "What is the short legal text that grants the four freedoms and states their conditions? (one word)",
+        answers: ["license", "a license", "the license", "licence", "a licence", "the licence"],
+    ),
+    Choice(
+        id: CheckId("m6-02-mit"),
+        prompt: "In one sentence, what does the MIT license say?",
+        options: [
+            "use this for anything, and keep the copyright notice attached",
+            "if you ship a changed version, you must publish your changes",
+            "you may read the code but not change it",
+        ],
+        answer: 0,
+    ),
+    Choice(
+        id: CheckId("m6-02-gpl"),
+        prompt: "What does the GPL require that MIT does not?",
+        options: [
+            "paying the original author a fee for any commercial use",
+            "shipping changed versions under the same terms, source included",
+            "keeping the author's copyright notice attached to the code",
+        ],
+        answer: 1,
+    ),
+
+    // --- Lesson 03: version control ---
+    Short(
+        id: CheckId("m6-03-git"),
+        prompt: "What is the version control tool nearly every open source project uses to record its history? (one word)",
+        answers: ["git"],
+    ),
+    Short(
+        id: CheckId("m6-03-commit"),
+        prompt: "What is one recorded change called, carrying its author, date, edits, and an explaining message? (one word)",
+        answers: ["commit", "a commit", "the commit"],
+    ),
+    Choice(
+        id: CheckId("m6-03-fork"),
+        prompt: "What is a fork?",
+        options: [
+            "a commit that broke the build",
+            "your own complete copy of a project, to work in freely",
+            "the list of a project's maintainers",
+        ],
+        answer: 1,
+    ),
+
+    // --- Lesson 04: reading a diff ---
+    Choice(
+        id: CheckId("m6-04-plus"),
+        prompt: "In a diff, what does a line starting with + mean?",
+        options: [
+            "the line was removed",
+            "the line was added",
+            "the line is unchanged context",
+        ],
+        answer: 1,
+    ),
+    Short(
+        id: CheckId("m6-04-hunk"),
+        prompt: "What is one block of changed lines, shown with unchanged context around it and marked with a @@ header, called? (one word)",
+        answers: ["hunk", "a hunk", "the hunk"],
+    ),
+    Choice(
+        id: CheckId("m6-04-unit"),
+        prompt: "Reviews, disagreements, and approvals in open source all happen on what?",
+        options: ["the diff", "the project's website", "a video call"],
+        answer: 0,
+    ),
+
+    // --- Lesson 05: the culture of merit ---
+    Short(
+        id: CheckId("m6-05-maintainer"),
+        prompt: "Who has the authority to accept a change into a project? (one word)",
+        answers: [
+            "maintainer",
+            "a maintainer",
+            "the maintainer",
+            "maintainers",
+            "the maintainers",
+        ],
+    ),
+    Choice(
+        id: CheckId("m6-05-review"),
+        prompt: "What does review judge?",
+        options: [
+            "the person who sent the change",
+            "the change itself, not the person who sent it",
+            "how long the author has been on the project",
+        ],
+        answer: 1,
+    ),
+    Choice(
+        id: CheckId("m6-05-record"),
+        prompt: "Why is a contribution history a work record unlike a resume line?",
+        options: [
+            "it is written by the project's maintainers for you",
+            "it is public and anyone can verify it at the source, diff by diff",
+            "it expires after a few years",
+        ],
+        answer: 1,
+    ),
+]

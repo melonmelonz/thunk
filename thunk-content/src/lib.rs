@@ -37,6 +37,7 @@ pub const LADDER: &[&str] = &[
     "m3-bus",
     "m4-panel",
     "m5-doom",
+    "m6-open-source",
 ];
 
 pub struct Curriculum;
@@ -187,6 +188,51 @@ mod tests {
                     "duplicate check id {:?}",
                     c.id()
                 );
+            }
+        }
+    }
+
+    #[test]
+    fn the_ladder_is_complete_m0_through_m6() {
+        assert_eq!(
+            LADDER,
+            &[
+                "m0-power-on",
+                "m1-kernel",
+                "m2-rust",
+                "m3-bus",
+                "m4-panel",
+                "m5-doom",
+                "m6-open-source",
+            ]
+        );
+    }
+
+    #[test]
+    fn every_check_belongs_to_a_lesson() {
+        // The reverse of every_lesson_has_at_least_three_checks: no orphaned or
+        // mis-prefixed check ids (a typo like "m2-01-..." inside m3-bus/checks.ron,
+        // or a lesson number no lesson has).
+        for dir in LADDER {
+            let m = Curriculum::load_module(dir);
+            let prefix = dir.split('-').next().expect("module dir starts with mN-");
+            let lesson_numbers: Vec<String> = m
+                .lessons
+                .iter()
+                .map(|l| {
+                    l.id.0
+                        .split('-')
+                        .next()
+                        .expect("lesson NN- prefix")
+                        .to_string()
+                })
+                .collect();
+            for c in Curriculum::load_checks(dir) {
+                let id = &c.id().0;
+                let ok = lesson_numbers
+                    .iter()
+                    .any(|n| id.starts_with(&format!("{prefix}-{n}-")));
+                assert!(ok, "check {id:?} in {dir} does not match any lesson");
             }
         }
     }
