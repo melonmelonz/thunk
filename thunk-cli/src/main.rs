@@ -19,11 +19,11 @@ struct Cli {
 enum Cmd {
     /// Launch the terminal classroom (reader + checks + panel).
     Tui,
-    /// Print a lesson (defaults to the first lesson of Module 1).
+    /// Print a lesson (defaults to the first lesson of the course).
     Read { lesson: Option<String> },
-    /// List the checks for Module 1.
+    /// List every check, by module.
     Check,
-    /// Show what mastery of Module 1 requires.
+    /// Show what mastery requires.
     Progress,
     /// Boot the simulated panel and print it as ASCII.
     Sim,
@@ -45,21 +45,36 @@ fn main() {
     }
 }
 
+fn ladder_tag(module_id: &str) -> String {
+    module_id
+        .split('-')
+        .next()
+        .unwrap_or(module_id)
+        .to_uppercase()
+}
+
 fn overview() -> String {
-    let m = Curriculum::module_one();
-    let mut s = format!("thunk - Module 1: {}\n\nLessons:\n", m.title);
-    for l in &m.lessons {
-        s.push_str(&format!("  {}  {}\n", l.id.0, l.title));
+    let mut s = String::from("thunk - a systems course, from the ground up\n\n");
+    for m in Curriculum::all() {
+        s.push_str(&format!(
+            "  {:3} {:24} {} lessons\n",
+            ladder_tag(&m.id.0),
+            m.title,
+            m.lessons.len()
+        ));
     }
     s.push_str("\nTry:  thunk tui   |   thunk read   |   thunk check   |   thunk sim\n");
     s
 }
 
 fn read(which: Option<&str>) -> String {
-    let m = Curriculum::module_one();
+    let modules = Curriculum::all();
     let lesson = match which {
-        Some(id) => m.lessons.iter().find(|l| l.id.0 == id),
-        None => m.lessons.first(),
+        Some(id) => modules
+            .iter()
+            .flat_map(|m| m.lessons.iter())
+            .find(|l| l.id.0 == id),
+        None => modules.first().and_then(|m| m.lessons.first()),
     };
     match lesson {
         Some(l) => format!("{}\n", l.body),
@@ -68,18 +83,28 @@ fn read(which: Option<&str>) -> String {
 }
 
 fn checks() -> String {
-    let mut s = String::from("Module 1 checks:\n\n");
-    for (i, c) in Curriculum::module_one_checks().iter().enumerate() {
-        s.push_str(&format!("{}. {}\n", i + 1, c.prompt()));
+    let mut s = String::from("Checks, by module:\n");
+    for m in Curriculum::all() {
+        let cs = Curriculum::load_checks(&m.id.0);
+        s.push_str(&format!(
+            "\n{} - {} ({} checks)\n",
+            ladder_tag(&m.id.0),
+            m.title,
+            cs.len()
+        ));
+        for (i, c) in cs.iter().enumerate() {
+            s.push_str(&format!("  {}. {}\n", i + 1, c.prompt()));
+        }
     }
     s
 }
 
 fn progress() -> String {
-    let n = Curriculum::module_one_checks().len();
-    format!(
-        "Mastery of Module 1 = pass all {n} checks. Interactive tracking arrives with the TUI.\n"
-    )
+    let total: usize = Curriculum::all()
+        .iter()
+        .map(|m| Curriculum::load_checks(&m.id.0).len())
+        .sum();
+    format!("Mastery = pass every check in a module to unlock the next. {total} checks across the course.\n")
 }
 
 fn sim() -> String {
@@ -96,13 +121,38 @@ mod tests {
     use super::*;
 
     #[test]
-    fn overview_lists_module_one() {
-        assert!(overview().contains("The Kernel"));
+    fn overview_lists_the_whole_ladder() {
+        let s = overview();
+        for needle in [
+            "M0",
+            "Power On",
+            "M1",
+            "The Kernel",
+            "M2",
+            "Rust for the Metal",
+            "M3",
+            "The Bus",
+            "M4",
+            "The Panel",
+            "M5",
+            "DOOM",
+            "M6",
+            "Intro to Open Source",
+        ] {
+            assert!(s.contains(needle), "overview missing {needle:?}:\n{s}");
+        }
     }
 
     #[test]
-    fn read_defaults_to_first_lesson() {
-        assert!(read(None).to_lowercase().contains("kernel"));
+    fn read_defaults_to_the_first_lesson_of_the_course() {
+        // The course now starts at true zero: M0, The Machine.
+        assert!(read(None).to_lowercase().contains("machine"));
+    }
+
+    #[test]
+    fn read_finds_a_lesson_in_any_module() {
+        assert!(read(Some("02-syscalls")).to_lowercase().contains("syscall"));
+        assert!(read(Some("01-why-rust")).to_lowercase().contains("rust"));
     }
 
     #[test]
