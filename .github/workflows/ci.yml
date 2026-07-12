@@ -1,0 +1,71 @@
+# CI: the same four gates a contributor runs locally, nothing more.
+# fmt --check | clippy -D warnings | test --workspace | vocab-lint
+name: ci
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  check:
+    name: fmt + clippy + test + vocab-lint
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+
+      # rustup reads rust-toolchain.toml (1.88 + rustfmt + clippy); this
+      # triggers the pinned install so every later step uses it.
+      - name: Install pinned toolchain
+        run: rustup show
+
+      - uses: Swatinem/rust-cache@v2
+
+      - name: Format
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --workspace --all-targets --locked -- -D warnings
+
+      - name: Test
+        run: cargo test --workspace --locked
+
+      - name: Vocab lint (review-safety gate)
+        run: ./scripts/vocab-lint.sh
+
+  # The inside build must always compile as a fully static binary with no
+  # host-linked surprises. This is the deployment artifact for facilities.
+  static-musl:
+    name: static musl build
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install pinned toolchain + musl target
+        run: |
+          rustup show
+          rustup target add x86_64-unknown-linux-musl
+      - name: Install musl-gcc
+        run: sudo apt-get update && sudo apt-get install -y musl-tools
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: musl
+      - name: Build release (static)
+        run: cargo build --release -p thunk-cli --target x86_64-unknown-linux-musl --locked
+      # musl output is static-PIE on modern toolchains; `file` reports it as
+      # "static-pie linked". Both spellings mean no dynamic dependencies.
+      - name: Verify the binary is static
+        run: |
+          file target/x86_64-unknown-linux-musl/release/thunk | tee /dev/stderr | grep -Eq 'statically linked|static-pie linked'
