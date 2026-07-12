@@ -1,0 +1,32 @@
+// The placement diagnostic: three checks per module, chosen for concept over
+// recall - a learner who already knows the material should be able to answer
+// these without having read the lesson. Pairs of (module_dir, check_id).
+[
+    ("m0-power-on", "m0-03-same"),
+    ("m0-power-on", "m0-02-range"),
+    ("m0-power-on", "m0-05-run"),
+
+    ("m1-kernel", "m1-01-privilege"),
+    ("m1-kernel", "m1-04-isolation"),
+    ("m1-kernel", "m1-05-driver"),
+
+    ("m2-rust", "m2-01-fit"),
+    ("m2-rust", "m2-02-move"),
+    ("m2-rust", "m2-03-rule"),
+
+    ("m3-bus", "m3-01-serial"),
+    ("m3-bus", "m3-02-clock"),
+    ("m3-bus", "m3-03-select"),
+
+    ("m4-panel", "m4-01-coords"),
+    ("m4-panel", "m4-03-index"),
+    ("m4-panel", "m4-04-dc"),
+
+    ("m5-doom", "m5-01-proof"),
+    ("m5-doom", "m5-02-path"),
+    ("m5-doom", "m5-03-same"),
+
+    ("m6-open-source", "m6-01-means"),
+    ("m6-open-source", "m6-02-gpl"),
+    ("m6-open-source", "m6-05-review"),
+]

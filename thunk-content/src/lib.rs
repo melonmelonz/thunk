@@ -2,7 +2,7 @@
 
 use rust_embed::RustEmbed;
 use serde::Deserialize;
-use thunk_core::{Check, Lesson, LessonId, Module, ModuleId};
+use thunk_core::{Check, Lesson, LessonId, Module, ModuleId, PlacementItem};
 
 #[derive(RustEmbed)]
 #[folder = "modules/"]
@@ -80,6 +80,28 @@ impl Curriculum {
 
     pub fn load_checks(dir: &str) -> Vec<Check> {
         ron::from_str(&read(&format!("{dir}/checks.ron"))).expect("valid checks.ron")
+    }
+
+    /// The placement diagnostic: three existing checks per module, chosen to
+    /// separate "already knows this" from "needs the module".
+    pub fn placement() -> Vec<PlacementItem> {
+        let pairs: Vec<(String, String)> =
+            ron::from_str(&read("placement.ron")).expect("valid placement.ron");
+        pairs
+            .iter()
+            .map(|(dir, check_id)| {
+                let check = Self::load_checks(dir)
+                    .into_iter()
+                    .find(|c| c.id().0 == *check_id)
+                    .unwrap_or_else(|| {
+                        panic!("placement references unknown check {check_id} in {dir}")
+                    });
+                PlacementItem {
+                    module: ModuleId(dir.clone()),
+                    check,
+                }
+            })
+            .collect()
     }
 }
 
@@ -235,6 +257,25 @@ mod tests {
                 assert!(ok, "check {id:?} in {dir} does not match any lesson");
             }
         }
+    }
+
+    #[test]
+    fn placement_covers_every_module_with_three_existing_checks() {
+        let items = Curriculum::placement();
+        for dir in LADDER {
+            let m = Curriculum::load_module(dir);
+            let count = items.iter().filter(|i| i.module.0 == m.id.0).count();
+            assert_eq!(count, 3, "module {dir} needs exactly 3 placement items");
+            let bank = Curriculum::load_checks(dir);
+            for item in items.iter().filter(|i| i.module.0 == m.id.0) {
+                assert!(
+                    bank.iter().any(|c| c == &item.check),
+                    "placement item {:?} is not in {dir}'s bank",
+                    item.check.id()
+                );
+            }
+        }
+        assert_eq!(items.len(), LADDER.len() * 3);
     }
 
     #[test]
