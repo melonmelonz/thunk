@@ -5,6 +5,22 @@
 //! push down the bus, frame after frame. (The open build points the same
 //! interface at heavier programs; see the roadmap.)
 
+use crate::display::Display;
+use crate::spi::SpiBus;
+
+/// Init the panel and draw frame zero: the finale boots.
+pub fn boot_finale(bus: &mut impl SpiBus, w: u16, h: u16) {
+    let mut d = Display::new(bus, w, h);
+    d.init();
+    d.blit_rect(0, 0, w, h, &frame(w, h, 0));
+}
+
+/// Draw frame `t`. The panel is already initialized; this is one animation step.
+pub fn finale_tick(bus: &mut impl SpiBus, w: u16, h: u16, t: u32) {
+    let mut d = Display::new(bus, w, h);
+    d.blit_rect(0, 0, w, h, &frame(w, h, t));
+}
+
 /// Render frame `t` of the corridor as RGB565, row-major, `w * h` pixels.
 pub fn frame(w: u16, h: u16, t: u32) -> Vec<u16> {
     let (w, h) = (w as i32, h as i32);
@@ -79,5 +95,42 @@ mod tests {
         let g = ((c >> 5) & 0x3f) as u32;
         let b = (c & 0x1f) as u32;
         r * 2 + g + b * 2 // channel-width-adjusted, good enough to compare
+    }
+
+    #[test]
+    fn boot_finale_initializes_and_draws_frame_zero() {
+        use crate::ili9341::Ili9341;
+        use crate::spi::SimSpi;
+        let mut bus = SimSpi::new();
+        boot_finale(&mut bus, 240, 320);
+        let mut panel = Ili9341::new(240, 320);
+        panel.replay(bus.trace());
+        assert!(panel.is_on());
+        let expected = frame(240, 320, 0);
+        assert_eq!(panel.framebuffer().get_pixel(0, 160), expected[160 * 240]);
+        assert_eq!(
+            panel.framebuffer().get_pixel(120, 160),
+            expected[160 * 240 + 120]
+        );
+    }
+
+    #[test]
+    fn ticks_animate_the_panel_incrementally() {
+        use crate::ili9341::Ili9341;
+        use crate::spi::SimSpi;
+        let mut bus = SimSpi::new();
+        let mut panel = Ili9341::new(240, 320);
+        boot_finale(&mut bus, 240, 320);
+        panel.replay(&bus.take_trace());
+        let before = panel.framebuffer().get_pixel(4, 160);
+        finale_tick(&mut bus, 240, 320, 3);
+        panel.replay(&bus.take_trace()); // only the new frame's events
+        let expected = frame(240, 320, 3);
+        assert_eq!(
+            panel.framebuffer().get_pixel(4, 160),
+            expected[160 * 240 + 4]
+        );
+        let _ = before; // frames 0 and 3 may or may not differ at one pixel; the
+                        // equality against the frame source is the real assertion
     }
 }

@@ -12,6 +12,7 @@ pub mod spi;
 
 pub use boot::{boot_splash, boot_splash_via_display};
 pub use display::Display;
+pub use finale::{boot_finale, finale_tick};
 pub use ili9341::Ili9341;
 pub use panel::Panel;
 pub use spi::{Dc, SimSpi, SpiBus, TraceEvent};
