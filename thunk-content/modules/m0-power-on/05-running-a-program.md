@@ -6,14 +6,16 @@ can say exactly what "running a program" means.
 
 When a program runs, the machine copies its instructions from storage into memory, and the
 processor starts stepping through them. That is the whole event. The program was sitting on the
-shelf, a file of bytes in storage, doing nothing. Now its instructions are on the desk, in memory,
-and the processor is walking the list, one instruction at a time, billions of times a second.
+shelf as a **file**, a named bundle of bytes kept in storage, doing nothing. Now its instructions
+are on the desk, in memory, and the processor is walking the list, one instruction at a time,
+billions of times a second.
 
 ## The terminal
 
 How do you ask for that to happen? In this course, through the **terminal**. The terminal is a
-program that takes typed commands. It shows you a mostly empty screen with a short prompt, and it
-waits. You type a line, press enter, and the terminal acts on what you typed.
+program that takes typed commands. It shows you a mostly empty screen with a short prompt, a few
+characters marking where your typing goes, and it waits. You type a line, press enter, and the
+terminal acts on what you typed.
 
 A **command** is the name of a program, plus whatever you want from it. The first word on the line
 says which program to run. The words after it say what you want that program to do. When you press
@@ -47,6 +49,7 @@ you are the one putting dots on a screen. Same machine, closer up.
 
 ## Key terms
 
+- **file** — a named bundle of bytes kept in storage.
 - **run** — to copy a program's instructions from storage into memory and have the processor step through them.
 - **terminal** — a program that takes typed commands and shows their output as text.
 - **command** — a typed line naming a program to run, plus what you want from it.

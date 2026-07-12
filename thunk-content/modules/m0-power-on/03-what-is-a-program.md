@@ -15,9 +15,9 @@ instructions.
 ## One step at a time
 
 The processor works like this. It picks up one instruction, does what that instruction says, and
-moves to the next one. Then it does that again. And again. It never does two instructions at once,
-it never skips ahead because it is bored, and it never gets tired. It steps through the list,
-billions of times every second.
+moves to the next one. Then it does that again. And again. It works through the list one
+instruction at a time, it does not skip ahead because it is bored, and it does not get tired. It
+steps through the list, billions of times every second.
 
 ## Each step is tiny
 

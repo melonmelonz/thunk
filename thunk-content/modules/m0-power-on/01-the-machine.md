@@ -1,6 +1,6 @@
 # The Machine
 
-Start with the thing in front of you. A **computer** is a machine that follows instructions. That
+Begin with the machine itself. A **computer** is a machine that follows instructions. That
 is the whole definition. It does not think, it does not understand, it does not want anything. It
 takes one instruction, does it, and moves to the next.
 
@@ -11,8 +11,8 @@ switches inside the box in front of you, and every single thing the machine does
 them being flipped on and off, very fast.
 
 That can sound impossible. How do you get a screen full of words out of switches? The answer takes
-this whole course to give properly, and giving it is what the course is for. For now, hold on to
-the plain version: switches, on or off, billions of them, flipped in careful patterns.
+this whole course to give properly. For now, hold on to the plain version: switches, on or off,
+billions of them, flipped in careful patterns.
 
 ## Four parts
 

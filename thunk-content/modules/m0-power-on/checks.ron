@@ -3,7 +3,7 @@
     Choice(
         id: CheckId("m0-01-processor"),
         prompt: "Which part of the machine steps through instructions, one after another?",
-        options: ["the processor", "storage", "the screen"],
+        options: ["the processor", "storage", "memory"],
         answer: 0,
     ),
     Choice(
@@ -37,7 +37,7 @@
     Choice(
         id: CheckId("m0-02-range"),
         prompt: "What is the largest number one byte can hold?",
-        options: ["100", "255", "1000"],
+        options: ["100", "255", "256"],
         answer: 1,
     ),
 
@@ -87,7 +87,7 @@
     Choice(
         id: CheckId("m0-04-language"),
         prompt: "Which programming language does this course use?",
-        options: ["English", "Rust", "Morse"],
+        options: ["Python", "Rust", "C"],
         answer: 1,
     ),
 
@@ -101,9 +101,9 @@
         id: CheckId("m0-05-run"),
         prompt: "What happens when a program runs?",
         options: [
-            "its instructions are copied from storage into memory and the processor steps through them",
-            "it is printed on the screen so you can read it",
-            "the machine turns off and on again",
+            "its instructions are copied into memory and the processor steps through them",
+            "its source code is printed on the screen so you can read it line by line",
+            "the machine turns itself off and on again to clear space for it",
         ],
         answer: 0,
     ),

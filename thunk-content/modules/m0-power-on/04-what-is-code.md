@@ -23,9 +23,9 @@ to translate.
 
 That something is the **compiler**. A compiler is a program whose job is to read your source code
 and translate it into the processor's instructions. Text goes in, a runnable program comes out.
-This is worth pausing on: the tool that turns programs into programs is itself just a program, a
-list of instructions like any other. There is no special machinery for it. It reads bytes and
-writes bytes.
+And notice what the compiler is: the tool that turns programs into programs is itself just a
+program, a list of instructions like any other. There is no special machinery for it. It reads
+bytes and writes bytes.
 
 So the working loop of a programmer is: write source code, run it through the compiler, and get a
 program the processor can step through.
