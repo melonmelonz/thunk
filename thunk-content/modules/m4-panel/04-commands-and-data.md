@@ -24,12 +24,14 @@ command. One wire with one job, in the same spirit as M3's chip select.
 The controller understands many commands, but drawing needs only three: two to aim, one to
 write. To paint a rectangular region:
 
-1. Send the column address command, with data bytes giving the first and last column.
-2. Send the page address command, with data bytes giving the first and last row. "Page" is
-   the datasheet's word for a row of pixels.
+1. Send the column address command, byte `0x2A`, with four data bytes: the first and last
+   column, each as two bytes, high byte first.
+2. Send the page address command, byte `0x2B`, with four data bytes in the same shape: the
+   first and last row. "Page" is the datasheet's word for a row of pixels.
 3. Those two together define the **address window**: the rectangle you are about to fill.
 4. Send the memory-write command, **RAMWR**, byte `0x2C`. Then hold DC high and stream pixel
-   data: two bytes per pixel, high byte first, M3's MSB-first convention doing its job.
+   data: two bytes per pixel, high byte first, a second ordering rule, this one the
+   controller's, sitting on top of M3's MSB-first bit order.
 
 The part that makes this fast is what you do not send. There are no coordinates in the pixel
 stream. The controller steps through the window on its own: each arriving pixel lands one step
@@ -40,7 +42,8 @@ pixels land in order. Filling the whole screen is a window covering everything, 
 ## The trace, solved
 
 Now read M3's mystery transaction one last time: `0x2C`, then `0xF8`. The first byte, sent
-with DC low, was RAMWR: start writing pixels into the window. The second, with DC high, was
+with DC low, a fourth wire that trace never showed, was RAMWR: start writing pixels into the
+window. The second, with DC high, was
 the high byte of `0xF800`. That trace caught a program in the act of painting a red pixel,
 and you decoded it before you knew what it meant.
 

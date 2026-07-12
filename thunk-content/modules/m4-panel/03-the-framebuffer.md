@@ -38,11 +38,11 @@ message will tell you why.
 
 With the framebuffer in hand, drawing loses its mystery. To set pixel (x, y) to a color,
 compute the index and write the `u16` there. That is drawing: writing memory. Animation is
-nothing new either: rewrite the framebuffer, show it, rewrite it again, many times a second.
-Motion on a screen is memory changing quickly.
+nothing new either: rewrite the framebuffer, show it, rewrite it again, many times a second,
+until the changes read as motion.
 
-Count the cost. One frame is 240 x 320 = 76,800 pixels at 2 bytes each: 153,600 bytes, 150 KiB
-exactly, every time you want the whole screen different.
+Count the cost. One frame is 240 x 320 = 76,800 pixels at 2 bytes each: 153,600 bytes, every
+time you want the whole screen different.
 
 One more fact, and it matters for the next lesson. The panel's controller chip holds its own
 framebuffer, in its own memory on the far side of the bus. Once your pixels arrive there, the

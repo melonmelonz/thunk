@@ -50,8 +50,8 @@ Split `0xF800` into bytes the way M2 taught, shift and mask, and its **high byte
 The second byte of that mystery transaction was the first half of a pure red pixel, already in
 flight toward the panel. What the `0x2C` in front of it was, lesson four will tell you.
 
-Where do 76,800 of these `u16` values live while they are being the picture? That is the next
-lesson.
+Where do 76,800 of these `u16` values live while they are being the picture? Lesson three
+answers that.
 
 ## Key terms
 
