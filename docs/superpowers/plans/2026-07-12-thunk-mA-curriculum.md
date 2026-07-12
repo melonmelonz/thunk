@@ -83,7 +83,9 @@ Course totals after M-A: 7 modules, 31 lessons, 93 checks.
 concrete, second person, engineering-not-hacking. Short declarative sentences. Start from the thing
 in front of the learner. No em dashes. No manufactured aphorisms, no corny closings, no "journey"
 language, no exclamation marks. Bold key nouns on first introduction. Every lesson ends with a
-`## Key terms` footer (4-6 terms, one line each).
+`## Key terms` footer (4-6 terms, one line each). Banned tics (each caught in review once already):
+the "sit with it / worth sitting with / worth pausing on" family, and reusing another module's
+opening sentence verbatim. One rhetorical gesture per module, maximum.
 
 **Length.** 40-70 lines of markdown per lesson. M0 lessons sit at the gentle end (shorter
 paragraphs, zero assumed knowledge; do not assume the learner knows what a file is until taught).
@@ -340,10 +342,13 @@ syscalls, drivers). Small Rust snippets in fenced code blocks are welcome from h
 
 - **01-why-rust** (`# Why Rust, Down Here`) - what goes wrong in low-level code: using memory after
   giving it back, reading past the end of a buffer, two threads writing the same bytes; in C these
-  become crashes discovered at runtime, sometimes years later; Rust's bet: catch them at compile
-  time, before the program exists; no garbage collector, so memory comes back the instant it is
-  done, predictably, which is why Rust fits kernels and small machines; the kernel itself now
-  accepts Rust (state it plainly).
+  become crashes discovered at runtime, sometimes years later; Rust's bet: catch use-after-free and
+  data races at compile time, before the program exists, and stop out-of-bounds access at runtime
+  with a bounds check the moment it happens (**erratum 2026-07-12:** an earlier draft of this arc
+  said "catch them at compile time" for all three; bounds checks are runtime - do not re-import
+  that claim); no garbage collector, so memory comes back the instant it is done, predictably,
+  which is why Rust fits kernels and small machines; the kernel itself now accepts Rust (state it
+  plainly).
 - **02-ownership** (`# Ownership`) - every value has exactly one owner; assignment of non-trivial
   values moves ownership, the old name is dead (show a 6-line snippet with the compile error in
   prose); when the owner goes out of scope the value is dropped and its memory returned; this is the
