@@ -64,12 +64,12 @@ deterministic; the trace records the protocol. Seed-driven where randomness is i
 
 The finale renders moving frames to the framebuffer via the `Display` driver over the sim bus.
 
-**Decision to raise with Penn before building:** a fully playable DOOM (doomgeneric = C + a WAD) is
-heavier and raises the "game in a facility" risk (see the risk register). Options:
+**Decision (Penn, 2026-07-12): resolved.** Option 1 ships as the inside-build finale; playable DOOM
+lives on the **open** build only ("doom part could even be on the outside"). Original options kept
+for the record:
 1. A minimal pure-Rust software-rendered "boot a graphical scene" demo (review-safe default, ships on
    the inside build).
 2. Real doomgeneric behind the **open** build only, framed strictly as an engineering demonstration.
-Recommended: build option 1 as the inside-build finale and gate option 2 behind the open build.
 **TDD:** the frame source produces deterministic frames; frames reach the panel over the bus.
 **Acceptance:** `thunk sim` boots the finale on the sim panel; inside build ships the non-game version.
 
@@ -105,6 +105,27 @@ present (not merely disabled).
 **Acceptance:** README polished; CI defined; `docs/` and PDFs regenerated and uniform.
 
 ---
+
+## Penn's directives (2026-07-12, verbatim intent)
+
+Recorded from Penn at build-out kickoff; these steer M-D through M-H and add follow-on spec work:
+
+- **Review posture:** all fine with the review as designed. The DOOM part can live on the outside
+  (open build); the in-facility material stays very real.
+- **In-facility deliverables are real:** budgets, real hardware lists, a real program document for
+  facilities.
+- **Lean heavy on after-release** in case facility access never lands. A separate hosted website for
+  people once they are out (accounts, security, cutting-edge stack) is on the table as its own
+  spec - it is *not* part of the offline core, which stays self-contained Rust, totally offline.
+- **UI/UX:** gorgeous web GUI in the minimal spirit of monkeytype.com (the inspiration is the slick,
+  unique, distraction-free feel, not the typing product). Do real UI/UX research before M-F; nothing
+  gimmicky, no AI slop; the repo will be audited by real engineers.
+- **Modes:** web GUI, TUI/CLI, and a MUD-style interface are all in scope as packagings of the one
+  content source.
+- **Curriculum flavor:** starts at 1s and 0s, builds toward systems thinking; onboards people to open
+  source, contributions, Linux, heavy command-line fluency, possibly vim.
+- **Craft:** secure by default, clean idiosyncratic code, TDD throughout with screenshots of the TDD
+  rhythm in the repo, Penn's prose voice kept throughout.
 
 ## Definition of done (whole build-out)
 - M0-M6 authored; every check self-validates; gates satisfiable.
