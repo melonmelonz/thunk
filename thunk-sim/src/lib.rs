@@ -9,4 +9,4 @@ pub mod spi;
 
 pub use boot::boot_splash;
 pub use panel::Panel;
-pub use spi::{SimSpi, SpiBus, TraceEvent};
+pub use spi::{Dc, SimSpi, SpiBus, TraceEvent};
