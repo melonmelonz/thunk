@@ -66,6 +66,14 @@ fn event_loop(terminal: &mut Terminal<CrosstermBackend<Stdout>>, app: &mut App) 
 /// Translate a keypress into an `Action`, given the current scene.
 fn map_key(app: &App, code: KeyCode) -> Option<Action> {
     match app.scene {
+        Scene::Modules => match code {
+            KeyCode::Char('q') => Some(Action::Quit),
+            KeyCode::Char('j') | KeyCode::Down => Some(Action::SelectNext),
+            KeyCode::Char('k') | KeyCode::Up => Some(Action::SelectPrev),
+            KeyCode::Enter => Some(Action::EnterModule),
+            KeyCode::Char('p') => Some(Action::OpenPlacement),
+            _ => None,
+        },
         Scene::Reader => match code {
             KeyCode::Char('q') => Some(Action::Quit),
             KeyCode::Char('j') | KeyCode::Down => Some(Action::ScrollDown),
@@ -74,6 +82,7 @@ fn map_key(app: &App, code: KeyCode) -> Option<Action> {
             KeyCode::Char('p') => Some(Action::PrevLesson),
             KeyCode::Char('c') => Some(Action::OpenChecks),
             KeyCode::Char('s') => Some(Action::OpenPanel),
+            KeyCode::Char('m') | KeyCode::Esc => Some(Action::OpenModules),
             KeyCode::Char('?') => Some(Action::OpenHelp),
             _ => None,
         },
@@ -101,22 +110,69 @@ fn map_key(app: &App, code: KeyCode) -> Option<Action> {
             _ => Some(Action::Back),
         },
         Scene::Help => Some(Action::Back),
+        Scene::Placement => {
+            // Like Checks, but Esc abandons the run back to the module ladder
+            // and items advance on submit rather than by `n`/Tab.
+            let is_short = matches!(
+                app.current_placement_item().map(|i| &i.check),
+                Some(thunk_core::Check::Short { .. })
+            );
+            match code {
+                KeyCode::Esc => Some(Action::OpenModules),
+                KeyCode::Enter => Some(Action::Submit),
+                _ if is_short => match code {
+                    KeyCode::Char(c) => Some(Action::Char(c)),
+                    KeyCode::Backspace => Some(Action::Backspace),
+                    _ => None,
+                },
+                KeyCode::Up => Some(Action::SelectPrev),
+                KeyCode::Down => Some(Action::SelectNext),
+                KeyCode::Char('q') => Some(Action::Quit),
+                _ => None,
+            }
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::app::test_app;
 
     #[test]
-    fn reader_c_opens_checks() {
-        let app = App::new();
+    fn modules_keys_select_enter_and_place() {
+        let app = test_app(); // home scene
+        assert_eq!(map_key(&app, KeyCode::Char('j')), Some(Action::SelectNext));
+        assert_eq!(map_key(&app, KeyCode::Char('k')), Some(Action::SelectPrev));
+        assert_eq!(map_key(&app, KeyCode::Enter), Some(Action::EnterModule));
+        assert_eq!(
+            map_key(&app, KeyCode::Char('p')),
+            Some(Action::OpenPlacement)
+        );
+        assert_eq!(map_key(&app, KeyCode::Char('q')), Some(Action::Quit));
+    }
+
+    #[test]
+    fn reader_c_opens_checks_and_esc_returns_home() {
+        let mut app = test_app();
+        app.update(Action::EnterModule);
         assert_eq!(map_key(&app, KeyCode::Char('c')), Some(Action::OpenChecks));
+        assert_eq!(map_key(&app, KeyCode::Esc), Some(Action::OpenModules));
+        assert_eq!(map_key(&app, KeyCode::Char('m')), Some(Action::OpenModules));
+    }
+
+    #[test]
+    fn placement_esc_abandons_the_run() {
+        let mut app = test_app();
+        app.update(Action::OpenPlacement);
+        assert_eq!(map_key(&app, KeyCode::Esc), Some(Action::OpenModules));
+        assert_eq!(map_key(&app, KeyCode::Enter), Some(Action::Submit));
     }
 
     #[test]
     fn panel_any_key_returns() {
-        let mut app = App::new();
+        let mut app = test_app();
+        app.update(Action::EnterModule);
         app.update(Action::OpenPanel);
         assert_eq!(map_key(&app, KeyCode::Char('x')), Some(Action::Back));
         assert_eq!(map_key(&app, KeyCode::Char('q')), Some(Action::Quit));
