@@ -1,7 +1,7 @@
 //! Progress: what a learner has read and which checks they have passed.
 
 use crate::check::{CheckId, Verdict};
-use crate::content::LessonId;
+use crate::content::{LessonId, ModuleId};
 use serde::{Deserialize, Serialize};
 use std::collections::BTreeSet;
 
@@ -9,6 +9,9 @@ use std::collections::BTreeSet;
 pub struct Progress {
     pub lessons_read: BTreeSet<LessonId>,
     pub checks_passed: BTreeSet<CheckId>,
+    /// Modules mastered by placement rather than by passing every check.
+    #[serde(default)]
+    pub modules_placed: BTreeSet<ModuleId>,
 }
 
 impl Progress {
@@ -23,6 +26,13 @@ impl Progress {
     /// Mastery: every check in the given list has been passed at least once.
     pub fn module_mastered(&self, ids: &[CheckId]) -> bool {
         !ids.is_empty() && ids.iter().all(|i| self.checks_passed.contains(i))
+    }
+    pub fn place_module(&mut self, id: &ModuleId) {
+        self.modules_placed.insert(id.clone());
+    }
+    /// Mastered the long way or the placement way.
+    pub fn mastered_or_placed(&self, id: &ModuleId, checks: &[CheckId]) -> bool {
+        self.modules_placed.contains(id) || self.module_mastered(checks)
     }
 }
 

@@ -2,8 +2,10 @@
 
 pub mod check;
 pub mod content;
+pub mod gate;
 pub mod progress;
 
 pub use check::{Answer, Check, CheckId, Verdict};
 pub use content::{Lesson, LessonId, Module, ModuleId};
+pub use gate::{ladder_state, ModuleStatus};
 pub use progress::Progress;
