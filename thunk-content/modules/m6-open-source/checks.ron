@@ -13,7 +13,7 @@
     Choice(
         id: CheckId("m6-01-free"),
         prompt: "In the name \"free software\", what does \"free\" refer to?",
-        options: ["price", "freedom", "advertising"],
+        options: ["price", "freedom", "free of charge for companies only"],
         answer: 1,
     ),
     Choice(

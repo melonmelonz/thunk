@@ -28,8 +28,8 @@ fn title_of(body: &str, fallback: &str) -> String {
         .unwrap_or_else(|| fallback.to_string())
 }
 
-/// The course ladder, in order. Grows as modules are authored (M-A);
-/// completeness is pinned by `the_ladder_is_complete` once M0-M6 land.
+/// The course ladder, in order, complete M0 through M6;
+/// completeness is pinned by `the_ladder_is_complete_m0_through_m6`.
 pub const LADDER: &[&str] = &[
     "m0-power-on",
     "m1-kernel",

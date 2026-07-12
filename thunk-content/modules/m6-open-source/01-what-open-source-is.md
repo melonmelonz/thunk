@@ -1,17 +1,18 @@
 # What Open Source Is
 
-You have been working inside this world all course without a name for it. The kernel M1 taught is
-part of Linux, and anyone on earth can read Linux's source code. The Rust toolchain that builds
-the code you read in M2 is the same way. So is thunk, the program teaching you right now. And M5
-told the story of 1997, when id Software published DOOM's engine source and strangers ported it to
-everything with a screen. All of these are **open source**. This module is about what that means.
+You have been working inside this world all course without a name for it. The kernel idea M1
+taught is what Linux is: a real kernel whose source anyone on earth can read. The Rust toolchain
+that builds the code you read in M2 is the same way. So is thunk, the program teaching you right
+now. And M5 told the story of 1997, when id Software published DOOM's engine source and strangers
+ported it to everything with a screen. All of these are **open source**. This module is about
+what that means.
 
 ## The definition
 
 A program is open source when two things are true.
 
 First, its **source code** is public. The human-readable text the program is built from is there
-for anyone to read, the way you read the driver code in M4.
+for anyone to read, the way M4 laid the panel's command language open to you.
 
 Second, it carries a license that grants everyone four permissions: use the program for any
 purpose, study how it works, change it, and share it, changed or not. The license is a real legal
@@ -32,9 +33,9 @@ It would be easy to picture open source as hobbyists giving code away, a sidesho
 industry. The picture is wrong in both directions.
 
 Much of the world's **infrastructure** runs on open source. Most of the servers behind the
-internet run Linux. The tools that build software, compilers, version control, whole languages
-like Rust, are open source. When you load a web page, open source code handles it at nearly every
-layer of the stack you traced in M5.
+internet run Linux. The tools that build software are open source too: compilers, version
+control, whole toolchains like Rust's. When you load a web page, open source code handles it at
+nearly every layer of the stack you traced in M5.
 
 And much of the work is done by paid engineers working in the open. Companies whose products
 stand on Linux or Rust pay people full time to improve them, and those improvements are public

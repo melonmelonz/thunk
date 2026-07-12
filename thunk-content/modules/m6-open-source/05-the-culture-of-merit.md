@@ -29,27 +29,30 @@ correct, is it clear, does it fit.
 
 The second half means the standard is only the work. Nobody in a review thread is asked who they
 are, what they did before, or where they are writing from. The diff does not carry your history,
-your schooling, or your record. Regulars and strangers get the same questions, the questions you
-learned to read in the last lesson: what does this change do, and is it right. The culture is
-blunt about code and blind to everything else. People with gaps in their story have found that
-combination unusual, and useful.
+your schooling, or your record. A stranger's diff gets the questions you learned to read in the
+last lesson: what does this change do, and is it right. Expect one more thing, because it is the
+most common first outcome: silence. Review attention is scarce and uneven, and a diff can wait
+weeks or go unanswered; the silence is about the length of the queue, not about the sender. The
+culture's standard is blunt about code and blind to everything else; most projects hold to it
+better than most workplaces do. People with gaps in their story have found that combination
+unusual, and useful.
 
 ## The record
 
 Lesson 03 said merged work stays credited to its author, permanently and publicly. Follow that
 through. Every change you get merged is in the project's history with your name and date on it,
 in a public repository, verifiable by anyone who cares to look. Not claimed on a resume: checkable
-at the source, with the diff itself still readable. A **contribution history** is a work record
-that proves itself, built one accepted change at a time.
+at the source, with the diff itself still readable. A **contribution history** is that record,
+built one accepted change at a time.
 
 You now know what open source is, what its licenses promise, how its history is kept, how to read
 the diffs it runs on, and who decides what merges. What remains is to do it once: take a real
 project, make a real change, and send it. That is M7, on the open build, where thunk's own
-repository is on hand. Your first merged diff starts the record.
+repository is on hand.
 
 ## Key terms
 
 - **maintainer** — a person with the authority to accept a change into a project.
-- **reviewer** — a person who reads a proposed diff and says, plainly, what they see.
+- **reviewer** — a person who reads proposed diffs and reports what they find in them.
 - **merit** — the standard review applies: the change is judged, not the person who sent it.
 - **contribution history** — the public, verifiable record of the changes merged under your name.

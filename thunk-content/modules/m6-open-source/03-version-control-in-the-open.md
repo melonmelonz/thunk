@@ -13,8 +13,8 @@ these, each one building on the one before, going back to the first line ever wr
 
 This history is the project's memory. Ask git about any line in Linux and it will tell you who
 wrote it, when, and what the commit message said. When code misbehaves, you can walk the chain
-backward and find the exact commit where the behavior changed. Nothing is remembered by rumor;
-it is all written down.
+backward and find the exact commit where the behavior changed. None of this depends on anyone's
+memory; it is all recorded.
 
 It is also a ledger of credit. Because every commit carries its author's name, the history records
 not just what the code is but who built it, change by change, with dates.

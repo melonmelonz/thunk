@@ -29,7 +29,7 @@ settles the question in writing, which is why lawyers at large companies tend to
 The GPL takes a different position. It is the best-known **copyleft** license: you may use, study,
 change, and share the code, but if you ship a changed version, you must ship it under the same
 terms, source included. The freedoms travel with the code and you may not strip them off. Linux,
-the kernel you studied in M1, is GPL.
+the real kernel behind everything M1 described, is GPL.
 
 ## Why an author picks one
 

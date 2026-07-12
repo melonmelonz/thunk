@@ -15,9 +15,9 @@ lands.
 
 ## One real diff
 
-Here is a diff the world of this course could produce. The framebuffer code from M4 has a
-`set_pixel` function, and someone has noticed that nothing stops a caller from writing a pixel
-outside the frame. Their fix:
+Here is a diff the world of this course could produce. Imagine the framebuffer arithmetic from
+M4 written as a `set_pixel` function. Someone has noticed that nothing stops a caller from
+writing a pixel outside the frame. Their fix:
 
 ```diff
 --- a/src/framebuffer.rs
@@ -37,16 +37,16 @@ outside the frame. Their fix:
 ```
 
 Walk it. The two `---`/`+++` lines name the file, before and after: same file, `framebuffer.rs`.
-The `@@` header opens the only hunk and says where it lands: six lines of the old file are
-replaced by ten lines of the new one, starting at line 12. The doc comment at the top is context,
+The `@@` header opens the only hunk and says where it lands: the hunk spans six lines of the old
+file and ten of the new, starting at line 12. The doc comment at the top is context,
 unchanged. The `-` line removes the old signature; the `+` line directly under it puts the
 signature back with one difference, a `-> bool` return type, so the function can now report
 whether it wrote anything. The next three `+` lines are the actual fix: if `x` or `y` is off the
 frame, return `false` instead of writing. Then two context lines, the index arithmetic you know
-from M4 and the write itself, untouched. One more `+` line makes the function end in `true`, the value it returns when
-the write happens. The closing braces are context. Read this way, the diff answers the reviewer's
-question precisely: out-of-range writes are refused, in-range behavior is unchanged, and callers
-can now tell which happened.
+from M4 and the write itself, untouched. One more `+` line makes the function end in `true`, the
+value it returns when the write happens. The closing braces are context. Read this way, the diff
+answers the reviewer's question precisely: out-of-range writes are refused, in-range behavior is
+unchanged, and callers can now tell which happened.
 
 ## The unit of conversation
 
