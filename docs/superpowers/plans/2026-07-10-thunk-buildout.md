@@ -90,6 +90,12 @@ for the record:
   impl wraps errors/delays outside the trait) - document it, or grow the trait before a second
   implementor exists. SWRESET/SLPOUT settle delays live outside the sim.
 
+**Status: DONE 2026-07-12.** The inside-build finale is a deterministic integer-math corridor scene
+rendered through the Display driver over the bus (boot_finale/finale_tick + take_trace drain);
+`thunk sim` boots it (--splash keeps the bars); the TUI panel scene animates it at a 60ms tick.
+Playable DOOM remains open-build work under M-G, per Penn's decision. Workspace at 60+ tests,
+clippy + vocab-lint clean.
+
 ## M-E · Trace view (the Saleae echo)
 
 Render the `TraceEvent` stream as a logic-analyzer-style view (TUI first, then web).

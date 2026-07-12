@@ -8,6 +8,8 @@ in the TUI's panel scene and booting from `thunk sim`. Per Penn's decision (2026
 review-safe rendered scene IS the inside build's finale; playable DOOM belongs to the open build
 (milestone M-G territory).
 
+**Status: executed 2026-07-12; all 6 tasks done.**
+
 **Architecture:** A pure frame source (`finale::frame(w, h, t) -> Vec<u16>`: one-point-perspective
 corridor, integer math only, no randomness) is composed with the M-C protocol stack: init once,
 then one `blit_rect` per frame. Two pieces of bus plumbing inherited from the M-C review make
