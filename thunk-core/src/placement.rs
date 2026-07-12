@@ -51,7 +51,11 @@ mod tests {
 
     #[test]
     fn a_module_places_only_when_all_its_items_are_correct() {
-        let items = vec![item("m1", "q1", 0), item("m1", "q2", 1), item("m2", "q3", 0)];
+        let items = vec![
+            item("m1", "q1", 0),
+            item("m1", "q2", 1),
+            item("m2", "q3", 0),
+        ];
         let answers = vec![Answer::Choice(0), Answer::Choice(1), Answer::Choice(1)];
         let placed = evaluate_placement(&items, &answers);
         assert_eq!(placed, vec![ModuleId("m1".into())]); // m2's one item was wrong

@@ -70,6 +70,9 @@ mod tests {
             state_path(None, None, Some("/h")),
             PathBuf::from("/h/.local/share/thunk/progress.ron")
         );
-        assert_eq!(state_path(None, None, None), PathBuf::from("thunk-progress.ron"));
+        assert_eq!(
+            state_path(None, None, None),
+            PathBuf::from("thunk-progress.ron")
+        );
     }
 }
