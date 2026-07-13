@@ -9,21 +9,15 @@ const fn ioc(dir: u64, ty: u8, nr: u8, size: usize) -> u64 {
     (dir << 30) | ((size as u64) << 16) | ((ty as u64) << 8) | nr as u64
 }
 
-// The spi requests are consumed by the bus module; until it lands they are
-// exercised solely by the pinned-literal tests below.
-#[allow(dead_code)]
 const SPI_MAGIC: u8 = b'k';
 const GPIO_MAGIC: u8 = 0xB4;
 
-#[allow(dead_code)]
 pub const fn spi_wr_mode() -> u64 {
     ioc(IOC_WRITE, SPI_MAGIC, 1, 1)
 }
-#[allow(dead_code)]
 pub const fn spi_wr_bits_per_word() -> u64 {
     ioc(IOC_WRITE, SPI_MAGIC, 3, 1)
 }
-#[allow(dead_code)]
 pub const fn spi_wr_max_speed_hz() -> u64 {
     ioc(IOC_WRITE, SPI_MAGIC, 4, 4)
 }
