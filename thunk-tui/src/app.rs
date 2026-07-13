@@ -67,6 +67,9 @@ pub struct App {
     /// Answers given so far in the current placement run; its length is also
     /// the index of the current item.
     pub placement_answers: Vec<Answer>,
+    /// A one-shot message for the Modules scene (placement results); shown
+    /// until the next action.
+    pub notice: Option<String>,
     /// Where progress is saved: resolved once from the environment, or given
     /// directly by tests (which keeps them hermetic and parallel-safe).
     pub state_dir: PathBuf,
@@ -98,18 +101,8 @@ impl App {
     /// Build the classroom over an explicit state directory.
     pub fn with_state_dir(state_dir: PathBuf) -> Self {
         let progress = Self::load_progress_from(&state_dir);
-        let modules = Curriculum::all();
-        let ladder: Vec<(ModuleId, Vec<CheckId>)> = modules
-            .iter()
-            .map(|m| {
-                let ids = Curriculum::load_checks(&m.id.0)
-                    .iter()
-                    .map(|c| c.id().clone())
-                    .collect();
-                (m.id.clone(), ids)
-            })
-            .collect();
-        let ladder_titles = modules.iter().map(|m| m.title.clone()).collect();
+        let ladder = Curriculum::ladder();
+        let ladder_titles = Curriculum::all().iter().map(|m| m.title.clone()).collect();
         // Start the selection on the first unlocked module (m0 on a fresh
         // start); when everything is mastered, on the last one.
         let statuses = ladder_state(&ladder, &progress);
@@ -141,6 +134,7 @@ impl App {
             module_sel,
             placement: Curriculum::placement(),
             placement_answers: Vec::new(),
+            notice: None,
             state_dir,
             panel,
             bus,
@@ -166,23 +160,37 @@ impl App {
         ladder_state(&self.ladder, &self.progress)
     }
 
-    /// Write progress into `dir/progress.ron`. Failure to save is not worth
-    /// crashing the classroom over; the learner keeps working.
+    /// Write progress into `dir/progress.ron`, atomically: the RON goes to a
+    /// `.tmp` file first and is renamed over the real one, so a crash mid-save
+    /// never truncates saved progress. Failure to save is not worth crashing
+    /// the classroom over; the learner keeps working.
     pub fn save_progress_to(&self, dir: &Path) {
         if let Some(s) = progress_to_ron(&self.progress) {
             if std::fs::create_dir_all(dir).is_ok() {
-                let _ = std::fs::write(dir.join("progress.ron"), s);
+                let tmp = dir.join("progress.ron.tmp");
+                if std::fs::write(&tmp, s).is_ok() {
+                    let _ = std::fs::rename(&tmp, dir.join("progress.ron"));
+                }
             }
         }
     }
 
-    /// Read progress from `dir/progress.ron`. A missing or unreadable file is
-    /// a fresh start, never an error.
+    /// Read progress from `dir/progress.ron`. A missing file is a fresh
+    /// start; a file that exists but does not parse is set aside as
+    /// `progress.ron.bad` (best effort) so it can be inspected rather than
+    /// silently overwritten by the next save.
     pub fn load_progress_from(dir: &Path) -> Progress {
-        std::fs::read_to_string(dir.join("progress.ron"))
-            .ok()
-            .and_then(|s| progress_from_ron(&s))
-            .unwrap_or_default()
+        let path = dir.join("progress.ron");
+        let Ok(s) = std::fs::read_to_string(&path) else {
+            return Progress::default();
+        };
+        match progress_from_ron(&s) {
+            Some(p) => p,
+            None => {
+                let _ = std::fs::rename(&path, dir.join("progress.ron.bad"));
+                Progress::default()
+            }
+        }
     }
 
     fn save(&self) {
@@ -208,9 +216,35 @@ impl App {
         }
     }
 
+    /// Start a placement run over the modules not yet mastered - nobody is
+    /// asked to prove again what the ladder already shows. Nothing left means
+    /// no run: a notice on the Modules scene says so.
+    fn open_placement(&mut self) {
+        let statuses = self.module_status();
+        let mastered: std::collections::BTreeSet<ModuleId> = self
+            .ladder
+            .iter()
+            .zip(&statuses)
+            .filter(|(_, s)| **s == ModuleStatus::Mastered)
+            .map(|((id, _), _)| id.clone())
+            .collect();
+        self.placement = Curriculum::placement()
+            .into_iter()
+            .filter(|i| !mastered.contains(&i.module))
+            .collect();
+        self.placement_answers.clear();
+        self.reset_check_input();
+        if self.placement.is_empty() {
+            self.notice = Some("nothing left to place".to_string());
+        } else {
+            self.scene = Scene::Placement;
+        }
+    }
+
     /// Record the answer to the current placement item. Placement answers do
     /// not touch check progress; when the last item is answered the whole run
-    /// is evaluated, placed modules are recorded, and we return home.
+    /// is evaluated, placed modules are recorded, and we return home with a
+    /// notice saying what happened.
     fn submit_placement(&mut self) {
         let Some(item) = self.current_placement_item() else {
             return;
@@ -222,8 +256,15 @@ impl App {
         self.placement_answers.push(answer);
         self.reset_check_input();
         if self.placement_answers.len() == self.placement.len() {
-            for m in evaluate_placement(&self.placement, &self.placement_answers) {
-                self.progress.place_module(&m);
+            let placed = evaluate_placement(&self.placement, &self.placement_answers);
+            self.notice = Some(if placed.is_empty() {
+                "no modules placed - the ladder is the path".to_string()
+            } else {
+                let tags: Vec<String> = placed.iter().map(module_tag).collect();
+                format!("placed out of {}", tags.join(", "))
+            });
+            for m in &placed {
+                self.progress.place_module(m);
             }
             self.save();
             self.scene = Scene::Modules;
@@ -242,6 +283,9 @@ impl App {
     }
 
     pub fn update(&mut self, action: Action) {
+        // A notice is shown exactly once: whatever the learner does next
+        // dismisses it (the action below may set a fresh one).
+        self.notice = None;
         match action {
             Action::Quit => {
                 self.save();
@@ -255,11 +299,7 @@ impl App {
             Action::OpenPanel => self.scene = Scene::Panel,
             Action::OpenHelp => self.scene = Scene::Help,
             Action::OpenModules => self.scene = Scene::Modules,
-            Action::OpenPlacement => {
-                self.scene = Scene::Placement;
-                self.placement_answers.clear();
-                self.reset_check_input();
-            }
+            Action::OpenPlacement => self.open_placement(),
             Action::EnterModule => self.enter_selected_module(),
             Action::ScrollUp => self.scroll = self.scroll.saturating_sub(1),
             Action::ScrollDown => self.scroll = self.scroll.saturating_add(1),
@@ -352,6 +392,11 @@ impl App {
             .filter(|c| self.progress.checks_passed.contains(c.id()))
             .count()
     }
+}
+
+/// A module's ladder tag for short messages: "m0-power-on" -> "M0".
+fn module_tag(id: &ModuleId) -> String {
+    id.0.split('-').next().unwrap_or(&id.0).to_uppercase()
 }
 
 /// A fresh app over a unique empty state directory: hermetic and
@@ -578,6 +623,82 @@ mod tests {
             .checks_passed
             .contains(&CheckId("m0-01-processor".into())));
         std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn a_corrupt_state_file_is_preserved_not_overwritten() {
+        let dir = test_state_dir();
+        std::fs::write(dir.join("progress.ron"), "not ron at all").unwrap();
+        let loaded = App::load_progress_from(&dir);
+        assert_eq!(loaded, Progress::default(), "corrupt file is a fresh start");
+        assert!(
+            dir.join("progress.ron.bad").exists(),
+            "corrupt file kept for inspection"
+        );
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn saving_is_atomic_and_leaves_no_tmp_behind() {
+        let dir = test_state_dir();
+        let app = test_app();
+        app.save_progress_to(&dir);
+        assert!(dir.join("progress.ron").exists());
+        assert!(!dir.join("progress.ron.tmp").exists());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn finishing_placement_reports_what_was_placed() {
+        let mut app = test_app();
+        app.update(Action::OpenPlacement);
+        let items = app.placement.clone();
+        for item in &items {
+            match &item.check {
+                Check::Choice { answer, .. } => app.selected = *answer,
+                Check::Short { answers, .. } => app.input = answers[0].clone(),
+            }
+            app.update(Action::Submit);
+        }
+        assert_eq!(app.scene, Scene::Modules);
+        let notice = app.notice.clone().expect("a result notice");
+        assert!(notice.contains("placed"), "{notice}");
+        // the next action clears it
+        app.update(Action::SelectNext);
+        assert!(app.notice.is_none());
+    }
+
+    #[test]
+    fn abandoning_placement_sets_no_notice() {
+        let mut app = test_app();
+        app.update(Action::OpenPlacement);
+        app.update(Action::OpenModules); // what Esc maps to
+        assert_eq!(app.scene, Scene::Modules);
+        assert!(app.notice.is_none());
+    }
+
+    #[test]
+    fn placement_skips_modules_already_mastered() {
+        let mut app = test_app();
+        for c in Curriculum::load_checks("m0-power-on") {
+            app.progress.record(c.id(), c.grade(&c.canonical_answer()));
+        }
+        app.update(Action::OpenPlacement);
+        assert_eq!(app.scene, Scene::Placement);
+        assert_eq!(app.placement.len(), 18, "m0's three items are not re-asked");
+        assert!(app.placement.iter().all(|i| i.module.0 != "m0-power-on"));
+    }
+
+    #[test]
+    fn placement_with_everything_mastered_stays_home() {
+        let mut app = test_app();
+        let ids: Vec<ModuleId> = app.ladder.iter().map(|(id, _)| id.clone()).collect();
+        for id in &ids {
+            app.progress.place_module(id);
+        }
+        app.update(Action::OpenPlacement);
+        assert_eq!(app.scene, Scene::Modules, "no run to start");
+        assert_eq!(app.notice.as_deref(), Some("nothing left to place"));
     }
 
     #[test]

@@ -2,9 +2,7 @@
 
 use clap::{Parser, Subcommand};
 use thunk_content::Curriculum;
-use thunk_core::{
-    ladder_state, progress_from_ron, state_path, CheckId, ModuleId, ModuleStatus, Progress,
-};
+use thunk_core::{ladder_state, progress_from_ron, state_path, ModuleStatus, Progress};
 use thunk_sim::{boot::boot_splash_via_display, boot_finale, Ili9341, SimSpi};
 
 #[derive(Parser)]
@@ -106,27 +104,12 @@ fn checks() -> String {
     s
 }
 
-/// Every module paired with the check ids that must all pass to master it,
-/// in ladder order - the shape `ladder_state` expects.
-fn ladder() -> Vec<(ModuleId, Vec<CheckId>)> {
-    Curriculum::all()
-        .iter()
-        .map(|m| {
-            let ids = Curriculum::load_checks(&m.id.0)
-                .iter()
-                .map(|c| c.id().clone())
-                .collect();
-            (m.id.clone(), ids)
-        })
-        .collect()
-}
-
 /// Render the gated ladder for the given progress. Pure - no env, no I/O -
 /// so it is fully unit-testable; `progress()` below is the thin disk-reading
 /// wrapper around it.
 fn progress_with(progress: &Progress) -> String {
     let modules = Curriculum::all();
-    let ladder = ladder();
+    let ladder = Curriculum::ladder();
     let statuses = ladder_state(&ladder, progress);
     let mut s =
         String::from("Mastery ladder - pass every check in a module to unlock the next:\n\n");
@@ -166,7 +149,7 @@ fn progress() -> String {
         .and_then(|s| progress_from_ron(&s))
         .unwrap_or_default();
     let mut s = progress_with(&saved);
-    s.push_str(&format!("\nProgress saved to {}\n", path.display()));
+    s.push_str(&format!("\nProgress file: {}\n", path.display()));
     s
 }
 

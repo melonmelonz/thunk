@@ -48,13 +48,24 @@ fn render_header(f: &mut Frame, area: Rect, app: &App) {
         Scene::Help => "help",
         Scene::Placement => "placement",
     };
-    let left = format!(" thunk - {} ", app.module.title);
-    let right = format!(
-        "[{}]  checks passed {}/{} ",
-        scene,
-        app.passed_count(),
-        app.checks.len()
-    );
+    // The loaded module's title and check count only mean something inside a
+    // module; the home and placement scenes get their own words.
+    let left = match app.scene {
+        Scene::Modules | Scene::Help => " thunk - a systems course ".to_string(),
+        Scene::Placement => " thunk - placement diagnostic ".to_string(),
+        Scene::Reader | Scene::Checks | Scene::Panel => {
+            format!(" thunk - {} ", app.module.title)
+        }
+    };
+    let right = match app.scene {
+        Scene::Reader | Scene::Checks | Scene::Panel => format!(
+            "[{}]  checks passed {}/{} ",
+            scene,
+            app.passed_count(),
+            app.checks.len()
+        ),
+        Scene::Modules | Scene::Help | Scene::Placement => format!("[{scene}] "),
+    };
     let line = Line::from(vec![
         Span::styled(
             left,
@@ -99,6 +110,15 @@ fn render_modules(f: &mut Frame, area: Rect, app: &App) {
             ),
             Span::styled(word, Style::default().fg(color)),
         ]));
+    }
+    if let Some(n) = &app.notice {
+        lines.push(Line::from(""));
+        lines.push(Line::from(Span::styled(
+            n.clone(),
+            Style::default()
+                .fg(Color::Yellow)
+                .add_modifier(Modifier::BOLD),
+        )));
     }
     f.render_widget(Paragraph::new(lines), inner);
 }

@@ -2,7 +2,7 @@
 
 use rust_embed::RustEmbed;
 use serde::Deserialize;
-use thunk_core::{Check, Lesson, LessonId, Module, ModuleId, PlacementItem};
+use thunk_core::{Check, CheckId, Lesson, LessonId, Module, ModuleId, PlacementItem};
 
 #[derive(RustEmbed)]
 #[folder = "modules/"]
@@ -82,6 +82,21 @@ impl Curriculum {
         ron::from_str(&read(&format!("{dir}/checks.ron"))).expect("valid checks.ron")
     }
 
+    /// Every module paired with the check ids that must all pass to master
+    /// it, in course order - the shape `thunk_core::ladder_state` expects.
+    pub fn ladder() -> Vec<(ModuleId, Vec<CheckId>)> {
+        Self::all()
+            .iter()
+            .map(|m| {
+                let ids = Self::load_checks(&m.id.0)
+                    .iter()
+                    .map(|c| c.id().clone())
+                    .collect();
+                (m.id.clone(), ids)
+            })
+            .collect()
+    }
+
     /// The placement diagnostic: three existing checks per module, chosen to
     /// separate "already knows this" from "needs the module".
     pub fn placement() -> Vec<PlacementItem> {
@@ -109,6 +124,20 @@ impl Curriculum {
 mod tests {
     use super::*;
     use thunk_core::Verdict;
+
+    #[test]
+    fn ladder_pairs_every_module_with_its_check_ids() {
+        let ladder = Curriculum::ladder();
+        assert_eq!(ladder.len(), LADDER.len());
+        for ((id, ids), dir) in ladder.iter().zip(LADDER) {
+            assert_eq!(&id.0, dir, "ladder is in course order");
+            let want: Vec<_> = Curriculum::load_checks(dir)
+                .iter()
+                .map(|c| c.id().clone())
+                .collect();
+            assert_eq!(ids, &want, "every check id of {dir}, in bank order");
+        }
+    }
 
     #[test]
     fn loads_module_one() {
