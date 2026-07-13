@@ -1,0 +1,262 @@
+/* thunk.css — the whole design in one auditable file.
+   Token values come from docs/research/ui-ux-research.md §5 (binding):
+   dark "gantry" is the default; light "datasheet" answers
+   prefers-color-scheme. Components reference tokens, never hex.
+   The look: an instrument, not a website — one centered reading column,
+   hierarchy carried by type and color, boxes rare and quiet. */
+
+:root {
+  /* ---- gantry (dark) ---- */
+  --bg:        #16181d;   /* page */
+  --bg-raised: #1d2127;   /* cards: checks, code chrome */
+  --fg:        #d7dae0;   /* ~12.5:1 on --bg */
+  --fg-muted:  #9aa1ab;   /* secondary, still AA */
+  --accent:    #d9a962;   /* quiet phosphor amber — the one brand color */
+  --accent-2:  #8fb4c9;   /* desaturated instrument cyan: links, info */
+  --ok:        #8fb573;   /* check passed */
+  --err:       #d08770;   /* check missed — warm, not alarm-red */
+  --border:    #2a2f37;
+  --code-bg:   #101216;   /* code wells: data sits in the darkest layer */
+  --trace-hi:  #d9a962;   /* trace cursor / highlighted byte */
+
+  /* ---- type scale (research §4: 17px base, 1.25 ratio, three steps) ---- */
+  --text-s: 0.875rem;
+  --text-m: 1.0625rem;
+  --text-l: 1.625rem;
+  --measure: 65ch;        /* hard cap 72ch, never 80+ */
+  --leading: 1.65;
+
+  /* ---- shape and rhythm ---- */
+  --radius: 4px;
+  --gap-s: 0.5rem;
+  --gap-m: 1rem;
+  --gap-l: 2.5rem;
+
+  /* ---- voices: mono is the instrument, sans is the prose ---- */
+  --mono: ui-monospace, "Cascadia Mono", "Source Code Pro", Menlo, Consolas, monospace;
+  --sans: system-ui, "Segoe UI", Roboto, sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    /* ---- datasheet (light) — paper, not white glare ---- */
+    --bg:        #f6f5f1;
+    --bg-raised: #fdfdfb;
+    --fg:        #26282c;
+    --fg-muted:  #585e66;
+    --accent:    #8a5f17;   /* the same amber, carried down to AA on paper */
+    --accent-2:  #2d6a84;
+    --ok:        #3d6b35;
+    --err:       #a13d2d;
+    --border:    #d9d6cd;
+    --code-bg:   #ecebe5;
+    --trace-hi:  #8a5f17;
+  }
+}
+
+/* ---- document ---- */
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--sans);
+  font-size: var(--text-m);
+  line-height: var(--leading);
+  text-align: left; /* never justified: rivers hurt weak readers */
+}
+
+main {
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding: var(--gap-l) var(--gap-m) var(--gap-l);
+}
+
+/* ---- chrome that recedes: thin mono header and footer ---- */
+
+header, footer {
+  font-family: var(--mono);
+  font-size: var(--text-s);
+}
+
+header nav {
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding: var(--gap-m);
+  border-bottom: 1px solid var(--border);
+}
+
+header .site {
+  color: var(--accent);
+  text-decoration: none;
+  letter-spacing: 0.08em;
+}
+
+footer p {
+  max-width: var(--measure);
+  margin-inline: auto;
+  padding: var(--gap-m);
+  border-top: 1px solid var(--border);
+  color: var(--fg-muted);
+}
+
+.skip {
+  position: absolute;
+  left: -999px;
+  background: var(--accent);
+  color: var(--bg);
+  padding: var(--gap-s) var(--gap-m);
+}
+
+.skip:focus { left: var(--gap-m); top: var(--gap-s); z-index: 1; }
+
+/* ---- hierarchy by type, not boxes ---- */
+
+h1 { font-size: var(--text-l); line-height: 1.25; margin: 0 0 var(--gap-m); }
+h2 { font-size: 1.3125rem; line-height: 1.3; margin: var(--gap-l) 0 var(--gap-s); }
+h3 {
+  font-family: var(--mono); /* the instrument voice inside prose */
+  font-size: var(--text-m);
+  margin: var(--gap-l) 0 var(--gap-s);
+}
+
+p, ul, ol { margin: 0 0 var(--gap-m); }
+li { margin-bottom: var(--gap-s); }
+
+a { color: var(--accent-2); text-underline-offset: 0.2em; }
+a:hover { color: var(--accent); }
+
+.crumbs, .meta, .tagline {
+  font-family: var(--mono);
+  font-size: var(--text-s);
+  color: var(--fg-muted);
+}
+
+.tag {
+  font-family: var(--mono);
+  font-size: var(--text-s);
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+/* ---- the ladder and lesson lists: quiet rows, not loud cards ---- */
+
+.ladder, .lessons { list-style: none; padding: 0; }
+
+.ladder .card {
+  display: flex;
+  gap: var(--gap-m);
+  align-items: baseline;
+  padding: var(--gap-m) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.ladder .meta { margin-left: auto; }
+
+.lessons li {
+  font-family: var(--mono);
+  padding: var(--gap-s) 0;
+  border-bottom: 1px solid var(--border);
+}
+
+/* ---- code: full-measure wells with a thin left border ---- */
+
+code {
+  font-family: var(--mono);
+  font-size: 0.9375em; /* mono runs wide; optically match prose */
+  background: var(--bg-raised);
+  border-radius: var(--radius);
+  padding: 0.1em 0.3em;
+}
+
+pre {
+  background: var(--code-bg);
+  border-left: 2px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap-m);
+  overflow-x: auto;
+  line-height: 1.5;
+}
+
+pre code { background: none; padding: 0; }
+
+/* ---- checks: conversation, not examination (research §6.3) ---- */
+
+.check {
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  border-left: 2px solid var(--accent);
+  border-radius: var(--radius);
+  padding: var(--gap-m);
+  margin: var(--gap-m) 0;
+}
+
+.check fieldset { border: 0; padding: 0; margin: 0 0 var(--gap-s); }
+.check legend, .check > label { font-weight: 600; padding: 0; }
+.check fieldset label { display: block; font-weight: 400; margin: var(--gap-s) 0; }
+
+.check input[type="text"] {
+  display: block;
+  font-family: var(--mono);
+  font-size: var(--text-s);
+  color: var(--fg);
+  background: var(--code-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: var(--gap-s);
+  margin-top: var(--gap-s);
+  width: 100%;
+  max-width: 24ch;
+}
+
+.check .grade {
+  font-family: var(--mono);
+  font-size: var(--text-s);
+  color: var(--bg);
+  background: var(--accent);
+  border: 0;
+  border-radius: var(--radius);
+  padding: var(--gap-s) var(--gap-m);
+  cursor: pointer;
+}
+
+/* verdicts are words first, color second — never color-only */
+.verdict { font-family: var(--mono); font-size: var(--text-s); margin: var(--gap-s) 0 0; }
+.verdict.ok  { color: var(--ok); }
+.verdict.err { color: var(--err); }
+.check:has(.verdict.ok)  { border-left-color: var(--ok); }
+.check:has(.verdict.err) { border-left-color: var(--err); }
+
+/* ---- pager ---- */
+
+.pager {
+  display: flex;
+  justify-content: space-between;
+  gap: var(--gap-m);
+  font-family: var(--mono);
+  font-size: var(--text-s);
+  margin-top: var(--gap-l);
+  padding-top: var(--gap-m);
+  border-top: 1px solid var(--border);
+}
+
+.pager a[rel="next"] { margin-left: auto; }
+
+/* ---- focus, selection, motion ---- */
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+::selection { background: var(--trace-hi); color: var(--bg); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}

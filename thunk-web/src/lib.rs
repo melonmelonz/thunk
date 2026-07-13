@@ -3,4 +3,6 @@
 //! Pure functions from domain values to HTML/CSS strings. No dependencies
 //! beyond the thunk workspace crates; no external assets, ever.
 
+pub mod course;
 pub mod markdown;
+pub mod page;
