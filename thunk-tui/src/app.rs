@@ -7,7 +7,7 @@ use thunk_core::{
     evaluate_placement, ladder_state, progress_from_ron, progress_to_ron, state_path, Answer,
     Check, CheckId, Lesson, Module, ModuleId, ModuleStatus, PlacementItem, Progress, Verdict,
 };
-use thunk_sim::{boot_finale, finale_tick, Ili9341, SimSpi};
+use thunk_sim::{boot_finale, finale_tick, Ili9341, SimSpi, TraceEvent};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Scene {
@@ -16,6 +16,8 @@ pub enum Scene {
     Reader,
     Checks,
     Panel,
+    /// The bus trace: what the driver put on the wires, annotated.
+    Trace,
     Help,
     /// The placement diagnostic: test out of modules you already know.
     Placement,
@@ -27,6 +29,7 @@ pub enum Action {
     Back,
     OpenChecks,
     OpenPanel,
+    OpenTrace,
     OpenHelp,
     OpenModules,
     OpenPlacement,
@@ -79,6 +82,11 @@ pub struct App {
     pub bus: SimSpi,
     /// The finale's current frame number.
     pub frame_t: u32,
+    /// The most recent transaction's bus events: the boot transaction (init +
+    /// frame 0) at start, then the latest animation frame's drained trace.
+    pub trace: Vec<TraceEvent>,
+    /// Which annotated trace row the cursor is on.
+    pub trace_sel: usize,
 }
 
 impl Default for App {
@@ -116,7 +124,8 @@ impl App {
         let mut bus = SimSpi::new();
         boot_finale(&mut bus, 240, 320);
         let mut panel = Ili9341::new(240, 320);
-        panel.replay(&bus.take_trace());
+        let trace = bus.take_trace();
+        panel.replay(&trace);
         Self {
             module,
             checks,
@@ -139,6 +148,8 @@ impl App {
             panel,
             bus,
             frame_t: 0,
+            trace,
+            trace_sel: 0,
         }
     }
 
@@ -291,12 +302,28 @@ impl App {
                 self.save();
                 self.should_quit = true;
             }
-            Action::Back => self.scene = Scene::Reader,
+            Action::Back => {
+                // The trace scene is entered from the panel; Back retraces
+                // that step. Every other scene's Back leads to the reader.
+                self.scene = if self.scene == Scene::Trace {
+                    Scene::Panel
+                } else {
+                    Scene::Reader
+                };
+            }
             Action::OpenChecks => {
                 self.scene = Scene::Checks;
                 self.reset_check_input();
             }
             Action::OpenPanel => self.scene = Scene::Panel,
+            Action::OpenTrace => {
+                // The frame trace may have replaced a longer one; keep the
+                // cursor on a row that exists.
+                self.trace_sel = self
+                    .trace_sel
+                    .min(self.trace_rows().len().saturating_sub(1));
+                self.scene = Scene::Trace;
+            }
             Action::OpenHelp => self.scene = Scene::Help,
             Action::OpenModules => self.scene = Scene::Modules,
             Action::OpenPlacement => self.open_placement(),
@@ -319,12 +346,18 @@ impl App {
             }
             Action::SelectPrev => match self.scene {
                 Scene::Modules => self.module_sel = self.module_sel.saturating_sub(1),
+                Scene::Trace => self.trace_sel = self.trace_sel.saturating_sub(1),
                 _ => self.selected = self.selected.saturating_sub(1),
             },
             Action::SelectNext => match self.scene {
                 Scene::Modules => {
                     if self.module_sel + 1 < self.ladder.len() {
                         self.module_sel += 1;
+                    }
+                }
+                Scene::Trace => {
+                    if self.trace_sel + 1 < self.trace_rows().len() {
+                        self.trace_sel += 1;
                     }
                 }
                 Scene::Placement => {
@@ -379,10 +412,27 @@ impl App {
                 if self.scene == Scene::Panel {
                     self.frame_t += 1;
                     finale_tick(&mut self.bus, 240, 320, self.frame_t);
-                    self.panel.replay(&self.bus.take_trace());
+                    // Keep the drained frame as the current trace. Kept raw:
+                    // annotation happens on demand in trace_rows(), never here.
+                    let frame_trace = self.bus.take_trace();
+                    self.panel.replay(&frame_trace);
+                    self.trace = frame_trace;
                 }
             }
         }
+    }
+
+    /// The current trace as annotated protocol rows. Grouping keeps a full
+    /// frame (~154k events) to about a dozen rows; computed on demand, only
+    /// where the trace scene needs it - never on Tick.
+    pub fn trace_rows(&self) -> Vec<String> {
+        thunk_sim::trace::annotate(&self.trace)
+    }
+
+    /// The waveform of the first byte backing the selected trace row, if the
+    /// row was built from bytes (select edges have none).
+    pub fn selected_waveform(&self) -> Option<[String; 3]> {
+        thunk_sim::trace::row_byte(&self.trace, self.trace_sel).map(thunk_sim::trace::waveform)
     }
 
     /// How many of the module's checks have been passed.
@@ -478,6 +528,43 @@ mod tests {
         let frame_before = app.frame_t;
         app.update(Action::Tick); // Modules scene
         assert_eq!(app.frame_t, frame_before);
+    }
+
+    #[test]
+    fn the_trace_scene_opens_from_the_panel_and_returns() {
+        let mut app = test_app();
+        app.update(Action::OpenPanel);
+        app.update(Action::OpenTrace);
+        assert_eq!(app.scene, Scene::Trace);
+        app.update(Action::Back);
+        assert_eq!(app.scene, Scene::Panel);
+    }
+
+    #[test]
+    fn the_boot_trace_is_kept_and_annotated() {
+        let app = test_app();
+        let rows = app.trace_rows();
+        assert!(
+            rows.iter().any(|r| r.contains("RAMWR")),
+            "boot trace shows the write:\n{rows:?}"
+        );
+        assert!(
+            rows.iter()
+                .any(|r| r.contains("153600 bytes") || r.contains("bytes)")),
+            "pixel run is grouped:\n{rows:?}"
+        );
+    }
+
+    #[test]
+    fn trace_cursor_moves_and_selects_a_byte_waveform() {
+        let mut app = test_app();
+        app.update(Action::OpenPanel);
+        app.update(Action::OpenTrace);
+        let before = app.trace_sel;
+        app.update(Action::SelectNext);
+        assert_eq!(app.trace_sel, before + 1);
+        // the selected row's first byte, if any, has a waveform
+        assert!(app.selected_waveform().is_some() || app.trace_rows().len() <= 1);
     }
 
     #[test]

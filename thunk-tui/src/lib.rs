@@ -107,7 +107,15 @@ fn map_key(app: &App, code: KeyCode) -> Option<Action> {
         }
         Scene::Panel => match code {
             KeyCode::Char('q') => Some(Action::Quit),
+            KeyCode::Char('t') => Some(Action::OpenTrace),
             _ => Some(Action::Back),
+        },
+        Scene::Trace => match code {
+            KeyCode::Char('q') => Some(Action::Quit),
+            KeyCode::Char('j') | KeyCode::Down => Some(Action::SelectNext),
+            KeyCode::Char('k') | KeyCode::Up => Some(Action::SelectPrev),
+            KeyCode::Esc => Some(Action::Back),
+            _ => None,
         },
         Scene::Help => Some(Action::Back),
         Scene::Placement => {
@@ -175,6 +183,19 @@ mod tests {
         app.update(Action::EnterModule);
         app.update(Action::OpenPanel);
         assert_eq!(map_key(&app, KeyCode::Char('x')), Some(Action::Back));
+        assert_eq!(map_key(&app, KeyCode::Char('q')), Some(Action::Quit));
+    }
+
+    #[test]
+    fn panel_t_opens_the_trace_and_its_keys_move_the_cursor() {
+        let mut app = test_app();
+        app.update(Action::EnterModule);
+        app.update(Action::OpenPanel);
+        assert_eq!(map_key(&app, KeyCode::Char('t')), Some(Action::OpenTrace));
+        app.update(Action::OpenTrace);
+        assert_eq!(map_key(&app, KeyCode::Char('j')), Some(Action::SelectNext));
+        assert_eq!(map_key(&app, KeyCode::Char('k')), Some(Action::SelectPrev));
+        assert_eq!(map_key(&app, KeyCode::Esc), Some(Action::Back));
         assert_eq!(map_key(&app, KeyCode::Char('q')), Some(Action::Quit));
     }
 }

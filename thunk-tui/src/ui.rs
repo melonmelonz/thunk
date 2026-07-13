@@ -33,6 +33,7 @@ pub fn draw(f: &mut Frame, app: &App) {
         Scene::Reader => render_reader(f, chunks[1], app),
         Scene::Checks => render_checks(f, chunks[1], app),
         Scene::Panel => render_panel(f, chunks[1], app),
+        Scene::Trace => render_trace(f, chunks[1], app),
         Scene::Help => render_help(f, chunks[1]),
         Scene::Placement => render_placement(f, chunks[1], app),
     }
@@ -45,6 +46,7 @@ fn render_header(f: &mut Frame, area: Rect, app: &App) {
         Scene::Reader => "reader",
         Scene::Checks => "checks",
         Scene::Panel => "panel",
+        Scene::Trace => "trace",
         Scene::Help => "help",
         Scene::Placement => "placement",
     };
@@ -53,12 +55,12 @@ fn render_header(f: &mut Frame, area: Rect, app: &App) {
     let left = match app.scene {
         Scene::Modules | Scene::Help => " thunk - a systems course ".to_string(),
         Scene::Placement => " thunk - placement diagnostic ".to_string(),
-        Scene::Reader | Scene::Checks | Scene::Panel => {
+        Scene::Reader | Scene::Checks | Scene::Panel | Scene::Trace => {
             format!(" thunk - {} ", app.module.title)
         }
     };
     let right = match app.scene {
-        Scene::Reader | Scene::Checks | Scene::Panel => format!(
+        Scene::Reader | Scene::Checks | Scene::Panel | Scene::Trace => format!(
             "[{}]  checks passed {}/{} ",
             scene,
             app.passed_count(),
@@ -243,6 +245,57 @@ fn render_panel(f: &mut Frame, area: Rect, app: &App) {
     f.render_widget(Paragraph::new(lines), inner);
 }
 
+fn render_trace(f: &mut Frame, area: Rect, app: &App) {
+    let block = Block::default()
+        .borders(Borders::ALL)
+        .title(" bus trace - the logic analyzer's view ");
+    let inner = block.inner(area);
+    f.render_widget(block, area);
+    let chunks = Layout::default()
+        .direction(Direction::Vertical)
+        .constraints([
+            Constraint::Min(1),
+            Constraint::Length(5),
+            Constraint::Length(1),
+        ])
+        .split(inner);
+
+    let rows = app.trace_rows();
+    let sel = app.trace_sel.min(rows.len().saturating_sub(1));
+    let mut lines: Vec<Line> = Vec::with_capacity(rows.len());
+    for (i, row) in rows.iter().enumerate() {
+        let is_sel = i == sel;
+        let marker = if is_sel { "> " } else { "  " };
+        let style = if is_sel {
+            Style::default()
+                .fg(Color::Cyan)
+                .add_modifier(Modifier::BOLD)
+        } else {
+            Style::default()
+        };
+        lines.push(Line::from(Span::styled(format!("{marker}{row}"), style)));
+    }
+    f.render_widget(Paragraph::new(lines), chunks[0]);
+
+    let wave_block = Block::default()
+        .borders(Borders::ALL)
+        .title(" selected byte, on the wires ");
+    let wave_inner = wave_block.inner(chunks[1]);
+    f.render_widget(wave_block, chunks[1]);
+    if let Some(wave) = app.selected_waveform() {
+        let wave_lines: Vec<Line> = wave.into_iter().map(Line::from).collect();
+        f.render_widget(Paragraph::new(wave_lines), wave_inner);
+    }
+
+    f.render_widget(
+        Paragraph::new(Span::styled(
+            "this is the traffic your driver put on the bus; M3 taught you to read it",
+            Style::default().fg(Color::DarkGray),
+        )),
+        chunks[2],
+    );
+}
+
 fn render_help(f: &mut Frame, area: Rect) {
     let block = Block::default().borders(Borders::ALL).title(" help ");
     let inner = block.inner(area);
@@ -255,7 +308,8 @@ fn render_help(f: &mut Frame, area: Rect) {
         Line::from("checks:  up/down pick an option, or type a short answer"),
         Line::from("         enter submit   n next check   esc back"),
         Line::from("placement: enter submits each item   esc abandons the run"),
-        Line::from("panel:   any key returns to the reader"),
+        Line::from("panel:   t trace view   any other key returns to the reader"),
+        Line::from("trace:   j/k move the cursor   esc back to the panel"),
         Line::from("         q quits anywhere it is not a typed letter"),
         Line::from(""),
         Line::from("progress saves to a local file. nothing leaves the machine."),
@@ -269,7 +323,8 @@ fn render_footer(f: &mut Frame, area: Rect, app: &App) {
         Scene::Modules => "j/k select  enter open  p placement  q quit",
         Scene::Reader => "j/k scroll  n/p lesson  c checks  s panel  m modules  ? help  q quit",
         Scene::Checks => "up/down or type  enter submit  n next  esc back",
-        Scene::Panel => "any key back  q quit",
+        Scene::Panel => "t trace  any other key back  q quit",
+        Scene::Trace => "j/k move  esc back  q quit",
         Scene::Help => "any key back",
         Scene::Placement => "up/down or type  enter submit  esc back to modules",
     };
