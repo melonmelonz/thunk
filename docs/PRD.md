@@ -1,7 +1,7 @@
 # thunk — Product Requirements Document (PRD)
 
 **Product:** thunk — an offline systems course for justice-impacted learners
-**Author:** Penn Porterfield · **Status:** Draft (Phase 1 built) · **Date:** 2026-07
+**Author:** Penn Porterfield · **Status:** Draft (Phases 1-2 built) · **Date:** 2026-07 (updated 2026-07-13)
 **Related:** `DESIGN-SPEC.md` (architecture) · `superpowers/plans/2026-07-06-thunk-phase1.md` (build plan) ·
 `thunk-risk-assessment.html` (risks) · `PROPOSAL.md` (the pitch)
 
@@ -68,19 +68,23 @@ open-source contributions.
 
 - FR-7: A command-line mode (read / check / progress / sim).
 - FR-8: A terminal classroom (TUI): reader, interactive checks, panel view, help.
-- FR-9: A local web GUI (offline; `serve` binds 127.0.0.1 only) — richest visual mode. *(Phase 2.)*
+- FR-9: A local web GUI (offline; `serve` binds 127.0.0.1 only), the richest visual mode. *(Built;
+  Phase 2 complete 2026-07-12.)*
 
 **Simulator (the keystone)**
 
 - FR-10: A deterministic, pure-Rust model of an SPI bus that records a trace.
 - FR-11: A display-panel framebuffer the learner can drive; a boot splash renders over the bus.
-- FR-12: The finale boots DOOM on the simulated panel. *(Phase 2.)*
+- FR-12: The finale renders a deterministic corridor scene on the simulated panel, driven through
+  the Display driver over the bus. *(Built; Phase 2 complete 2026-07-12. Playable DOOM is deferred
+  to the open build.)*
 - FR-13: The same interface (`SpiBus` trait) swaps to a real Saleae + panel on the open build.
 
 **Curriculum ladder**
 
 - FR-14: M0 Power On → M1 The Kernel → M2 Rust for the Metal → M3 The Bus → M4 The Panel → M5 DOOM →
-  M6 Intro to Open Source → M7 First Patch.
+  M6 Intro to Open Source → M7 First Patch. M0–M6 are authored (31 lessons, 93 checks); M7 is the
+  open-build module, planned for Phase 3.
 
 **Open-source track (open build)**
 
@@ -116,10 +120,15 @@ open-source contributions.
 - **Phase 1 (built + passing tests):** workspace; Module 1 authored end to end (5 lessons, 15 checks);
   content pipeline into CLI + TUI; first simulator slice (bus + panel + boot splash); review-safety
   gate. Demoable at the Aug 2026 Next Chapter demo.
-- **Phase 2:** full SPI/panel/DOOM simulator + trace view + sim-or-real seam; the web GUI; full M0–M5
-  curriculum; competency gates + placement diagnostic.
-- **Phase 3:** the M6–M7 open-source track (own sub-spec); facilitator kit; hardened build profiles;
-  Saleae/partner outreach; first outside cohort; first facility conversation.
+- **Phase 2 (complete 2026-07-12):** full curriculum M0–M6 (31 lessons, 93 checks, all
+  self-validating); competency gates + a 21-item placement diagnostic + RON progress persistence;
+  protocol-accurate simulator (real ILI9341 command set over the SPI bus model) with an annotated
+  trace view (TUI and CLI `sim --trace`) and a deterministic corridor-scene finale rendered through
+  the Display driver; the offline web GUI (`thunk web --out DIR` static site; `thunk serve` bound
+  to 127.0.0.1 only). 118 workspace tests passing.
+- **Phase 3 (future):** the M7 First Patch module (open build; own sub-spec); inside/open build
+  profiles; facilitator kit; playable DOOM on the open build; Saleae/partner outreach; first
+  outside cohort; first facility conversation.
 
 ## 8. Success metrics
 
@@ -149,6 +158,15 @@ See `thunk-risk-assessment.html` (D/V/F register with L×C scoring). Top residua
 
 ## 12. Current status
 
-Phase 1 is built and green: four-plus-one crate workspace (`thunk-core/content/sim/tui/cli`), Module 1
-authored, CLI + TUI working, first simulator slice rendering a boot splash, 24 tests passing, offline
-static build, dual license, and the vocab-lint gate. Local git only; not yet pushed.
+Phases 1 and 2 are built and green as of 2026-07-12. Six-crate workspace
+(`thunk-core/content/sim/web/tui/cli`). Full curriculum authored, M0 Power On through M6 Intro to
+Open Source: 31 lessons, 93 checks, all self-validating. Competency gates, a 21-item placement
+diagnostic, and RON progress persistence are in place. The simulator speaks the real ILI9341
+command set (SWRESET/SLPOUT/DISPON/CASET/PASET/RAMWR/COLMOD) over the SPI bus model, with an
+annotated trace view in the TUI and via `sim --trace` in the CLI, and a deterministic
+corridor-scene finale rendered through the Display driver (playable DOOM is deferred to the open
+build). The offline web GUI is built: `thunk web --out DIR` writes a 42-file static site (semantic
+HTML, two themes, client-side check grading, panel SVG + trace table); `thunk serve` binds
+127.0.0.1 only. CI runs check, static-musl, and hermetic web jobs; 118 workspace tests pass; fmt,
+clippy, and vocab-lint are clean. Not yet built: inside/open build profiles, the M7 First Patch
+module, and the facilitator kit (all Phase 3). Local git only; not yet pushed.

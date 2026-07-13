@@ -148,14 +148,18 @@ oscilloscope. Not neon. Detailed in a later design pass.
 
 ## 13. Phasing
 
-- **Phase 1 — Spine (built + tested).** Content pipeline → CLI + TUI, M1 authored end-to-end, and a
+- **Phase 1 (Spine): built and tested.** Content pipeline → CLI + TUI, M1 authored end-to-end, and a
   first simulator slice that boots a splash on a simulated panel. Runs today; ready for the Aug 2026
   Next Chapter demo.
-- **Phase 2 — Keystone.** Full SPI/panel/DOOM simulator + trace view + sim-or-real seam; the web
-  GUI; full M0–M5 curriculum; competency gates and a placement diagnostic.
-- **Phase 3 — Program.** The M6–M7 open-source track (intro to open source + first contribution; its own sub-spec),
-  facilitator kit, hardened build profiles, Saleae/partner outreach, first outside cohort, first
-  facility conversation.
+- **Phase 2 (Keystone): complete 2026-07-12.** Protocol-accurate simulator (real ILI9341 command
+  set over the SPI bus model) with an annotated trace view (TUI and CLI `sim --trace`) and a
+  deterministic corridor-scene finale rendered through the Display driver (playable DOOM deferred
+  to the open build); the offline web GUI (static site via `thunk web`, `thunk serve` bound to
+  127.0.0.1 only); full M0–M6 curriculum (31 lessons, 93 checks); competency gates and a 21-item
+  placement diagnostic. 118 workspace tests passing.
+- **Phase 3 (Program): future.** The M7 First Patch module (open build; its own sub-spec),
+  facilitator kit, hardened inside/open build profiles, Saleae/partner outreach, first outside
+  cohort, first facility conversation.
 
 ## 14. Open questions
 
