@@ -5,6 +5,11 @@ edition.workspace = true
 license.workspace = true
 description = "thunk curriculum, embedded at compile time."
 
+[features]
+# The open build adds M7 First Patch: the internet-facing module, done on the
+# outside. The inside build never embeds it.
+open = []
+
 [dependencies]
 thunk-core = { path = "../thunk-core" }
 serde = { workspace = true }

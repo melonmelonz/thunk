@@ -4,9 +4,20 @@ use rust_embed::RustEmbed;
 use serde::Deserialize;
 use thunk_core::{Check, CheckId, Lesson, LessonId, Module, ModuleId, PlacementItem};
 
+// Gating note: an `exclude` attribute here would need rust-embed's
+// `include-exclude` feature, which pulls in `globset` - a dependency the
+// offline build cannot add. Two embed roots give the same guarantee with zero
+// new dependencies: `modules/` ships on every build, and `modules-open/` (M7,
+// the internet-facing module) is compiled in only when `open` is on, so the
+// inside binary carries no M7 bytes at all.
 #[derive(RustEmbed)]
 #[folder = "modules/"]
 struct Assets;
+
+#[cfg(feature = "open")]
+#[derive(RustEmbed)]
+#[folder = "modules-open/"]
+struct OpenAssets;
 
 #[derive(Deserialize)]
 struct ModuleMeta {
@@ -16,7 +27,10 @@ struct ModuleMeta {
 }
 
 fn read(path: &str) -> String {
-    let f = Assets::get(path).unwrap_or_else(|| panic!("missing embedded asset: {path}"));
+    let asset = Assets::get(path);
+    #[cfg(feature = "open")]
+    let asset = asset.or_else(|| OpenAssets::get(path));
+    let f = asset.unwrap_or_else(|| panic!("missing embedded asset: {path}"));
     String::from_utf8(f.data.into_owned()).expect("embedded asset is valid utf8")
 }
 
@@ -28,9 +42,33 @@ fn title_of(body: &str, fallback: &str) -> String {
         .unwrap_or_else(|| fallback.to_string())
 }
 
-/// The course ladder, in order, complete M0 through M6;
-/// completeness is pinned by `the_ladder_is_complete_m0_through_m6`.
+/// The course ladder, in order. The inside build ends at M6; the open build
+/// adds M7 First Patch, the internet-facing module.
+#[cfg(not(feature = "open"))]
 pub const LADDER: &[&str] = &[
+    "m0-power-on",
+    "m1-kernel",
+    "m2-rust",
+    "m3-bus",
+    "m4-panel",
+    "m5-doom",
+    "m6-open-source",
+];
+#[cfg(feature = "open")]
+pub const LADDER: &[&str] = &[
+    "m0-power-on",
+    "m1-kernel",
+    "m2-rust",
+    "m3-bus",
+    "m4-panel",
+    "m5-doom",
+    "m6-open-source",
+    "m7-first-patch",
+];
+
+/// The placement diagnostic covers M0-M6 on every build: knowledge modules
+/// you can test out of. Nobody tests out of doing the first contribution.
+pub const PLACEMENT_LADDER: &[&str] = &[
     "m0-power-on",
     "m1-kernel",
     "m2-rust",
@@ -243,8 +281,9 @@ mod tests {
         }
     }
 
+    #[cfg(not(feature = "open"))]
     #[test]
-    fn the_ladder_is_complete_m0_through_m6() {
+    fn the_inside_ladder_is_complete_m0_through_m6() {
         assert_eq!(
             LADDER,
             &[
@@ -257,6 +296,27 @@ mod tests {
                 "m6-open-source",
             ]
         );
+        assert!(
+            Assets::get("m7-first-patch/module.ron").is_none(),
+            "m7 must not be embedded inside"
+        );
+    }
+
+    #[cfg(feature = "open")]
+    #[test]
+    fn the_open_ladder_adds_m7_last() {
+        assert_eq!(LADDER.len(), 8);
+        assert_eq!(LADDER[..7], PLACEMENT_LADDER[..]);
+        assert_eq!(LADDER[7], "m7-first-patch");
+        assert_eq!(
+            Curriculum::load_module("m7-first-patch").id.0,
+            "m7-first-patch"
+        );
+    }
+
+    #[test]
+    fn placement_never_covers_m7() {
+        assert_eq!(PLACEMENT_LADDER.last(), Some(&"m6-open-source"));
     }
 
     #[test]
@@ -291,7 +351,7 @@ mod tests {
     #[test]
     fn placement_covers_every_module_with_three_existing_checks() {
         let items = Curriculum::placement();
-        for dir in LADDER {
+        for dir in PLACEMENT_LADDER {
             let m = Curriculum::load_module(dir);
             let count = items.iter().filter(|i| i.module.0 == m.id.0).count();
             assert_eq!(count, 3, "module {dir} needs exactly 3 placement items");
@@ -304,7 +364,7 @@ mod tests {
                 );
             }
         }
-        assert_eq!(items.len(), LADDER.len() * 3);
+        assert_eq!(items.len(), PLACEMENT_LADDER.len() * 3);
     }
 
     #[test]

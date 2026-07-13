@@ -1,0 +1,9 @@
+(
+    id: "m7-first-patch",
+    title: "First Patch",
+    lessons: [
+        "01-picking-a-project",
+        "02-a-docs-fix",
+        "03-review-and-merge",
+    ],
+)

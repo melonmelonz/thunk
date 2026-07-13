@@ -1,0 +1,87 @@
+[
+    // --- Lesson 01: picking a project ---
+    Choice(
+        id: CheckId("m7-01-first"),
+        prompt: "What is the best first project to contribute to?",
+        options: [
+            "software you already use, where the contribution can be small and real",
+            "the most famous project you can find, for the visibility",
+            "a brand-new project nobody uses yet, to avoid review",
+        ],
+        answer: 0,
+    ),
+    Choice(
+        id: CheckId("m7-01-contributing"),
+        prompt: "Before writing a change, which file tells you how this project wants changes prepared and sent?",
+        options: [
+            "the LICENSE file",
+            "the CONTRIBUTING file",
+            "the issue tracker's oldest open issue",
+        ],
+        answer: 1,
+    ),
+    Short(
+        id: CheckId("m7-01-label"),
+        prompt: "What label do maintainers put on tasks they judge suitable for newcomers? (three words)",
+        answers: [
+            "good first issue",
+            "a good first issue",
+            "the good first issue label",
+            "good first issues",
+        ],
+    ),
+
+    // --- Lesson 02: a docs fix ---
+    Choice(
+        id: CheckId("m7-02-why"),
+        prompt: "Why should the first contribution be a documentation fix?",
+        options: [
+            "because documentation changes are merged without review",
+            "because maintainers do not care what the documentation says",
+            "because it exercises the whole workflow, fork to merge, with almost no risk",
+        ],
+        answer: 2,
+    ),
+    Short(
+        id: CheckId("m7-02-branch"),
+        prompt: "Inside your fork, what is the named line of commits that keeps one change separate from everything else? (one word)",
+        answers: ["branch", "a branch", "the branch"],
+    ),
+    Choice(
+        id: CheckId("m7-02-describe"),
+        prompt: "A good change description answers three questions. Which three?",
+        options: [
+            "who you are, why you picked this project, and what you plan to fix next",
+            "what was wrong, what is right now, and how you verified it",
+            "how long the change took, which editor you used, and who helped",
+        ],
+        answer: 1,
+    ),
+
+    // --- Lesson 03: review and merge ---
+    Short(
+        id: CheckId("m7-03-ci"),
+        prompt: "What are the project's scripted checks, run automatically against every proposed change, called? (two letters)",
+        answers: ["ci", "the ci", "continuous integration"],
+    ),
+    Choice(
+        id: CheckId("m7-03-comments"),
+        prompt: "A reviewer leaves four comments on your patch. What do you do?",
+        options: [
+            "respond to every one: fix what is right, or say why you disagree in the thread",
+            "fix the easy ones and quietly ignore the rest",
+            "withdraw the patch and start over on a different project",
+        ],
+        answer: 0,
+    ),
+    Choice(
+        id: CheckId("m7-03-next"),
+        prompt: "After your docs fix merges, what is the natural next rung?",
+        options: [
+            "a rewrite of the project's core",
+            "a small bug from the issue tracker: reproduce it, fix it, write the test",
+            "waiting to be invited before contributing again",
+        ],
+        answer: 1,
+    ),
+]
