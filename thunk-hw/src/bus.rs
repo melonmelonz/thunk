@@ -22,8 +22,9 @@ pub trait DcPin {
 /// ILI9341 wiring: DC low = command, high = data.
 impl DcPin for crate::GpioLine {
     fn set(&mut self, dc: Dc) -> io::Result<()> {
-        // The inherent method, named in full: a bare `self.set(...)` would
-        // resolve back to this trait method and recurse.
+        // The inherent method, named in full: inherent methods win resolution
+        // today, but a future rename of the inherent `set` would silently turn
+        // a bare `self.set(...)` into trait-method recursion.
         crate::GpioLine::set(self, dc == Dc::Data)
     }
 }
