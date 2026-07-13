@@ -44,6 +44,7 @@ pub fn shell(title: &str, site_name: &str, main_html: &str, depth: usize) -> Str
          {main_html}\n\
          </main>\n\
          <footer><p>{site} · MIT OR Apache-2.0 · fully offline, nothing leaves this machine</p></footer>\n\
+         <script src=\"{root}assets/check.js\"></script>\n\
          </body>\n\
          </html>\n"
     )
@@ -80,6 +81,20 @@ mod tests {
             "a&lt;b &amp; &quot;c&quot;&#39;d&#39;"
         );
         assert_eq!(esc("bit — a digit"), "bit — a digit");
+    }
+
+    #[test]
+    fn the_shell_includes_the_grader_and_the_grader_is_framework_free() {
+        let js = include_str!("../assets/check.js");
+        for forbidden in ["fetch(", "XMLHttpRequest", "import ", "require(", "http"] {
+            assert!(
+                !js.contains(forbidden),
+                "check.js must be inert: found {forbidden}"
+            );
+        }
+        assert!(js.contains("aria-live") || js.contains("verdict"));
+        let html = shell("t", "thunk", "<p>x</p>", 0);
+        assert!(html.contains("check.js"));
     }
 
     #[test]
