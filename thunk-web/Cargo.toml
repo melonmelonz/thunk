@@ -1,0 +1,9 @@
+[package]
+name = "thunk-web"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "thunk course rendered as a fully offline static site."
+
+[dev-dependencies]
+thunk-content = { path = "../thunk-content" }
