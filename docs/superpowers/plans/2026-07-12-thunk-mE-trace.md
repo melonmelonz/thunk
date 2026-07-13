@@ -16,6 +16,11 @@ constants the decoder uses (single source of truth: re-export or share them).
 
 **Tech Stack:** Rust 1.88, zero new dependencies.
 
+**Status: executed 2026-07-12; all 4 tasks done.** Task 2's waveform literals were re-derived on
+paper as instructed (37 columns, 4-char cells; the plan's illustrative strings were inconsistent)
+and machine-checked by a 256-value property test. Command constants live in `trace.rs`; the
+decoder imports them.
+
 ---
 
 ## File Structure

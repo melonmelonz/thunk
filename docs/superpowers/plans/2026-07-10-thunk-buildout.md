@@ -108,6 +108,14 @@ Render the `TraceEvent` stream as a logic-analyzer-style view (TUI first, then w
 **TDD:** trace formatting (given events, expected rendered rows) as pure functions.
 **Acceptance:** a trace panel shows the bus traffic from M-C/M-D.
 
+**Status: DONE 2026-07-12.** Pure formatting in `thunk-sim/src/trace.rs`: `annotate()` (named
+commands + glosses, select edges, data runs grouped to one row) and `waveform()` (a byte as the M3
+lesson diagram; hand-derived literals machine-checked by a 256-value property test); the command
+byte table lives in `trace.rs` and the `Ili9341` decoder imports it (one table, two users). TUI
+Trace scene (`t` from the panel; j/k cursor with a per-row waveform; boot transaction at start,
+latest frame after each tick; annotation on demand, never on Tick) plus `thunk sim --trace` for
+the CLI. Web rendering stays M-F's job. Workspace at 96 tests, clippy + vocab-lint clean.
+
 ## M-F · The web GUI (offline)
 
 An offline web front-end (localhost `serve` bound to 127.0.0.1, or a static wasm bundle) rendering the
