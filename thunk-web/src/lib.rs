@@ -6,3 +6,4 @@
 pub mod course;
 pub mod markdown;
 pub mod page;
+pub mod sim;

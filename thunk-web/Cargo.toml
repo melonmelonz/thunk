@@ -8,3 +8,4 @@ description = "thunk course rendered as a fully offline static site."
 [dependencies]
 thunk-content = { path = "../thunk-content" }
 thunk-core = { path = "../thunk-core" }
+thunk-sim = { path = "../thunk-sim" }
