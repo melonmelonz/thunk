@@ -45,6 +45,25 @@ jobs:
       - name: Vocab lint (review-safety gate)
         run: ./scripts/vocab-lint.sh
 
+  # The static site must be hermetic: generate it for real, then prove not a
+  # single external URL appears anywhere in the output. Facilities open this
+  # from disk; nothing may ever try to phone out.
+  web:
+    name: offline site (hermetic)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install pinned toolchain
+        run: rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: web
+      - name: Generate the site
+        run: cargo run -p thunk-cli --locked -- web --out site
+      - name: Hermetic check (zero external URLs)
+        run: '! grep -rE "https?://" site/'
+
   # The inside build must always compile as a fully static binary with no
   # host-linked surprises. This is the deployment artifact for facilities.
   static-musl:

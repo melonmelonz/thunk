@@ -14,4 +14,5 @@ thunk-content = { path = "../thunk-content" }
 thunk-core = { path = "../thunk-core" }
 thunk-sim = { path = "../thunk-sim" }
 thunk-tui = { path = "../thunk-tui" }
+thunk-web = { path = "../thunk-web" }
 clap = { workspace = true }

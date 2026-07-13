@@ -84,7 +84,11 @@ pub fn index_page() -> String {
             module.lessons.len(),
         ));
     }
-    main.push_str("</ol>\n");
+    main.push_str(
+        "</ol>\n\
+         <p class=\"bench\"><a href=\"sim/index.html\">The Bench</a> - \
+         the simulated panel and the bus trace that drew it.</p>\n",
+    );
     shell("thunk", "thunk", &main, 0)
 }
 
@@ -185,6 +189,7 @@ mod tests {
             assert!(html.contains(needle));
         }
         assert!(html.contains("thunk"));
+        assert!(html.contains("sim/index.html"), "the bench is reachable");
     }
 
     #[test]

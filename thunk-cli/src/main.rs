@@ -35,6 +35,19 @@ enum Cmd {
         #[arg(long)]
         trace: bool,
     },
+    /// Write the whole course as an offline static site.
+    Web {
+        /// Directory to write the site into (created if missing).
+        #[arg(long, default_value = "thunk-site")]
+        out: std::path::PathBuf,
+    },
+    /// Serve the site on 127.0.0.1 - a convenience; the written site also
+    /// works opened straight from disk.
+    Serve {
+        /// Port on the loopback interface.
+        #[arg(long, default_value_t = 7878)]
+        port: u16,
+    },
 }
 
 fn main() {
@@ -50,7 +63,118 @@ fn main() {
         Some(Cmd::Check) => print!("{}", checks()),
         Some(Cmd::Progress) => print!("{}", progress()),
         Some(Cmd::Sim { splash, trace }) => print!("{}", sim(splash, trace)),
+        Some(Cmd::Web { out }) => match write_site(&out) {
+            Ok(n) => println!(
+                "wrote {n} files to {}; open {}/index.html",
+                out.display(),
+                out.display()
+            ),
+            Err(e) => {
+                eprintln!("thunk: could not write the site: {e}");
+                std::process::exit(1);
+            }
+        },
+        Some(Cmd::Serve { port }) => {
+            if let Err(e) = serve(port) {
+                eprintln!("thunk: could not serve the site: {e}");
+                std::process::exit(1);
+            }
+        }
     }
+}
+
+/// Write the generated site under `dir`, creating directories as needed.
+/// Returns how many files landed.
+fn write_site(dir: &std::path::Path) -> std::io::Result<usize> {
+    let files = thunk_web::Site::generate();
+    for (rel, body) in &files {
+        let path = dir.join(rel);
+        if let Some(parent) = path.parent() {
+            std::fs::create_dir_all(parent)?;
+        }
+        std::fs::write(&path, body)?;
+    }
+    Ok(files.len())
+}
+
+/// The generated site keyed by request path, so `serve` answers entirely
+/// from memory - nothing is read from disk, nothing leaves the machine.
+fn site_map() -> std::collections::HashMap<String, String> {
+    thunk_web::Site::generate()
+        .into_iter()
+        .map(|(p, body)| (format!("/{}", p.display()), body))
+        .collect()
+}
+
+/// Content-Type for a request path, by extension. The site only contains
+/// html, css, and js (the panel SVG is inline in its page).
+fn content_type(path: &str) -> &'static str {
+    if path.ends_with(".css") {
+        "text/css; charset=utf-8"
+    } else if path.ends_with(".js") {
+        "text/javascript; charset=utf-8"
+    } else if path.ends_with(".svg") {
+        "image/svg+xml"
+    } else {
+        "text/html; charset=utf-8"
+    }
+}
+
+/// Bind the loopback interface EXPLICITLY - the classroom never listens
+/// beyond this machine. `serve` and its test share this one bind.
+fn bind_loopback(port: u16) -> std::io::Result<std::net::TcpListener> {
+    std::net::TcpListener::bind(("127.0.0.1", port))
+}
+
+/// Answer one HTTP request from the in-memory site: `/` and `<dir>/` map to
+/// their index.html; anything unknown is a plain 404.
+fn handle(
+    mut stream: std::net::TcpStream,
+    site: &std::collections::HashMap<String, String>,
+) -> std::io::Result<()> {
+    use std::io::{BufRead, BufReader, Write};
+    let mut request_line = String::new();
+    BufReader::new(stream.try_clone()?).read_line(&mut request_line)?;
+    let mut path = request_line
+        .split_whitespace()
+        .nth(1)
+        .unwrap_or("/")
+        .to_string();
+    if path.ends_with('/') {
+        path.push_str("index.html");
+    }
+    let response = match site.get(&path) {
+        Some(body) => format!(
+            "HTTP/1.1 200 OK\r\nContent-Type: {}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+            content_type(&path),
+            body.len(),
+        ),
+        None => {
+            let body = "not found";
+            format!(
+                "HTTP/1.1 404 Not Found\r\nContent-Type: text/plain; charset=utf-8\r\nContent-Length: {}\r\nConnection: close\r\n\r\n{body}",
+                body.len(),
+            )
+        }
+    };
+    stream.write_all(response.as_bytes())
+}
+
+/// Serve the site from memory, one request at a time - plenty for one
+/// learner on loopback, and small enough to audit in a minute.
+fn serve(port: u16) -> std::io::Result<()> {
+    let listener = bind_loopback(port)?;
+    let site = site_map();
+    println!(
+        "thunk site on 127.0.0.1:{} - loopback only; Ctrl-C stops it",
+        listener.local_addr()?.port()
+    );
+    // Failed connections and hung-up clients are skipped or ignored; neither
+    // may kill the server.
+    for stream in listener.incoming().flatten() {
+        let _ = handle(stream, &site);
+    }
+    Ok(())
 }
 
 fn ladder_tag(module_id: &str) -> String {
@@ -245,6 +369,67 @@ mod tests {
         for needle in ["SWRESET", "CASET", "RAMWR", "bytes)"] {
             assert!(s.contains(needle), "missing {needle:?}:\n{s}");
         }
+    }
+
+    #[test]
+    fn web_writes_the_site_to_disk() {
+        let dir = std::env::temp_dir().join(format!("thunk-web-{}", std::process::id()));
+        write_site(&dir).expect("site written");
+        assert!(dir.join("index.html").exists());
+        assert!(dir.join("sim").join("index.html").exists());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn serve_binds_loopback_only_and_answers_one_get() {
+        use std::io::{Read, Write};
+        // The same bind `serve` uses: loopback EXPLICITLY, never 0.0.0.0.
+        let listener = bind_loopback(0).expect("bind");
+        let addr = listener.local_addr().expect("addr");
+        assert_eq!(addr.ip().to_string(), "127.0.0.1");
+        // Exactly one connection: the accept loop's body runs once in a
+        // thread, so the test can never hang CI.
+        let server = std::thread::spawn(move || {
+            let site = site_map();
+            let (stream, _) = listener.accept().expect("accept");
+            handle(stream, &site).expect("handled");
+        });
+        let mut client = std::net::TcpStream::connect(addr).expect("connect");
+        client
+            .write_all(b"GET / HTTP/1.1\r\nHost: localhost\r\n\r\n")
+            .expect("request");
+        let mut response = String::new();
+        client.read_to_string(&mut response).expect("response");
+        server.join().expect("server thread");
+        assert!(response.contains("200 OK"), "no 200:\n{response}");
+        assert!(response.contains("text/html"), "wrong type:\n{response}");
+        assert!(response.contains("thunk"), "not the site:\n{response}");
+    }
+
+    #[test]
+    fn serve_maps_content_types_and_404s_the_unknown() {
+        assert_eq!(content_type("/assets/thunk.css"), "text/css; charset=utf-8");
+        assert_eq!(
+            content_type("/assets/check.js"),
+            "text/javascript; charset=utf-8"
+        );
+        assert_eq!(content_type("/index.html"), "text/html; charset=utf-8");
+        use std::io::{Read, Write};
+        let listener = bind_loopback(0).expect("bind");
+        let addr = listener.local_addr().expect("addr");
+        let server = std::thread::spawn(move || {
+            let site = site_map();
+            let (stream, _) = listener.accept().expect("accept");
+            handle(stream, &site).expect("handled");
+        });
+        let mut client = std::net::TcpStream::connect(addr).expect("connect");
+        client
+            .write_all(b"GET /no-such-page HTTP/1.1\r\n\r\n")
+            .expect("request");
+        let mut response = String::new();
+        client.read_to_string(&mut response).expect("response");
+        server.join().expect("server thread");
+        assert!(response.contains("404 Not Found"), "no 404:\n{response}");
     }
 
     #[test]

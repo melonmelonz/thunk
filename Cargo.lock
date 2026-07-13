@@ -704,6 +704,7 @@ dependencies = [
  "thunk-core",
  "thunk-sim",
  "thunk-tui",
+ "thunk-web",
 ]
 
 [[package]]
