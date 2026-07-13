@@ -105,6 +105,41 @@ pub fn answer_key_md() -> String {
     s
 }
 
+/// Per-module mastery as CSV, one row per ladder entry: what a facilitator
+/// redirects to a file for record keeping. "Mastered" is exactly the gate's
+/// definition - `mastered_or_placed`, the same call `ladder_state` makes.
+pub fn export_csv(p: &thunk_core::Progress) -> String {
+    let mut s = String::from("module,title,checks_passed,checks_total,mastered\n");
+    for (m, (id, checks)) in Curriculum::all().iter().zip(Curriculum::ladder()) {
+        let passed = checks
+            .iter()
+            .filter(|c| p.checks_passed.contains(c))
+            .count();
+        let mastered = if p.mastered_or_placed(&id, &checks) {
+            "yes"
+        } else {
+            "no"
+        };
+        s.push_str(&format!(
+            "{},{},{passed},{},{mastered}\n",
+            id.0,
+            csv_field(&m.title),
+            checks.len()
+        ));
+    }
+    s
+}
+
+/// Comma-safe field: module titles carry no commas today, but if one ever
+/// does, quote it rather than corrupt the row.
+fn csv_field(t: &str) -> String {
+    if t.contains(',') {
+        format!("\"{}\"", t.replace('"', "\"\""))
+    } else {
+        t.to_string()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

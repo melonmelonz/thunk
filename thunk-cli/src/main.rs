@@ -1,6 +1,6 @@
 //! `thunk` command-line front-end. Renders the one content source to the terminal.
 
-pub mod kit;
+mod kit;
 
 use clap::{Parser, Subcommand};
 use thunk_content::Curriculum;
@@ -27,7 +27,11 @@ enum Cmd {
     /// List every check, by module.
     Check,
     /// Show what mastery requires.
-    Progress,
+    Progress {
+        /// Print per-module mastery as CSV instead of the ladder view.
+        #[arg(long)]
+        export: bool,
+    },
     /// Boot the simulated panel and print it as ASCII.
     Sim {
         /// Show the boot splash (color bars) instead of the finale.
@@ -41,6 +45,13 @@ enum Cmd {
     Web {
         /// Directory to write the site into (created if missing).
         #[arg(long, default_value = "thunk-site")]
+        out: std::path::PathBuf,
+    },
+    /// Write the facilitator kit: pacing guide + answer key, generated
+    /// from the curriculum in this binary.
+    Kit {
+        /// Directory to write the kit into (created if missing).
+        #[arg(long, default_value = "thunk-kit")]
         out: std::path::PathBuf,
     },
     /// Serve the site on 127.0.0.1 - a convenience; the written site also
@@ -85,7 +96,13 @@ fn main() {
         }
         Some(Cmd::Read { lesson }) => print!("{}", read(lesson.as_deref())),
         Some(Cmd::Check) => print!("{}", checks()),
-        Some(Cmd::Progress) => print!("{}", progress()),
+        Some(Cmd::Progress { export }) => {
+            if export {
+                print!("{}", kit::export_csv(&saved_progress().1));
+            } else {
+                print!("{}", progress());
+            }
+        }
         Some(Cmd::Sim { splash, trace }) => print!("{}", sim(splash, trace)),
         Some(Cmd::Web { out }) => match write_site(&out) {
             Ok(n) => println!(
@@ -95,6 +112,16 @@ fn main() {
             ),
             Err(e) => {
                 eprintln!("thunk: could not write the site: {e}");
+                std::process::exit(1);
+            }
+        },
+        Some(Cmd::Kit { out }) => match write_kit(&out) {
+            Ok(()) => println!(
+                "wrote pacing.md and answer-key.md to {} - the answer key is for facilitators",
+                out.display()
+            ),
+            Err(e) => {
+                eprintln!("thunk: could not write the kit: {e}");
                 std::process::exit(1);
             }
         },
@@ -183,6 +210,15 @@ fn write_site(dir: &std::path::Path) -> std::io::Result<usize> {
         std::fs::write(&path, body)?;
     }
     Ok(files.len())
+}
+
+/// Write the facilitator kit under `dir`, creating it as needed - the same
+/// shape as `write_site`, two fixed files instead of a tree.
+fn write_kit(dir: &std::path::Path) -> std::io::Result<()> {
+    std::fs::create_dir_all(dir)?;
+    std::fs::write(dir.join("pacing.md"), kit::pacing_md())?;
+    std::fs::write(dir.join("answer-key.md"), kit::answer_key_md())?;
+    Ok(())
 }
 
 /// The generated site keyed by request path, so `serve` answers entirely
@@ -352,9 +388,9 @@ fn progress_with(progress: &Progress) -> String {
     s
 }
 
-/// The real entry point: loads saved progress from the environment-resolved
-/// state file (a fresh start when there is none) and prints the ladder.
-fn progress() -> String {
+/// Saved progress from the environment-resolved state file (a fresh start
+/// when there is none) - the one load path `progress` and `--export` share.
+fn saved_progress() -> (std::path::PathBuf, Progress) {
     let state_dir = std::env::var("THUNK_STATE_DIR").ok();
     let xdg = std::env::var("XDG_DATA_HOME").ok();
     let home = std::env::var("HOME").ok();
@@ -363,6 +399,12 @@ fn progress() -> String {
         .ok()
         .and_then(|s| progress_from_ron(&s))
         .unwrap_or_default();
+    (path, saved)
+}
+
+/// The real entry point: loads saved progress and prints the ladder.
+fn progress() -> String {
+    let (path, saved) = saved_progress();
     let mut s = progress_with(&saved);
     s.push_str(&format!("\nProgress file: {}\n", path.display()));
     s
@@ -527,6 +569,34 @@ mod tests {
         let cmd = Cli::command();
         assert!(cmd.get_subcommands().any(|s| s.get_name() == "hw"));
         assert_eq!(thunk_content::LADDER.last(), Some(&"m7-first-patch"));
+    }
+
+    #[test]
+    fn kit_writes_the_facilitator_files_to_disk() {
+        let dir = std::env::temp_dir().join(format!("thunk-kit-{}", std::process::id()));
+        write_kit(&dir).expect("kit written");
+        assert!(dir.join("pacing.md").exists());
+        assert!(dir.join("answer-key.md").exists());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn progress_export_is_csv_with_one_row_per_module() {
+        let csv = kit::export_csv(&thunk_core::Progress::default());
+        let mut lines = csv.lines();
+        assert_eq!(
+            lines.next(),
+            Some("module,title,checks_passed,checks_total,mastered")
+        );
+        let ladder = Curriculum::ladder();
+        assert_eq!(
+            csv.lines().count(),
+            ladder.len() + 1,
+            "header + one row per module"
+        );
+        let first = csv.lines().nth(1).unwrap();
+        assert!(first.starts_with("m0-power-on,"));
+        assert!(first.ends_with(",no"), "empty progress masters nothing");
     }
 
     #[test]
