@@ -80,7 +80,7 @@ jobs:
         with:
           key: profiles
       - name: Profile audit (graph separation)
-        run: ./scripts/profile-audit.sh
+        run: CARGO_NET_OFFLINE=false ./scripts/profile-audit.sh
       - name: Build the open profile
         run: cargo build -p thunk-cli --features open --locked
       - name: Clippy the open profile

@@ -9,8 +9,13 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
-inside="$(CARGO_NET_OFFLINE=true cargo tree -p thunk-cli --edges normal --locked)"
-open="$(CARGO_NET_OFFLINE=true cargo tree -p thunk-cli --features open --edges normal --locked)"
+# Offline by default (the local sandbox has no network); CI overrides with
+# CARGO_NET_OFFLINE=false because a fresh runner has no registry index yet.
+: "${CARGO_NET_OFFLINE:=true}"
+export CARGO_NET_OFFLINE
+
+inside="$(cargo tree -p thunk-cli --edges normal --locked)"
+open="$(cargo tree -p thunk-cli --features open --edges normal --locked)"
 
 if grep -qE 'thunk-hw v[0-9]' <<<"$inside"; then
     echo "profile-audit: FAIL - the inside graph contains thunk-hw" >&2
