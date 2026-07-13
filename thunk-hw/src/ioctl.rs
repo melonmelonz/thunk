@@ -9,25 +9,39 @@ const fn ioc(dir: u64, ty: u8, nr: u8, size: usize) -> u64 {
     (dir << 30) | ((size as u64) << 16) | ((ty as u64) << 8) | nr as u64
 }
 
+// The spi requests are consumed by the bus module; until it lands they are
+// exercised solely by the pinned-literal tests below.
+#[allow(dead_code)]
 const SPI_MAGIC: u8 = b'k';
 const GPIO_MAGIC: u8 = 0xB4;
 
+#[allow(dead_code)]
 pub const fn spi_wr_mode() -> u64 {
     ioc(IOC_WRITE, SPI_MAGIC, 1, 1)
 }
+#[allow(dead_code)]
 pub const fn spi_wr_bits_per_word() -> u64 {
     ioc(IOC_WRITE, SPI_MAGIC, 3, 1)
 }
+#[allow(dead_code)]
 pub const fn spi_wr_max_speed_hz() -> u64 {
     ioc(IOC_WRITE, SPI_MAGIC, 4, 4)
 }
 pub const fn gpio_v2_get_line() -> u64 {
-    // sizeof(struct gpio_v2_line_request) == 592; Task 2 swaps in size_of.
-    ioc(IOC_READ | IOC_WRITE, GPIO_MAGIC, 0x07, 592)
+    ioc(
+        IOC_READ | IOC_WRITE,
+        GPIO_MAGIC,
+        0x07,
+        std::mem::size_of::<crate::gpio::GpioV2LineRequest>(),
+    )
 }
 pub const fn gpio_v2_line_set_values() -> u64 {
-    // sizeof(struct gpio_v2_line_values) == 16; Task 2 swaps in size_of.
-    ioc(IOC_READ | IOC_WRITE, GPIO_MAGIC, 0x0F, 16)
+    ioc(
+        IOC_READ | IOC_WRITE,
+        GPIO_MAGIC,
+        0x0F,
+        std::mem::size_of::<crate::gpio::GpioV2LineValues>(),
+    )
 }
 
 #[cfg(test)]
