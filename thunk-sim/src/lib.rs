@@ -9,6 +9,7 @@ pub mod finale;
 pub mod ili9341;
 pub mod panel;
 pub mod spi;
+pub mod trace;
 
 pub use boot::{boot_splash, boot_splash_via_display};
 pub use display::Display;

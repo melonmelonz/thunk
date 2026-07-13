@@ -3,15 +3,9 @@
 
 use crate::panel::Panel;
 use crate::spi::{Dc, TraceEvent};
-
-const SWRESET: u8 = 0x01;
-const SLPOUT: u8 = 0x11;
-const DISPOFF: u8 = 0x28;
-const DISPON: u8 = 0x29;
-const CASET: u8 = 0x2A;
-const PASET: u8 = 0x2B;
-const RAMWR: u8 = 0x2C;
-const COLMOD: u8 = 0x3A;
+// The command byte values live in one table, owned by `trace`; the decoder
+// and the trace formatter can never drift apart.
+use crate::trace::{CASET, COLMOD, DISPOFF, DISPON, PASET, RAMWR, SLPOUT, SWRESET};
 
 /// What the panel is currently collecting data bytes for.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
