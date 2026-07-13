@@ -1,5 +1,9 @@
 # thunk M-F: The Offline Web GUI Implementation Plan
 
+> **Status: DONE 2026-07-13** (Tasks 1-5 landed 2026-07-12, commits `4c6c0f2`..`a943bd7`; Task 6
+> sweep closed 07-13). Follow-up on record: IBM Plex embedding once font files can be added and
+> subset offline; system stacks until then.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** A gorgeous, fully offline, static web rendering of the whole course - reader, checks with
@@ -54,7 +58,7 @@ Design tokens (from the research; implement exactly): `--bg`, `--bg-raised`, `--
 
 **Files:** create `thunk-web/` (Cargo.toml, src/lib.rs, src/markdown.rs); add to workspace members.
 
-- [ ] **Step 1: Failing tests** (markdown.rs) - the dialect is exactly what the 31 lessons use:
+- [x] **Step 1: Failing tests** (markdown.rs) - the dialect is exactly what the 31 lessons use:
 
 ```rust
 #[cfg(test)]
@@ -105,13 +109,13 @@ mod tests {
 }
 ```
 
-- [ ] **Step 2:** COMPILE FAIL; observe. **Step 3: Implement** `pub fn render(md: &str) -> String`:
+- [x] **Step 2:** COMPILE FAIL; observe. **Step 3: Implement** `pub fn render(md: &str) -> String`:
 line-based state machine: fenced blocks (escape contents, no markdown inside), `#`/`##`/`###`
 headings, `- ` unordered and `N. ` ordered list runs, blank-line-separated paragraphs; inline pass
 (applied to non-fence text after escaping): `**bold**` → `<strong>`, `` `code` `` → `<code>`.
 Escape FIRST, then inline markers (the markers survive escaping since they are not `<>&`).
-- [ ] **Step 4:** PASS (add thunk-content as a dev-dependency for the real-lesson test).
-- [ ] **Step 5: Commit:** `feat(web): thunk-web crate + constrained markdown renderer`
+- [x] **Step 4:** PASS (add thunk-content as a dev-dependency for the real-lesson test).
+- [x] **Step 5: Commit:** `feat(web): thunk-web crate + constrained markdown renderer`
 
 ---
 
@@ -119,7 +123,7 @@ Escape FIRST, then inline markers (the markers survive escaping since they are n
 
 **Files:** `src/page.rs`, `src/course.rs`, `assets/thunk.css`, `src/lib.rs`.
 
-- [ ] **Step 1: Failing tests:**
+- [x] **Step 1: Failing tests:**
 
 ```rust
 // page.rs
@@ -166,7 +170,7 @@ fn check_widgets_encode_answers_for_client_grading() {
 }
 ```
 
-- [ ] **Step 2:** COMPILE FAIL; observe. **Step 3: Implement:**
+- [x] **Step 2:** COMPILE FAIL; observe. **Step 3: Implement:**
   - `page::shell(title, site_name, main_html, depth) -> String`: doctype, lang, charset, viewport,
     css link (relative via depth), skip-link, `<nav aria-label="course">` breadcrumb, `<main>`,
     footer with the license line. `page::esc(&str)` HTML-escaper used everywhere.
@@ -185,7 +189,7 @@ fn check_widgets_encode_answers_for_client_grading() {
     monospace for code/nav/trace, sans for prose per research; `:focus-visible` rings;
     `prefers-reduced-motion` respected (there is almost no motion anyway); check verdict states
     `.ok`/`.err` colored via tokens, never color-only (verdict text says correct/incorrect).
-- [ ] **Step 4:** PASS. **Step 5: Commit:** `feat(web): page shell, design tokens, course pages`
+- [x] **Step 4:** PASS. **Step 5: Commit:** `feat(web): page shell, design tokens, course pages`
 
 ---
 
@@ -193,7 +197,7 @@ fn check_widgets_encode_answers_for_client_grading() {
 
 **Files:** `assets/check.js`, wire into `page::shell`.
 
-- [ ] **Step 1: Failing test** (Rust-side; JS has no test runner here - keep JS so simple the Rust
+- [x] **Step 1: Failing test** (Rust-side; JS has no test runner here - keep JS so simple the Rust
 tests + a documented manual pass suffice):
 
 ```rust
@@ -209,14 +213,14 @@ fn the_shell_includes_the_grader_and_the_grader_is_framework_free() {
 }
 ```
 
-- [ ] **Step 2:** FAIL. **Step 3: Implement** `check.js` (~60 lines, vanilla): on grade-button
+- [x] **Step 2:** FAIL. **Step 3: Implement** `check.js` (~60 lines, vanilla): on grade-button
 click: find the enclosing `.check`; Choice: compare checked radio index to `data-answer`; Short:
 trim+lowercase input, compare against `data-answers` split on `|` (same normalization as
 `Check::grade` - document the parity in a comment); write "correct" / "not yet - reread and try
 again" into the verdict node with `.ok`/`.err` class; localStorage tally (`thunk-progress` key)
 storing passed check ids so the index can show per-module counts on reload (read-only enhancement;
 no accounts, no network - mirrors NFR-4).
-- [ ] **Step 4:** PASS. **Step 5: Commit:** `feat(web): client-side check grading, aria-live verdicts`
+- [x] **Step 4:** PASS. **Step 5: Commit:** `feat(web): client-side check grading, aria-live verdicts`
 
 ---
 
@@ -224,7 +228,7 @@ no accounts, no network - mirrors NFR-4).
 
 **Files:** `src/sim.rs`.
 
-- [ ] **Step 1: Failing tests:**
+- [x] **Step 1: Failing tests:**
 
 ```rust
 #[test]
@@ -251,7 +255,7 @@ fn the_sim_page_shows_the_trace_the_lessons_taught() {
 Wait - `aria-live` is for the checks; the trace is static content. Replace that needle with
 `<caption>` (the table explains itself). Adjust before running.
 
-- [ ] **Step 2:** COMPILE FAIL; observe. **Step 3: Implement:** drive `boot_finale` over `SimSpi`,
+- [x] **Step 2:** COMPILE FAIL; observe. **Step 3: Implement:** drive `boot_finale` over `SimSpi`,
 replay into `Ili9341`; `panel_svg`: per row, fold consecutive same-color pixels into one
 `<rect y=.. x=.. width=.. height="1" fill="#rrggbb">` (RGB565→888 upscale); wrap with
 `role="img"` + `<title>the finale frame, drawn by the display driver</title>`. `sim_page()`: the
@@ -259,7 +263,7 @@ SVG, then `annotate(bus.trace())` rendered as a two-column `<table>` (`<caption>
 column 1 = kind (select/cmd/data), column 2 = the row text), plus the waveform of 0x2C in a
 `<pre aria-label="one byte on the wire">` reusing `thunk_sim::trace::waveform`. Short prose intro
 tying to M3/M4 ("this is the traffic your driver put on the bus").
-- [ ] **Step 4:** PASS. **Step 5: Commit:** `feat(web): sim page - run-length panel SVG + annotated trace`
+- [x] **Step 4:** PASS. **Step 5: Commit:** `feat(web): sim page - run-length panel SVG + annotated trace`
 
 ---
 
@@ -267,7 +271,7 @@ tying to M3/M4 ("this is the traffic your driver put on the bus").
 
 **Files:** `src/lib.rs`, `thunk-cli/src/main.rs`, `.github/workflows/ci.yml`.
 
-- [ ] **Step 1: Failing tests:**
+- [x] **Step 1: Failing tests:**
 
 ```rust
 // thunk-web src/lib.rs
@@ -298,7 +302,7 @@ fn web_writes_the_site_to_disk() {
 }
 ```
 
-- [ ] **Step 2:** COMPILE FAIL; observe. **Step 3: Implement:**
+- [x] **Step 2:** COMPILE FAIL; observe. **Step 3: Implement:**
   - `Site::generate() -> Vec<(PathBuf, String)>`: index, per-module dirs
     (`<dir>/index.html`, `<dir>/lessons/<lesson>.html`), `sim/index.html`, both assets. All links
     relative (depth-aware); site works from `file://`.
@@ -316,15 +320,15 @@ fn web_writes_the_site_to_disk() {
     `! grep -rE "https?://" site/` (hermetic check), plus the workspace test job already covers
     the generation tests. Follow the existing job style (pinned toolchain, timeout, permissions
     already workflow-level).
-- [ ] **Step 4:** PASS; eyeball: generate the site to /tmp, open index.html in a text dump
+- [x] **Step 4:** PASS; eyeball: generate the site to /tmp, open index.html in a text dump
 (`cat`), sanity-check nav/lesson/check markup; report a lesson page excerpt.
-- [ ] **Step 5: Commit:** `feat(web,cli): static site assembly, thunk web/serve, hermetic CI gate`
+- [x] **Step 5: Commit:** `feat(web,cli): static site assembly, thunk web/serve, hermetic CI gate`
 
 ---
 
 ### Task 6: Sweep + roadmap
 
-- [ ] Full gate (fmt, clippy -D warnings, workspace tests, vocab-lint). Annotate M-F DONE in the
+- [x] Full gate (fmt, clippy -D warnings, workspace tests, vocab-lint). Annotate M-F DONE in the
 buildout roadmap (note: fonts deliberately system-stack until IBM Plex files can be added and
 subset offline - record as the one open follow-up; ratzilla explicitly not used per research).
 Update `docs/INFRA.md`'s "wasm job" sentence to describe the shipped `web` CI job. Annotate the

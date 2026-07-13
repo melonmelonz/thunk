@@ -15,7 +15,7 @@ thunk has exactly two deployment worlds, and they must never blur:
 | What | The course: one static Rust binary + static web bundle | Website for released learners: accounts, cohorts, progress |
 | Network | None. No sockets at runtime | Yes; its whole point |
 | Where it runs | Facility machines, any laptop | Cloudflare |
-| Status | Built (M-A done; M-B..M-H in flight) | Future; own sub-spec before any code |
+| Status | Built (M-A..M-F done; M-G/M-H in flight) | Future; own sub-spec before any code |
 
 Rule: no code, dependency, or config for the hosted platform ever enters the core workspace. The
 platform gets its own repository when its spec lands.
@@ -40,16 +40,17 @@ Checklist at first push (all in repo Settings unless noted):
 
 ### CI (`.github/workflows/ci.yml`, in repo)
 
-Two jobs, both required:
+Three jobs, all required:
 
 - **check** — `cargo fmt --check`, `clippy -D warnings`, `cargo test --workspace`, `vocab-lint`.
   Exactly the four gates a contributor runs locally; CI must never be the only place a rule lives.
 - **static-musl** — builds `thunk-cli` for `x86_64-unknown-linux-musl` in release and verifies the
   binary is statically linked. This is the facility deliverable; it must never quietly regress into
   a dynamic build.
-
-The wasm bundle job is added when M-F lands (build the web crate, assert zero external URLs in the
-output). Placeholder intentionally not committed; a skipped job is noise.
+- **web** — generates the static site (`thunk web --out site`) and asserts the output is hermetic:
+  `! grep -rE "https?://" site/`. M-F shipped plain Rust-generated semantic HTML rather than a wasm
+  bundle (the UI/UX research overturned the ratzilla/Trunk idea on accessibility grounds), so this
+  job replaces the wasm job earlier drafts of this document promised.
 
 ### Releases
 

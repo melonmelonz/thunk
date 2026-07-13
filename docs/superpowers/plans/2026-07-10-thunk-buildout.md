@@ -124,6 +124,17 @@ Trunk) so deps resolve offline. **No external assets, no CDN, no fonts fetched.*
 **TDD:** shared render/state logic tested in the core/tui crates; the web layer is a thin adapter.
 **Acceptance:** `trunk build` (or `thunk serve`) produces a fully offline experience; renders the course.
 
+**Status: DONE 2026-07-13** (built 2026-07-12; sweep closed 07-13). Deviation from the text above,
+recorded: the UI/UX research (`docs/research/ui-ux-research.md`) overturned ratzilla+Trunk/wasm on
+accessibility grounds; M-F shipped plain Rust-generated semantic HTML instead. `thunk-web` crate
+(pure functions to HTML/CSS: constrained markdown renderer, page shell + design tokens, course
+pages, client-side check grading with aria-live verdicts, run-length panel SVG + annotated trace);
+`thunk web --out DIR` writes the site (42 files, works from file://), `thunk serve` binds 127.0.0.1
+only; hermetic CI `web` job (zero external URLs, enforced by test AND grep); two themes (dark
+gantry / light datasheet) with screenshots in `docs/screenshots/`. One open follow-up: fonts are
+deliberately system-stack until IBM Plex files can be added and subset offline. Workspace at 118
+tests, clippy + vocab-lint clean.
+
 ## M-G · Two build profiles (inside / open)
 
 Cargo features: `inside` (no hardware/network code compiled in) and `open` (adds the real-hardware
