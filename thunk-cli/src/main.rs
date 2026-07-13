@@ -1,5 +1,7 @@
 //! `thunk` command-line front-end. Renders the one content source to the terminal.
 
+pub mod kit;
+
 use clap::{Parser, Subcommand};
 use thunk_content::Curriculum;
 use thunk_core::{ladder_state, progress_from_ron, state_path, ModuleStatus, Progress};
