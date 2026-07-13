@@ -1,5 +1,12 @@
 # thunk M-G: Inside/Open Build Profiles Implementation Plan
 
+> **Status: DONE 2026-07-13.** Commits `f665fdb`..`9092161` + sweep; every task per-task
+> spec-reviewed and quality-reviewed (subagent-driven). Two deviations from the text below,
+> both recorded in commit bodies: the rust-embed `exclude` route was offline-impossible
+> (globset not cached), replaced by a second embed root `modules-open/` + `OpenAssets`
+> fall-through; and the quiet-latch test was hardened with a call counter after review.
+> Playable DOOM on the open build stays a named follow-up (needs network).
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development
 > (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use
 > checkbox (`- [ ]`) syntax for tracking.
@@ -95,7 +102,7 @@ pub use gpio::GpioLine;
 
 (For this task only, comment out the `bus`/`gpio` lines; they land in Tasks 2-3.)
 
-- [ ] **Step 1: Write the failing tests** in `thunk-hw/src/ioctl.rs`. The expected literals are
+- [x] **Step 1: Write the failing tests** in `thunk-hw/src/ioctl.rs`. The expected literals are
 the kernel's own values (spidev: `linux/spi/spidev.h`, magic `'k'`; GPIO v2: `linux/gpio.h`,
 magic `0xB4`) — the same numbers `strace` shows on a real system:
 
@@ -122,9 +129,9 @@ mod tests {
 }
 ```
 
-- [ ] **Step 2:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-hw` — expected: COMPILE FAIL
+- [x] **Step 2:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-hw` — expected: COMPILE FAIL
 (functions not defined). Observe it fail.
-- [ ] **Step 3: Implement** in `ioctl.rs` (sizes for the GPIO requests come from Task 2's structs;
+- [x] **Step 3: Implement** in `ioctl.rs` (sizes for the GPIO requests come from Task 2's structs;
 for this task use the literal sizes with a comment, then Task 2 replaces them with
 `mem::size_of`):
 
@@ -163,9 +170,9 @@ If `/usr/include/linux/gpio.h` exists on the build box, eyeball the constants ag
 (`grep -A2 GPIO_V2_GET_LINE_IOCTL /usr/include/linux/gpio.h`) and note the result in the commit
 message body.
 
-- [ ] **Step 4:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-hw` — expected: PASS. Then
+- [x] **Step 4:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-hw` — expected: PASS. Then
 `cargo fmt` and `CARGO_NET_OFFLINE=true cargo clippy -p thunk-hw --all-targets` — clean.
-- [ ] **Step 5: Commit:** `feat(hw): thunk-hw crate - ioctl request math, pinned to the kernel ABI`
+- [x] **Step 5: Commit:** `feat(hw): thunk-hw crate - ioctl request math, pinned to the kernel ABI`
 
 ---
 
@@ -176,7 +183,7 @@ message body.
 - Modify: `thunk-hw/src/lib.rs` (enable `mod gpio; pub use gpio::GpioLine;`),
   `thunk-hw/src/ioctl.rs` (sizes via `size_of`)
 
-- [ ] **Step 1: Write the failing tests** in `gpio.rs`. Layout is the contract with the kernel;
+- [x] **Step 1: Write the failing tests** in `gpio.rs`. Layout is the contract with the kernel;
 pin every size:
 
 ```rust
@@ -201,8 +208,8 @@ mod tests {
 }
 ```
 
-- [ ] **Step 2:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-hw` — expected: COMPILE FAIL.
-- [ ] **Step 3: Implement:**
+- [x] **Step 2:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-hw` — expected: COMPILE FAIL.
+- [x] **Step 3: Implement:**
 
 ```rust
 //! The GPIO v2 character-device uAPI (linux/gpio.h), by hand: request one
@@ -328,9 +335,9 @@ Note `File` import: `open` returns `File` from `OpenOptions`; the chip fd may be
 line is requested (the line fd keeps the line). If clippy flags the unused `File` binding pattern,
 keep the explicit binding with a comment — dropping the chip early is intended.
 
-- [ ] **Step 4:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-hw` — expected: PASS (layout
+- [x] **Step 4:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-hw` — expected: PASS (layout
 sizes, /dev/null error path, and the Task 1 literals all green). fmt + clippy clean.
-- [ ] **Step 5: Commit:** `feat(hw): GPIO v2 output line handle over the char-device uAPI`
+- [x] **Step 5: Commit:** `feat(hw): GPIO v2 output line handle over the char-device uAPI`
 
 ---
 
@@ -340,7 +347,7 @@ sizes, /dev/null error path, and the Task 1 literals all green). fmt + clippy cl
 - Create: `thunk-hw/src/bus.rs`
 - Modify: `thunk-hw/src/lib.rs` (enable `mod bus; pub use bus::{DcPin, SpidevBus};`)
 
-- [ ] **Step 1: Write the failing tests** in `bus.rs`:
+- [x] **Step 1: Write the failing tests** in `bus.rs`:
 
 ```rust
 #[cfg(test)]
@@ -397,8 +404,8 @@ mod tests {
 }
 ```
 
-- [ ] **Step 2:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-hw` — expected: COMPILE FAIL.
-- [ ] **Step 3: Implement:**
+- [x] **Step 2:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-hw` — expected: COMPILE FAIL.
+- [x] **Step 3: Implement:**
 
 ```rust
 //! `SpiBus` over /dev/spidevX.Y. Config is three ioctls at open; data is
@@ -522,10 +529,10 @@ Check what `thunk_sim` re-exports: the CLI uses `thunk_sim::...` paths today. If
 are not at the crate root (`thunk-sim/src/lib.rs`), import from `thunk_sim::spi::{Dc, SpiBus}`
 and mirror whichever path the workspace already uses.
 
-- [ ] **Step 4:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-hw` — expected: PASS. fmt +
+- [x] **Step 4:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-hw` — expected: PASS. fmt +
 clippy clean. Also run `CARGO_NET_OFFLINE=true cargo test --workspace` — expected: 118 + new
 tests, no regressions.
-- [ ] **Step 5: Commit:** `feat(hw): SpidevBus - the real SpiBus over spidev, error-latched`
+- [x] **Step 5: Commit:** `feat(hw): SpidevBus - the real SpiBus over spidev, error-latched`
 
 ---
 
@@ -545,7 +552,7 @@ tests, no regressions.
 open = []
 ```
 
-- [ ] **Step 1: Write the failing tests.** In `thunk-content/src/lib.rs`, replace
+- [x] **Step 1: Write the failing tests.** In `thunk-content/src/lib.rs`, replace
 `the_ladder_is_complete_m0_through_m6` with a cfg'd pair, and add the embed assertions:
 
 ```rust
@@ -578,7 +585,7 @@ Also update `placement_covers_every_module_with_three_existing_checks` to iterat
 `PLACEMENT_LADDER` instead of `LADDER` (both loops and the final
 `assert_eq!(items.len(), PLACEMENT_LADDER.len() * 3)`), so it stays true on the open build.
 
-- [ ] **Step 2:** Run both, observe failures (compile fail on `PLACEMENT_LADDER`, then missing
+- [x] **Step 2:** Run both, observe failures (compile fail on `PLACEMENT_LADDER`, then missing
 m7 assets under the feature):
 
 ```sh
@@ -586,7 +593,7 @@ CARGO_NET_OFFLINE=true cargo test -p thunk-content
 CARGO_NET_OFFLINE=true cargo test -p thunk-content --features open
 ```
 
-- [ ] **Step 3: Implement the gating** in `thunk-content/src/lib.rs`:
+- [x] **Step 3: Implement the gating** in `thunk-content/src/lib.rs`:
 
 ```rust
 #[derive(RustEmbed)]
@@ -616,7 +623,7 @@ pub const PLACEMENT_LADDER: &[&str] = &[
 (If `cfg_attr` + the `exclude` helper attribute fails to expand under the derive, fall back to two
 `cfg`'d `Assets` definitions, each with its own full attribute set, and say so in the commit body.)
 
-- [ ] **Step 4: Author the M7 scaffold.** `module.ron`:
+- [x] **Step 4: Author the M7 scaffold.** `module.ron`:
 
 ```ron
 (
@@ -669,7 +676,7 @@ Choice(
 ),
 ```
 
-- [ ] **Step 5:** Run the full matrix — expected: ALL PASS:
+- [x] **Step 5:** Run the full matrix — expected: ALL PASS:
 
 ```sh
 CARGO_NET_OFFLINE=true cargo test -p thunk-content
@@ -681,7 +688,7 @@ CARGO_NET_OFFLINE=true cargo test --workspace
 The open run proves m7 meets every content bar (self-validating checks, 3+ per lesson, key terms,
 no orphans, satisfiable gate); the default run proves the inside build never sees it.
 
-- [ ] **Step 6: Commit:** `feat(content): open feature - M7 First Patch rides the open build only`
+- [x] **Step 6: Commit:** `feat(content): open feature - M7 First Patch rides the open build only`
 
 ---
 
@@ -701,7 +708,7 @@ thunk-hw = { path = "../thunk-hw", optional = true }
 open = ["dep:thunk-hw", "thunk-content/open"]
 ```
 
-- [ ] **Step 1: Write the failing test** (in `thunk-cli/src/main.rs`'s test module, feature-gated):
+- [x] **Step 1: Write the failing test** (in `thunk-cli/src/main.rs`'s test module, feature-gated):
 
 ```rust
 #[cfg(feature = "open")]
@@ -717,10 +724,10 @@ fn the_open_build_offers_the_hw_command_and_the_full_ladder() {
 (Adjust `Cli` to the actual clap parser type name in main.rs; the test belongs next to the
 existing CLI tests and follows their style.)
 
-- [ ] **Step 2:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-cli --features open` — expected:
+- [x] **Step 2:** Run `CARGO_NET_OFFLINE=true cargo test -p thunk-cli --features open` — expected:
 FAIL (no `hw` subcommand). Also confirm the default build is untouched:
 `CARGO_NET_OFFLINE=true cargo test -p thunk-cli` — PASS, unchanged.
-- [ ] **Step 3: Implement.** Add to the subcommand enum:
+- [x] **Step 3: Implement.** Add to the subcommand enum:
 
 ```rust
 /// Drive a real panel over /dev/spidev: the same driver, real wires. (open build)
@@ -793,7 +800,7 @@ fn run_hw(
 
 (Mirror the exact `boot_finale`/`finale_tick` import paths the `sim` command already uses.)
 
-- [ ] **Step 4:** Run — expected: PASS on all four:
+- [x] **Step 4:** Run — expected: PASS on all four:
 
 ```sh
 CARGO_NET_OFFLINE=true cargo test -p thunk-cli --features open
@@ -805,7 +812,7 @@ CARGO_NET_OFFLINE=true cargo clippy -p thunk-cli --features open --all-targets
 The real-hardware run cannot happen in this sandbox; the BeaglePlay bench is the manual test.
 Note that in the commit body.
 
-- [ ] **Step 5: Commit:** `feat(cli): open profile - thunk hw drives the finale on real wires`
+- [x] **Step 5: Commit:** `feat(cli): open profile - thunk hw drives the finale on real wires`
 
 ---
 
@@ -815,7 +822,7 @@ Note that in the commit body.
 - Create: `scripts/profile-audit.sh` (chmod +x)
 - Modify: `.github/workflows/ci.yml`
 
-- [ ] **Step 1: Write the script** (the "test" here is the script itself; it must fail loudly on
+- [x] **Step 1: Write the script** (the "test" here is the script itself; it must fail loudly on
 either violation):
 
 ```sh
@@ -836,9 +843,9 @@ fi
 echo "profile-audit: clean"
 ```
 
-- [ ] **Step 2:** Run `./scripts/profile-audit.sh` — expected: `profile-audit: clean`. Sanity-check
+- [x] **Step 2:** Run `./scripts/profile-audit.sh` — expected: `profile-audit: clean`. Sanity-check
 it can fail: run the first `cargo tree` by hand with `--features open` and confirm the grep hits.
-- [ ] **Step 3: Add the CI job** to `.github/workflows/ci.yml`, mirroring the existing jobs' style
+- [x] **Step 3: Add the CI job** to `.github/workflows/ci.yml`, mirroring the existing jobs' style
 exactly (same checkout/toolchain steps, `timeout-minutes`, workflow-level permissions):
 
 ```yaml
@@ -854,14 +861,14 @@ exactly (same checkout/toolchain steps, `timeout-minutes`, workflow-level permis
       - run: cargo test -p thunk-cli --features open
 ```
 
-- [ ] **Step 4:** Validate the workflow parses: `python3 -c "import yaml,sys; yaml.safe_load(open('.github/workflows/ci.yml'))"`.
-- [ ] **Step 5: Commit:** `feat(ci): profile-audit gate - inside graph clean, open graph complete`
+- [x] **Step 4:** Validate the workflow parses: `python3 -c "import yaml,sys; yaml.safe_load(open('.github/workflows/ci.yml'))"`.
+- [x] **Step 5: Commit:** `feat(ci): profile-audit gate - inside graph clean, open graph complete`
 
 ---
 
 ### Task 7: Sweep + roadmap
 
-- [ ] Full gate, both profiles:
+- [x] Full gate, both profiles:
 
 ```sh
 CARGO_NET_OFFLINE=true cargo fmt --all -- --check
@@ -872,13 +879,13 @@ CARGO_NET_OFFLINE=true cargo test -p thunk-content -p thunk-cli --features open 
 ./scripts/profile-audit.sh
 ```
 
-- [ ] Annotate M-G **Status: DONE** in `docs/superpowers/plans/2026-07-10-thunk-buildout.md` with:
+- [x] Annotate M-G **Status: DONE** in `docs/superpowers/plans/2026-07-10-thunk-buildout.md` with:
 the inside profile is the default build (hardware code absent from the graph, not disabled),
 `open` adds thunk-hw (hand-rolled spidev + GPIO v2 over libc; the spidev crate was not in the
 offline cache) and M7 First Patch; playable DOOM on the open build remains the named follow-up
 (needs network for doomgeneric + WAD); real-hardware smoke test deferred to Penn's BeaglePlay
 bench. Annotate this plan's header the same way.
-- [ ] Commit: `chore(mG): verification sweep - two profiles, one workspace`
+- [x] Commit: `chore(mG): verification sweep - two profiles, one workspace`
 
 ---
 

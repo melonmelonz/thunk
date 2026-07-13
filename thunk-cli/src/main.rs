@@ -132,7 +132,11 @@ fn run_hw(
 ) -> Result<(), String> {
     use std::{thread, time::Duration};
     use thunk_hw::{GpioLine, SpidevBus};
+    use thunk_sim::finale_tick;
 
+    // Hold the RST line handle for the whole run: releasing it back to the
+    // kernel mid-run would let a pull-down re-assert reset on some boards.
+    let mut rst_hold = None;
     if let Some(line) = rst_line {
         // Hardware reset: long, one-time delays live here, outside the bus.
         let mut rst =
@@ -143,17 +147,24 @@ fn run_hw(
         thread::sleep(Duration::from_millis(20));
         rst.set(true).map_err(|e| format!("rst: {e}"))?;
         thread::sleep(Duration::from_millis(150));
+        rst_hold = Some(rst);
     }
     let dc = GpioLine::open(dc_chip, dc_line, "thunk-dc").map_err(|e| format!("dc: {e}"))?;
     let mut bus = SpidevBus::open(spidev, speed_hz, dc).map_err(|e| format!("spidev: {e}"))?;
     boot_finale(&mut bus, 240, 320);
+    // Fail fast: a wiring error surfaces on the very first transfer; do not
+    // sleep through a hundred frames of a dead bus to report it.
+    if let Some(e) = bus.take_error() {
+        return Err(format!("bus: {e}"));
+    }
     for t in 1..frames {
-        thunk_sim::finale_tick(&mut bus, 240, 320, t);
+        finale_tick(&mut bus, 240, 320, t);
         thread::sleep(Duration::from_millis(30));
     }
     if let Some(e) = bus.take_error() {
         return Err(format!("bus: {e}"));
     }
+    drop(rst_hold);
     println!("drove {frames} frames over {}", spidev.display());
     Ok(())
 }

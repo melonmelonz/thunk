@@ -20,8 +20,8 @@ patch or on you. Give it a week or two. Then ping once, politely: one courteous 
 thread, asking whether anything is needed from your side. Not a new submission, not a private
 message to the maintainer. Then wait again. Queues are long everywhere.
 
-When review comes, it comes as comments, and M6 told you the register: specific, plain, sometimes blunt. "This
-sentence contradicts the section above it." "Wrap this at 80 columns like the rest of the file."
+When review comes, it comes as comments, and M6 told you the register: specific, plain,
+sometimes blunt. "This sentence contradicts the section above it." "Wrap this at 80 columns like the rest of the file."
 A reviewer may file a **request for changes**, which means: not as it stands, and here is what
 must be different. This is the normal middle of the process, not a rejection. Most patches, from
 everyone, go around this loop at least once.

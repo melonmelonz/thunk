@@ -143,6 +143,23 @@ Cargo features: `inside` (no hardware/network code compiled in) and `open` (adds
 present (not merely disabled).
 **Acceptance:** both profiles build; the inside profile contains no hardware/network code.
 
+**Status: DONE 2026-07-13.** The inside profile is the *default build*: the hardware crate is
+absent from its dependency graph, not disabled (asserted by `scripts/profile-audit.sh` via
+`cargo tree`, run locally and by the CI `profiles` job, which also builds and tests the open
+profile). `--features open` adds `thunk-hw` (hand-rolled spidev + GPIO v2 char-device backend
+over libc - the spidev crate is not in the offline cache; ioctl numbers and struct layouts
+pinned to the kernel ABI by tests, verified against this box's uapi headers) behind the same
+infallible `SpiBus` seam (first-error latch + `take_error()`; SWRESET/SLPOUT settle inside the
+bus, long resets in the caller), plus `thunk hw` (drives the finale on real wires; manual test
+is the BeaglePlay bench) and the M7 First Patch module (three lessons + nine checks living in
+`modules-open/`, a second cfg-gated embed root - rust-embed's `exclude` needs globset, absent
+offline). Placement stays M0-M6 on every build. On the acceptance line's
+"no network code": the inside binary's only socket surface is M-F's deliberate loopback-only
+`serve` (binds 127.0.0.1 explicitly, tested); there are no network dependencies in the inside
+graph. Playable DOOM on the open build remains the named follow-up: doomgeneric + a WAD need
+network access this sandbox does not have. Workspace at 127 tests inside / 130 open, clippy +
+vocab-lint + profile-audit clean.
+
 ## M-H · Facilitator kit, clean README, CI
 
 - Facilitator kit: static, offline pacing guide + answer keys + a progress export (no network).

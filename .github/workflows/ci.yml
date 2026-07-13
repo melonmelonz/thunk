@@ -65,8 +65,9 @@ jobs:
         run: '! grep -rE "https?://" site/'
 
   # The two build profiles must stay separated: the inside (default) graph
-  # carries no hardware crate at all, the open graph carries it plus M7, and
-  # both profiles build and pass their tests.
+  # carries no hardware crate at all, and the open profile builds, lints, and
+  # passes its tests here. (The inside profile's build/tests/lint live in the
+  # check job; its deployment artifact in static-musl.)
   profiles:
     name: inside/open profiles
     runs-on: ubuntu-latest
@@ -82,6 +83,10 @@ jobs:
         run: ./scripts/profile-audit.sh
       - name: Build the open profile
         run: cargo build -p thunk-cli --features open --locked
+      - name: Clippy the open profile
+        run: |
+          cargo clippy -p thunk-cli --features open --all-targets --locked -- -D warnings
+          cargo clippy -p thunk-content --features open --all-targets --locked -- -D warnings
       - name: Test the open content
         run: cargo test -p thunk-content --features open --locked
       - name: Test the open CLI
