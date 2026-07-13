@@ -1,0 +1,10 @@
+[package]
+name = "thunk-hw"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "thunk open-build hardware backend: SpiBus over Linux spidev + GPIO."
+
+[dependencies]
+thunk-sim = { path = "../thunk-sim" }
+libc = { workspace = true }

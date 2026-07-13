@@ -726,6 +726,14 @@ dependencies = [
 ]
 
 [[package]]
+name = "thunk-hw"
+version = "0.1.0"
+dependencies = [
+ "libc",
+ "thunk-sim",
+]
+
+[[package]]
 name = "thunk-sim"
 version = "0.1.0"
 

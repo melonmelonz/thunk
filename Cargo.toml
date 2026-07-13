@@ -1,6 +1,6 @@
 [workspace]
 resolver = "2"
-members = ["thunk-core", "thunk-content", "thunk-sim", "thunk-web", "thunk-tui", "thunk-cli"]
+members = ["thunk-core", "thunk-content", "thunk-sim", "thunk-web", "thunk-tui", "thunk-cli", "thunk-hw"]
 
 [workspace.package]
 version = "0.1.0"
@@ -19,6 +19,7 @@ anyhow = "1"
 thiserror = "1"
 ratatui = { version = "0.29", default-features = false }
 crossterm = "0.28"
+libc = "0.2"
 
 [profile.release]
 lto = "thin"
