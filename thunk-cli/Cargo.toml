@@ -15,4 +15,10 @@ thunk-core = { path = "../thunk-core" }
 thunk-sim = { path = "../thunk-sim" }
 thunk-tui = { path = "../thunk-tui" }
 thunk-web = { path = "../thunk-web" }
+thunk-hw = { path = "../thunk-hw", optional = true }
 clap = { workspace = true }
+
+[features]
+# The open build: the real spidev/GPIO backend + the M7 module. The inside
+# build is the default build; this feature is never on inside a facility.
+open = ["dep:thunk-hw", "thunk-content/open"]

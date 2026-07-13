@@ -48,6 +48,28 @@ enum Cmd {
         #[arg(long, default_value_t = 7878)]
         port: u16,
     },
+    /// Drive a real panel over /dev/spidev: the same driver, real wires. (open build)
+    #[cfg(feature = "open")]
+    Hw {
+        /// The spidev node wired to the panel, e.g. /dev/spidev0.0
+        #[arg(long)]
+        spidev: std::path::PathBuf,
+        /// The gpiochip carrying the DC (and optional RST) line
+        #[arg(long)]
+        dc_chip: std::path::PathBuf,
+        /// DC line offset on that chip
+        #[arg(long)]
+        dc_line: u32,
+        /// RST line offset, if the panel's reset is wired
+        #[arg(long)]
+        rst_line: Option<u32>,
+        /// SPI clock in Hz
+        #[arg(long, default_value_t = 8_000_000)]
+        speed_hz: u32,
+        /// Frames of the finale to run
+        #[arg(long, default_value_t = 120)]
+        frames: u32,
+    },
 }
 
 fn main() {
@@ -80,7 +102,60 @@ fn main() {
                 std::process::exit(1);
             }
         }
+        #[cfg(feature = "open")]
+        Some(Cmd::Hw {
+            spidev,
+            dc_chip,
+            dc_line,
+            rst_line,
+            speed_hz,
+            frames,
+        }) => {
+            if let Err(e) = run_hw(&spidev, &dc_chip, dc_line, rst_line, speed_hz, frames) {
+                eprintln!("thunk: could not drive the panel: {e}");
+                std::process::exit(1);
+            }
+        }
     }
+}
+
+/// Boot the finale on real wires: hardware reset (if wired) out here, then
+/// the same `boot_finale`/`finale_tick` the simulator runs, over spidev.
+#[cfg(feature = "open")]
+fn run_hw(
+    spidev: &std::path::Path,
+    dc_chip: &std::path::Path,
+    dc_line: u32,
+    rst_line: Option<u32>,
+    speed_hz: u32,
+    frames: u32,
+) -> Result<(), String> {
+    use std::{thread, time::Duration};
+    use thunk_hw::{GpioLine, SpidevBus};
+
+    if let Some(line) = rst_line {
+        // Hardware reset: long, one-time delays live here, outside the bus.
+        let mut rst =
+            GpioLine::open(dc_chip, line, "thunk-rst").map_err(|e| format!("rst: {e}"))?;
+        rst.set(true).map_err(|e| format!("rst: {e}"))?;
+        thread::sleep(Duration::from_millis(5));
+        rst.set(false).map_err(|e| format!("rst: {e}"))?;
+        thread::sleep(Duration::from_millis(20));
+        rst.set(true).map_err(|e| format!("rst: {e}"))?;
+        thread::sleep(Duration::from_millis(150));
+    }
+    let dc = GpioLine::open(dc_chip, dc_line, "thunk-dc").map_err(|e| format!("dc: {e}"))?;
+    let mut bus = SpidevBus::open(spidev, speed_hz, dc).map_err(|e| format!("spidev: {e}"))?;
+    boot_finale(&mut bus, 240, 320);
+    for t in 1..frames {
+        thunk_sim::finale_tick(&mut bus, 240, 320, t);
+        thread::sleep(Duration::from_millis(30));
+    }
+    if let Some(e) = bus.take_error() {
+        return Err(format!("bus: {e}"));
+    }
+    println!("drove {frames} frames over {}", spidev.display());
+    Ok(())
 }
 
 /// Write the generated site under `dir`, creating directories as needed.
@@ -430,6 +505,15 @@ mod tests {
         client.read_to_string(&mut response).expect("response");
         server.join().expect("server thread");
         assert!(response.contains("404 Not Found"), "no 404:\n{response}");
+    }
+
+    #[cfg(feature = "open")]
+    #[test]
+    fn the_open_build_offers_the_hw_command_and_the_full_ladder() {
+        use clap::CommandFactory;
+        let cmd = Cli::command();
+        assert!(cmd.get_subcommands().any(|s| s.get_name() == "hw"));
+        assert_eq!(thunk_content::LADDER.last(), Some(&"m7-first-patch"));
     }
 
     #[test]

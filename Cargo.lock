@@ -702,6 +702,7 @@ dependencies = [
  "clap",
  "thunk-content",
  "thunk-core",
+ "thunk-hw",
  "thunk-sim",
  "thunk-tui",
  "thunk-web",
