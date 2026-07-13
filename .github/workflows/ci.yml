@@ -64,6 +64,29 @@ jobs:
       - name: Hermetic check (zero external URLs)
         run: '! grep -rE "https?://" site/'
 
+  # The two build profiles must stay separated: the inside (default) graph
+  # carries no hardware crate at all, the open graph carries it plus M7, and
+  # both profiles build and pass their tests.
+  profiles:
+    name: inside/open profiles
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install pinned toolchain
+        run: rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: profiles
+      - name: Profile audit (graph separation)
+        run: ./scripts/profile-audit.sh
+      - name: Build the open profile
+        run: cargo build -p thunk-cli --features open --locked
+      - name: Test the open content
+        run: cargo test -p thunk-content --features open --locked
+      - name: Test the open CLI
+        run: cargo test -p thunk-cli --features open --locked
+
   # The inside build must always compile as a fully static binary with no
   # host-linked surprises. This is the deployment artifact for facilities.
   static-musl:
