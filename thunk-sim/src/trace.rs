@@ -96,6 +96,31 @@ fn command_row(c: u8) -> String {
     }
 }
 
+/// One byte as the M3 lesson diagram: three aligned rows (bit values, one
+/// clock pulse per tick, and the data line's level), MSB first, one 4-char
+/// cell per tick. The data line idles low and transitions at cell starts, so
+/// it is settled before each clock's rising edge - just as the lesson drew it.
+pub fn waveform(byte: u8) -> [String; 3] {
+    let mut bits = String::from("bit  ");
+    let mut clk = String::from("clk  ");
+    let mut data = String::from("data ");
+    let mut level = false; // the line idles low before the first bit
+    for i in (0..8).rev() {
+        let bit = (byte >> i) & 1 == 1;
+        bits.push_str(if bit { "  1 " } else { "  0 " });
+        clk.push_str("_/\\_");
+        let fill = if bit { '~' } else { '_' };
+        data.push(match (level, bit) {
+            (false, true) => '/',
+            (true, false) => '\\',
+            _ => fill,
+        });
+        data.push_str(&fill.to_string().repeat(3));
+        level = bit;
+    }
+    [bits, clk, data]
+}
+
 fn flush_data_run(out: &mut Vec<(String, Option<u8>)>, run: &mut Vec<u8>) {
     if run.is_empty() {
         return;
@@ -163,8 +188,49 @@ mod tests {
     }
 
     #[test]
+    fn waveform_draws_the_m3_lesson_diagram() {
+        // Hand-derived: 0x2C = 00101100, MSB first, one 4-char cell per tick,
+        // 5-char row prefix, data idles low and transitions at cell starts.
+        // The bit row carries a trailing space so all rows are 37 columns.
+        let w = waveform(0x2C);
+        assert_eq!(
+            w,
+            [
+                "bit    0   0   1   0   1   1   0   0 ".to_string(),
+                "clk  _/\\__/\\__/\\__/\\__/\\__/\\__/\\__/\\_".to_string(),
+                "data ________/~~~\\___/~~~~~~~\\_______".to_string(),
+            ]
+        );
+    }
+
+    #[test]
     fn unknown_commands_are_still_shown() {
         let rows = annotate(&[byte(0xD9, Dc::Command)]);
         assert_eq!(rows, vec!["cmd  D9  (unknown)".to_string()]);
+    }
+
+    #[test]
+    fn waveform_rows_have_equal_width_for_every_byte() {
+        for b in 0..=255u8 {
+            let [bits, clk, data] = waveform(b);
+            assert_eq!(bits.chars().count(), clk.chars().count(), "byte {b:#04X}");
+            assert_eq!(clk.chars().count(), data.chars().count(), "byte {b:#04X}");
+        }
+    }
+
+    #[test]
+    fn waveform_data_row_encodes_the_byte_msb_first() {
+        // The machine check for the hand derivation: reading the settled
+        // level at the end of each 4-char cell rebuilds the input byte.
+        for b in 0..=255u8 {
+            let data = &waveform(b)[2];
+            let cells: Vec<char> = data.chars().skip(5).collect();
+            let mut rebuilt = 0u8;
+            for tick in 0..8 {
+                let level = cells[tick * 4 + 3];
+                rebuilt = (rebuilt << 1) | u8::from(level == '~');
+            }
+            assert_eq!(rebuilt, b, "data row does not spell {b:#04X}: {data}");
+        }
     }
 }
