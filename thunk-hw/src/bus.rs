@@ -3,6 +3,9 @@
 //! the controller driving chip select. `SpiBus` is infallible by design (the
 //! M-C seam decision), so the first io error is latched and the bus goes
 //! quiet; callers check `take_error()` after driving.
+//!
+//! The 4096-byte write chunking is only exercisable on real hardware: a unit
+//! test writing through a plain `File` cannot observe chunk boundaries.
 
 use crate::ioctl;
 use std::fs::{File, OpenOptions};
@@ -19,7 +22,9 @@ pub trait DcPin {
 /// ILI9341 wiring: DC low = command, high = data.
 impl DcPin for crate::GpioLine {
     fn set(&mut self, dc: Dc) -> io::Result<()> {
-        self.set(dc == Dc::Data)
+        // The inherent method, named in full: a bare `self.set(...)` would
+        // resolve back to this trait method and recurse.
+        crate::GpioLine::set(self, dc == Dc::Data)
     }
 }
 
@@ -65,7 +70,7 @@ impl<P: DcPin> SpidevBus<P> {
         }
     }
 
-    /// The first error since the last call, if any. Draining.
+    /// The first error since the last drain, if any. Draining.
     pub fn take_error(&mut self) -> Option<io::Error> {
         self.error.take()
     }
@@ -130,10 +135,12 @@ mod tests {
 
     struct FakeDc {
         log: Rc<RefCell<Vec<Dc>>>,
+        calls: Rc<RefCell<u32>>,
         fail: bool,
     }
     impl DcPin for FakeDc {
         fn set(&mut self, dc: Dc) -> std::io::Result<()> {
+            *self.calls.borrow_mut() += 1;
             if self.fail {
                 return Err(std::io::Error::other("dc pin unavailable"));
             }
@@ -151,6 +158,7 @@ mod tests {
     fn opening_a_non_spidev_path_is_an_error() {
         let dc = FakeDc {
             log: Rc::default(),
+            calls: Rc::default(),
             fail: false,
         };
         assert!(SpidevBus::open(std::path::Path::new("/dev/null"), 8_000_000, dc).is_err());
@@ -161,6 +169,7 @@ mod tests {
         let log = Rc::new(RefCell::new(Vec::new()));
         let mut bus = null_bus(FakeDc {
             log: Rc::clone(&log),
+            calls: Rc::default(),
             fail: false,
         });
         bus.set_dc(Dc::Command);
@@ -171,12 +180,17 @@ mod tests {
 
     #[test]
     fn the_first_error_is_latched_and_the_bus_goes_quiet() {
+        let calls = Rc::new(RefCell::new(0));
         let mut bus = null_bus(FakeDc {
             log: Rc::default(),
+            calls: Rc::clone(&calls),
             fail: true,
         });
         bus.set_dc(Dc::Data);
+        assert_eq!(*calls.borrow(), 1, "the failing call reached the pin");
         bus.write(&[0xAA]); // after the latch: a no-op, not a second error
+        bus.set_dc(Dc::Command); // quiet means this never reaches the pin
+        assert_eq!(*calls.borrow(), 1, "the latched bus stops driving the pin");
         let e = bus.take_error().expect("the dc failure was latched");
         assert_eq!(e.to_string(), "dc pin unavailable");
         assert!(bus.take_error().is_none(), "take_error drains");

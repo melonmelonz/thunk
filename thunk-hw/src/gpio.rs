@@ -76,8 +76,13 @@ impl GpioLine {
                 &mut req,
             )
         };
-        if rc < 0 || req.fd < 0 {
+        if rc < 0 {
             return Err(io::Error::last_os_error());
+        }
+        if req.fd < 0 {
+            // The ioctl succeeded but handed back no usable fd; errno is not
+            // set on this path, so name the failure ourselves.
+            return Err(io::Error::other("kernel returned an invalid line fd"));
         }
         // The chip fd may be dropped after the line is requested; the line fd
         // keeps the line.
@@ -120,6 +125,20 @@ mod tests {
         assert_eq!(size_of::<GpioV2LineConfig>(), 272);
         assert_eq!(size_of::<GpioV2LineRequest>(), 592);
         assert_eq!(size_of::<GpioV2LineValues>(), 16);
+    }
+
+    #[test]
+    fn uapi_field_offsets_match_the_kernel() {
+        use std::mem::offset_of;
+        // gpio_v2_line_config: flags u64 (0), num_attrs u32 (8),
+        // padding [u32; 5] (12..32), attrs (32).
+        assert_eq!(offset_of!(GpioV2LineConfig, attrs), 32);
+        // gpio_v2_line_request: offsets [u32; 64] (0..256), consumer
+        // [u8; 32] (256..288), config 272 bytes (288..560), num_lines (560),
+        // event_buffer_size (564), padding [u32; 5] (568..588), fd (588).
+        assert_eq!(offset_of!(GpioV2LineRequest, config), 288);
+        assert_eq!(offset_of!(GpioV2LineRequest, num_lines), 560);
+        assert_eq!(offset_of!(GpioV2LineRequest, fd), 588);
     }
 
     #[test]
