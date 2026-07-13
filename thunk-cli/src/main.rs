@@ -31,6 +31,9 @@ enum Cmd {
         /// Show the boot splash (color bars) instead of the finale.
         #[arg(long)]
         splash: bool,
+        /// Print the annotated bus trace instead of the panel.
+        #[arg(long)]
+        trace: bool,
     },
 }
 
@@ -46,7 +49,7 @@ fn main() {
         Some(Cmd::Read { lesson }) => print!("{}", read(lesson.as_deref())),
         Some(Cmd::Check) => print!("{}", checks()),
         Some(Cmd::Progress) => print!("{}", progress()),
-        Some(Cmd::Sim { splash }) => print!("{}", sim(splash)),
+        Some(Cmd::Sim { splash, trace }) => print!("{}", sim(splash, trace)),
     }
 }
 
@@ -153,7 +156,7 @@ fn progress() -> String {
     s
 }
 
-fn sim(splash: bool) -> String {
+fn sim(splash: bool, trace: bool) -> String {
     let mut bus = SimSpi::new();
     let what = if splash {
         boot_splash_via_display(&mut bus, 240, 320);
@@ -162,6 +165,16 @@ fn sim(splash: bool) -> String {
         boot_finale(&mut bus, 240, 320);
         "the finale: a rendered corridor, drawn by the display driver"
     };
+    if trace {
+        // The same drive, seen as the logic analyzer would show it: every
+        // annotated row (grouping keeps even the pixel stream to one line).
+        let rows = thunk_sim::trace::annotate(bus.trace());
+        return format!(
+            "bus trace - {what}\n{} events, annotated:\n\n{}\n",
+            bus.trace().len(),
+            rows.join("\n")
+        );
+    }
     let mut panel = Ili9341::new(240, 320);
     panel.replay(bus.trace());
     let events = bus.trace().len();
@@ -214,7 +227,7 @@ mod tests {
 
     #[test]
     fn sim_boots_the_finale_by_default() {
-        let s = sim(false);
+        let s = sim(false, false);
         assert!(s.lines().count() > 20);
         assert!(s.contains("finale"), "names the scene:\n{s}");
         assert!(s.contains("bus events"), "reports the traffic:\n{s}");
@@ -222,8 +235,16 @@ mod tests {
 
     #[test]
     fn sim_splash_flag_keeps_the_color_bars() {
-        let s = sim(true);
+        let s = sim(true, false);
         assert!(s.contains("color bars"), "splash still available:\n{s}");
+    }
+
+    #[test]
+    fn sim_trace_prints_annotated_protocol_rows() {
+        let s = sim(false, true);
+        for needle in ["SWRESET", "CASET", "RAMWR", "bytes)"] {
+            assert!(s.contains(needle), "missing {needle:?}:\n{s}");
+        }
     }
 
     #[test]
