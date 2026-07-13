@@ -28,6 +28,7 @@
             "a good first issue",
             "the good first issue label",
             "good first issues",
+            "good-first-issue",
         ],
     ),
 
@@ -62,7 +63,7 @@
     Short(
         id: CheckId("m7-03-ci"),
         prompt: "What are the project's scripted checks, run automatically against every proposed change, called? (two letters)",
-        answers: ["ci", "the ci", "continuous integration"],
+        answers: ["ci", "c.i.", "the ci", "continuous integration"],
     ),
     Choice(
         id: CheckId("m7-03-comments"),

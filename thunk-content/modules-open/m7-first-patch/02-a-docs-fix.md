@@ -2,8 +2,9 @@
 
 Your first contribution should be to documentation. Not because documentation is easy, but
 because a docs change exercises the entire contribution workflow, fork to merge, with almost no
-risk on the far end. A wrong line of code can break the software for everyone who ships it; a
-wrong line of documentation was already there before you arrived. Reviewers can check a docs
+risk on the far end. A bad code change can break the software for everyone who runs it. A bad
+docs change has a much smaller blast radius: the worst case is that the document stays as wrong
+as it already was. Reviewers can check a docs
 change in minutes, which spends less of the scarce resource from last lesson. You get the full
 experience, the project gets a real improvement, and nothing can catch fire.
 

@@ -35,13 +35,14 @@ maintainer has already decided the task is worth a newcomer's time and their own
 
 ## On-ramps that already exist
 
-Some doors are built for first-time contributors. kernelnewbies.org documents exactly how to
-prepare and send a first Linux kernel patch, down to the email formatting. The Linux Kernel
+Some doors are built for first-time contributors; call them on-ramps. kernelnewbies.org is
+documentation plus a community: it spells out how to prepare and send a first Linux kernel patch,
+down to the email formatting, and its people answer first-timers' questions. Two of the on-ramps
+are **mentorship programs**, where someone has agreed in advance to teach you: the Linux Kernel
 Mentorship Program pairs newcomers with experienced kernel developers for a structured first
-contribution. Outreachy runs paid open source internships and is explicit about taking people
-whose path here was not the usual one. These are **mentorship programs**: entrances where someone
-is expecting newcomers and has agreed in advance to answer their questions. You do not need one to
-contribute, but if the cold start feels steep, they exist to remove it.
+contribution, and Outreachy runs paid open source internships, explicit about taking people whose
+path here was not the usual one. You do not need an on-ramp to contribute, but if the cold start
+feels steep, they exist to remove it.
 
 ## The scarce resource
 

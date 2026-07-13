@@ -14,7 +14,13 @@ already rejected, and a red check next to your name answers a question nobody as
 
 ## Then the people
 
-Review arrives as comments, and M6 told you the register: specific, plain, sometimes blunt. "This
+Often, at first, nothing happens. M6 lesson 05 named silence the most common first outcome, and a
+first patch can sit unreviewed for weeks; that is the length of the queue, not a judgment on the
+patch or on you. Give it a week or two. Then ping once, politely: one courteous reply in your own
+thread, asking whether anything is needed from your side. Not a new submission, not a private
+message to the maintainer. Then wait again. Queues are long everywhere.
+
+When review comes, it comes as comments, and M6 told you the register: specific, plain, sometimes blunt. "This
 sentence contradicts the section above it." "Wrap this at 80 columns like the rest of the file."
 A reviewer may file a **request for changes**, which means: not as it stands, and here is what
 must be different. This is the normal middle of the process, not a rejection. Most patches, from
@@ -46,7 +52,7 @@ reproduce it, fix it, write the test that proves the fix. Then, for the ambitiou
 kernel path, and you are better prepared for it than you may think: this course had you walk
 buses, drive a panel over SPI, and reason about drivers against a simulator. kernelnewbies.org,
 from lesson 01, documents the road from where you are standing to a driver patch in the Linux
-kernel. That is the long ladder. It starts with the one you just climbed.
+kernel. Take the rungs in order, and keep each patch small enough to review.
 
 ## Key terms
 

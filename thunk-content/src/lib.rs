@@ -296,10 +296,12 @@ mod tests {
                 "m6-open-source",
             ]
         );
-        assert!(
-            Assets::get("m7-first-patch/module.ron").is_none(),
-            "m7 must not be embedded inside"
-        );
+        for path in Assets::iter() {
+            assert!(
+                !path.starts_with("m7-"),
+                "m7 must not be embedded inside, found: {path}"
+            );
+        }
     }
 
     #[cfg(feature = "open")]
