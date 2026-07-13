@@ -1,5 +1,14 @@
 # thunk — Session Handoff
 
+> **2026-07-13: the build-out this document commissioned is complete.** M-A through M-H are all
+> DONE (see `docs/superpowers/plans/2026-07-10-thunk-buildout.md` for per-milestone status):
+> full M0-M6 curriculum, gates + placement, protocol simulator + trace + finale, offline web
+> GUI, inside/open build profiles (M7 + `thunk hw` on open), facilitator kit, clean README,
+> 4-job CI. 131 workspace tests inside; open-profile suites green. The "how we work" rules
+> below still govern any future session. Remaining follow-ups: playable DOOM on the open build
+> (needs network), the hosted after-release platform (own sub-spec first), the BeaglePlay
+> hardware smoke of `thunk hw`, and pushing to GitHub when Penn says so.
+
 **Read this first.** The project is designed and Phase 1 is built and green. The job for the next
 session is to **build the entire product out, test-first (full TDD), with a clean README.** This doc
 orients a fresh session that has none of the prior conversation.

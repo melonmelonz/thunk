@@ -169,6 +169,25 @@ vocab-lint + profile-audit clean.
   `vocab-lint`, and the wasm build. (Do not push; just define it.)
 **Acceptance:** README polished; CI defined; `docs/` and PDFs regenerated and uniform.
 
+**Status: DONE 2026-07-13.** CI was already ahead of this milestone (check + hermetic web +
+profiles + static-musl, all four defined; the M-G sweep added open-profile clippy). Facilitator
+kit: `thunk kit --out DIR` writes `pacing.md` + `answer-key.md`, generated from the embedded
+curriculum (never hand-maintained; covers M7 automatically on the open profile; hermeticity
+asserted by tests); `thunk progress --export` emits per-module mastery CSV through the same
+state-load path and `mastered_or_placed` call the ladder view uses. Top-level README rewritten
+for the finished product: the value-prop line, quickstart for all nine subcommands, the two
+build profiles, the 7-crate workspace map, the verification gates, docs index link, dual
+license. PRD/spec phasing updated (Phase 3 in progress: profiles + M7 + kit built; DOOM-on-open,
+outreach, cohort, facility, hosted platform remain). Workspace at 131 tests inside, open-profile
+suites green, all gates clean.
+
+---
+
+**Definition of done (below): met 2026-07-13.** All eight milestones M-A..M-H annotated DONE
+above. The remaining named follow-ups live outside this roadmap: playable DOOM on the open build
+(network assets), the hosted after-release platform (own sub-spec), outreach/cohort/facility
+work, and the real-hardware smoke of `thunk hw` on the BeaglePlay bench.
+
 ---
 
 ## Penn's directives (2026-07-12, verbatim intent)

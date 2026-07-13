@@ -1,5 +1,12 @@
 # thunk M-H: Facilitator Kit + Clean README Implementation Plan
 
+> **Status: DONE 2026-07-13.** Commits `9ba37f4`, `3d8a209` (kit, spec+quality reviewed:
+> approve, minors only), `58ed4bc` (README) + sweep. One sanctioned adaptation:
+> `canonical_answer()` returns the `Answer` enum, so the answer-key test asserts on the
+> rendered `answer_text` form. The kit derives everything from `Curriculum`; on the open
+> profile it includes M7 automatically. No docs/README.md entry for the kit: it is a
+> generated artifact, not a document.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development
 > (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use
 > checkbox (`- [ ]`) syntax for tracking.
@@ -25,7 +32,7 @@ profiles (the kit covers whatever LADDER the build carries).
 - Create: `thunk-cli/src/kit.rs`
 - Modify: `thunk-cli/src/main.rs` (add `mod kit;`)
 
-- [ ] **Step 1: Failing tests** (in kit.rs):
+- [x] **Step 1: Failing tests** (in kit.rs):
 
 ```rust
 #[cfg(test)]
@@ -65,8 +72,8 @@ exists; the content suite uses it). If it returns a `&str` or needs display form
 Choice options, adapt the assertion to whatever grades `Correct` - the key must show the answer
 a facilitator reads aloud, not an index.
 
-- [ ] **Step 2:** `CARGO_NET_OFFLINE=true cargo test -p thunk-cli` - COMPILE FAIL; observe.
-- [ ] **Step 3: Implement** pure generators:
+- [x] **Step 2:** `CARGO_NET_OFFLINE=true cargo test -p thunk-cli` - COMPILE FAIL; observe.
+- [x] **Step 3: Implement** pure generators:
   - `pub fn pacing_md() -> String`: header explaining the kit is generated and offline; a
     "How pacing works" section (self-paced mastery, module gate = every check correct, the
     21-item placement diagnostic lets experienced learners skip ahead - reuse the language of
@@ -78,8 +85,8 @@ a facilitator reads aloud, not an index.
     check as: id, prompt, then the canonical answer (for Choice: the text of the correct
     option; for Short: the canonical accepted answer, with the alternates listed).
   Both derive everything from `thunk_content::Curriculum` - no hardcoded module lists.
-- [ ] **Step 4:** PASS; fmt + clippy clean.
-- [ ] **Step 5: Commit:** `feat(cli): kit generators - pacing guide + answer key from the curriculum`
+- [x] **Step 4:** PASS; fmt + clippy clean.
+- [x] **Step 5: Commit:** `feat(cli): kit generators - pacing guide + answer key from the curriculum`
 
 ---
 
@@ -87,7 +94,7 @@ a facilitator reads aloud, not an index.
 
 **Files:** `thunk-cli/src/main.rs`
 
-- [ ] **Step 1: Failing tests** (next to the existing CLI tests):
+- [x] **Step 1: Failing tests** (next to the existing CLI tests):
 
 ```rust
 #[test]
@@ -118,8 +125,8 @@ the state file and reuse that path for the flag. `checks_passed` = count of that
 ids the progress marks passed - mirror however `thunk progress` computes its ladder display;
 read that code first and reuse its helpers rather than inventing parallel logic.)
 
-- [ ] **Step 2:** COMPILE FAIL; observe.
-- [ ] **Step 3: Implement:**
+- [x] **Step 2:** COMPILE FAIL; observe.
+- [x] **Step 3: Implement:**
   - kit.rs: `pub fn export_csv(p: &thunk_core::Progress) -> String` - header row exactly as the
     test pins, then per `Curriculum::ladder()` entry: dir, title (comma-safe: titles contain no
     commas today; assert or escape by quoting if one ever does), passed/total, `yes`/`no`.
@@ -127,13 +134,13 @@ read that code first and reuse its helpers rather than inventing parallel logic.
     `write_kit` (create dir, write both files, print the one-line summary like `web` does);
     `--export` flag on the existing `Progress` subcommand: when set, print `export_csv` of the
     loaded progress instead of the ladder view.
-- [ ] **Step 4:** PASS. Full gates: fmt, clippy --workspace --all-targets, cargo test --workspace,
+- [x] **Step 4:** PASS. Full gates: fmt, clippy --workspace --all-targets, cargo test --workspace,
   clippy/test with `-p thunk-cli --features open` (the kit must compile and its tests pass under
   the open profile too - the generators follow LADDER, so open output simply includes M7),
   vocab-lint. Eyeball: `cargo run -q -p thunk-cli -- kit --out /tmp/kit-check && head -40
   /tmp/kit-check/pacing.md /tmp/kit-check/answer-key.md`, and `cargo run -q -p thunk-cli --
   progress --export`.
-- [ ] **Step 5: Commit:** `feat(cli): thunk kit + progress --export - the facilitator layer`
+- [x] **Step 5: Commit:** `feat(cli): thunk kit + progress --export - the facilitator layer`
 
 ---
 
@@ -146,7 +153,7 @@ value-prop line, quickstart, workspace map, the two build profiles, docs index l
 Tight and professional; plain sentences; no em dashes; no hype adjectives; nothing the repo
 cannot back.
 
-- [ ] Content contract (verify each claim against the repo while writing):
+- [x] Content contract (verify each claim against the repo while writing):
   - Title + the canonical value-prop line (from `docs/thunk-value-proposition.html`).
   - What it is: 7 modules M0-M6 (M7 on the open build), fully offline, three front-ends (CLI,
     TUI, local web), the simulator finale, competency gates + placement.
@@ -162,13 +169,13 @@ cannot back.
   - Docs: link `docs/README.md`. License: MIT OR Apache-2.0, link both files.
   - Status: built and tested; local repo; the finale is the simulated corridor scene (playable
     DOOM is an open-build follow-up); facilitator kit generated by `thunk kit`.
-- [ ] Gate + commit: `docs: README for the finished product - profiles, kit, the whole ladder`
+- [x] Gate + commit: `docs: README for the finished product - profiles, kit, the whole ladder`
 
 ---
 
 ### Task 4: Sweep
 
-- [ ] Full gate both profiles (fmt, clippy x2, test x2, vocab-lint, profile-audit). Annotate M-H
+- [x] Full gate both profiles (fmt, clippy x2, test x2, vocab-lint, profile-audit). Annotate M-H
 DONE in the buildout roadmap (note CI was already complete before M-H started; kit + README were
 the delivered halves) and this plan's header. Update `docs/README.md` index if the kit warrants a
 line (it is a generated artifact, not a doc - likely no entry; decide and say so in the commit).

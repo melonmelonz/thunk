@@ -157,9 +157,11 @@ oscilloscope. Not neon. Detailed in a later design pass.
   to the open build); the offline web GUI (static site via `thunk web`, `thunk serve` bound to
   127.0.0.1 only); full M0–M6 curriculum (31 lessons, 93 checks); competency gates and a 21-item
   placement diagnostic. 118 workspace tests passing.
-- **Phase 3 (Program): future.** The M7 First Patch module (open build; its own sub-spec),
-  facilitator kit, hardened inside/open build profiles, Saleae/partner outreach, first outside
-  cohort, first facility conversation.
+- **Phase 3 (Program): in progress.** Built 2026-07-13: the M7 First Patch module (open build),
+  the facilitator kit (`thunk kit` + `thunk progress --export`), and the inside/open build
+  profiles (inside = default build, hardware crate absent from the graph, gated by
+  scripts/profile-audit.sh + CI). Remaining: playable DOOM on the open build (needs network
+  assets), Saleae/partner outreach, first outside cohort, first facility conversation.
 
 ## 14. Open questions
 

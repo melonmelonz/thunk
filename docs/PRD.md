@@ -126,9 +126,10 @@ open-source contributions.
   trace view (TUI and CLI `sim --trace`) and a deterministic corridor-scene finale rendered through
   the Display driver; the offline web GUI (`thunk web --out DIR` static site; `thunk serve` bound
   to 127.0.0.1 only). 118 workspace tests passing.
-- **Phase 3 (future):** the M7 First Patch module (open build; own sub-spec); inside/open build
-  profiles; facilitator kit; playable DOOM on the open build; Saleae/partner outreach; first
-  outside cohort; first facility conversation.
+- **Phase 3 (in progress):** built 2026-07-13: inside/open build profiles, the M7 First Patch
+  module (open build), and the facilitator kit. Remaining: playable DOOM on the open build (needs
+  network assets); Saleae/partner outreach; first outside cohort; first facility conversation;
+  the hosted after-release platform (own sub-spec first).
 
 ## 8. Success metrics
 
@@ -167,6 +168,12 @@ annotated trace view in the TUI and via `sim --trace` in the CLI, and a determin
 corridor-scene finale rendered through the Display driver (playable DOOM is deferred to the open
 build). The offline web GUI is built: `thunk web --out DIR` writes a 42-file static site (semantic
 HTML, two themes, client-side check grading, panel SVG + trace table); `thunk serve` binds
-127.0.0.1 only. CI runs check, static-musl, and hermetic web jobs; 118 workspace tests pass; fmt,
-clippy, and vocab-lint are clean. Not yet built: inside/open build profiles, the M7 First Patch
-module, and the facilitator kit (all Phase 3). Local git only; not yet pushed.
+127.0.0.1 only. Built 2026-07-13: the two build profiles (inside is the default build with the
+hardware crate absent from its dependency graph, enforced by scripts/profile-audit.sh and CI; the
+open profile adds a real spidev + GPIO backend behind the same SpiBus seam, the `thunk hw`
+command, and the M7 First Patch module) and the facilitator kit (`thunk kit` generates the pacing
+guide and answer key from the embedded curriculum; `thunk progress --export` emits per-module
+mastery CSV). CI runs check, hermetic web, profiles, and static-musl jobs; 131 workspace tests
+pass, with the open-profile suites green as well; fmt, clippy (both profiles), vocab-lint, and
+profile-audit are clean. Not yet built: playable DOOM on the open build (needs network assets).
+Local git only; not yet pushed.
