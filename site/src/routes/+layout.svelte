@@ -1,8 +1,10 @@
 <script lang="ts">
 	import '../app.css';
+	import { onMount } from 'svelte';
 	import { onNavigate } from '$app/navigation';
 	import SiteMark from '$lib/components/SiteMark.svelte';
 	import XpMeter from '$lib/components/XpMeter.svelte';
+	import build from '$lib/build.json';
 
 	let { children } = $props();
 
@@ -16,6 +18,23 @@
 				await navigation.complete;
 			});
 		});
+	});
+
+	// Boot ritual: once per session, on the first load, the header tick warms up
+	// and the hero eyebrow fades up just behind it. Never on later navigations
+	// (SPA nav does not remount this layout, and the flag is set immediately),
+	// never under reduced motion. No typing effects, no blinking cursors.
+	onMount(() => {
+		try {
+			if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
+			if (sessionStorage.getItem('thunk.booted')) return;
+			sessionStorage.setItem('thunk.booted', '1');
+			const root = document.documentElement;
+			root.classList.add('boot');
+			setTimeout(() => root.classList.remove('boot'), 900);
+		} catch {
+			// no sessionStorage (private mode edge cases): skip the ritual quietly
+		}
 	});
 </script>
 
@@ -41,6 +60,12 @@
 			<span class="dot" aria-hidden="true"></span>
 			<span class="note">Nothing leaves this machine.</span>
 		</div>
+		<!-- Build plate: real provenance stamped at build time by build-info.mjs. -->
+		<p class="plate mono tnum" aria-label="build provenance">
+			BUILD {build.sha}{#if build.tests}
+				<span class="pd" aria-hidden="true">&middot;</span> {build.tests} TESTS GREEN{/if}
+			<span class="pd" aria-hidden="true">&middot;</span> AIR-GAPPED
+		</p>
 	</footer>
 </div>
 
@@ -86,6 +111,17 @@
 		height: 3px;
 		border-radius: 50%;
 		background: var(--line);
+	}
+
+	.plate {
+		margin-top: 0.85rem;
+		font-size: 0.6875rem;
+		letter-spacing: 0.14em;
+		color: var(--faint);
+	}
+	.plate .pd {
+		color: var(--line);
+		margin-inline: 0.15em;
 	}
 
 	/* Same-document crossfade + a short lift. Firefox is Level-1; key off the

@@ -209,6 +209,47 @@ main {
 	padding-block: clamp(2.5rem, 6vw, 5rem) 4rem;
 }
 
+/* ---- Boot ritual ----------------------------------------------------- */
+
+/* First load of a session only (the layout adds html.boot for ~900ms). The
+   header tick warms up like a filament; the hero eyebrow fades up 80ms behind
+   it. Global on purpose - the .tick / .eyebrow classes live in scoped
+   components but keep their names, so app.css can reach them. */
+@media (prefers-reduced-motion: no-preference) {
+	html.boot .tick {
+		animation: tick-warm 500ms var(--ease-out) both;
+	}
+	html.boot .eyebrow {
+		animation: eyebrow-up 380ms var(--ease-out) 80ms both;
+	}
+}
+@keyframes tick-warm {
+	0% {
+		opacity: 0.25;
+		box-shadow: 0 0 0 1px #0a0e13 inset;
+	}
+	55% {
+		opacity: 1;
+		box-shadow:
+			0 0 0 1px #0a0e13 inset,
+			0 0 10px var(--phosphor);
+	}
+	100% {
+		opacity: 1;
+		box-shadow: 0 0 0 1px #0a0e13 inset;
+	}
+}
+@keyframes eyebrow-up {
+	from {
+		opacity: 0;
+		transform: translateY(4px);
+	}
+	to {
+		opacity: 1;
+		transform: none;
+	}
+}
+
 /* ---- Motion ---------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {

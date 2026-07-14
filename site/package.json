@@ -4,7 +4,9 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
+		"predev": "node scripts/build-info.mjs",
 		"dev": "vite dev",
+		"prebuild": "node scripts/build-info.mjs",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "svelte-kit sync || echo ''",
