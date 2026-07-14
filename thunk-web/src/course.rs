@@ -67,19 +67,24 @@ fn check_widget(check: &Check) -> String {
 /// The course ladder: every module as a card, in order.
 pub fn index_page() -> String {
     let mut main = String::from(
-        "<h1>thunk</h1>\n\
-         <p class=\"tagline\">A self-contained, offline systems course. \
-         From true zero to DOOM on a panel.</p>\n\
+        "<div class=\"hero\">\n\
+         <p class=\"eyebrow\">A self-contained, offline systems course</p>\n\
+         <h1>thunk</h1>\n\
+         <p class=\"tagline\">From true zero to DOOM on a panel. \
+         Nothing leaves this machine.</p>\n\
+         </div>\n\
          <ol class=\"ladder\">\n",
     );
     for module in Curriculum::all() {
         let dir = esc(&module.id.0);
-        let tag = esc(module.id.0.split('-').next().unwrap_or(""));
+        let tag = esc(&module.id.0.split('-').next().unwrap_or("").to_uppercase());
         let checks = Curriculum::load_checks(&module.id.0).len();
         main.push_str(&format!(
-            "<li class=\"card\"><span class=\"tag\">{tag}</span> \
-             <a href=\"{dir}/index.html\">{}</a> \
-             <span class=\"meta\" data-module=\"{dir}\">{} lessons · {checks} checks</span></li>\n",
+            "<li class=\"card\"><a class=\"session\" href=\"{dir}/index.html\">\
+             <span class=\"tag\" aria-hidden=\"true\">{tag}</span>\
+             <span class=\"s-body\"><span class=\"ttl\">{}</span>\
+             <span class=\"meta\" data-module=\"{dir}\">{} lessons · {checks} checks</span></span>\
+             <span class=\"go\" aria-hidden=\"true\">&#9654;</span></a></li>\n",
             esc(&module.title),
             module.lessons.len(),
         ));
@@ -96,12 +101,17 @@ pub fn index_page() -> String {
 pub fn module_page(dir: &str) -> String {
     let module = Curriculum::load_module(dir);
     let checks = Curriculum::load_checks(dir).len();
+    let tag = dir.split('-').next().unwrap_or("").to_uppercase();
     let mut main = format!(
         "<p class=\"crumbs\"><a href=\"../index.html\">thunk</a> / {}</p>\n\
+         <div class=\"head\">\n\
+         <p class=\"eyebrow\">Session {}</p>\n\
          <h1>{}</h1>\n\
          <p class=\"meta\">{} lessons · {checks} checks</p>\n\
+         </div>\n\
          <ol class=\"lessons\">\n",
         esc(&module.title),
+        esc(&tag),
         esc(&module.title),
         module.lessons.len(),
     );
@@ -152,14 +162,19 @@ pub fn lesson_page(dir: &str, lesson_id: &str) -> String {
         .filter(|c| c.id().0.starts_with(&prefix))
         .collect();
 
+    let tag = dir.split('-').next().unwrap_or("").to_uppercase();
     let mut main = format!(
         "<p class=\"crumbs\"><a href=\"../../index.html\">thunk</a> / \
          <a href=\"../index.html\">{}</a> / {}</p>\n\
+         <p class=\"eyebrow\">Session {} &middot; Lesson {:02} of {:02}</p>\n\
          <article class=\"lesson\">\n{}</article>\n\
          <section class=\"checks\" aria-label=\"checks\">\n<h2>Checks</h2>\n\
          <p class=\"meta\">Answer these to prove the lesson landed. Graded right here; nothing is sent anywhere.</p>\n",
         esc(&module.title),
         esc(&lesson.title),
+        esc(&tag),
+        index + 1,
+        module.lessons.len(),
         markdown::render(&lesson.body),
     );
     for check in &checks {

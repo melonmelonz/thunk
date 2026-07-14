@@ -28,13 +28,19 @@ pub fn shell(title: &str, site_name: &str, main_html: &str, depth: usize) -> Str
     let root = "../".repeat(depth);
     let title = esc(title);
     let site = esc(site_name);
+    // "thunk · thunk" reads like a stutter; the front page is just the site.
+    let doc_title = if title == site {
+        site.clone()
+    } else {
+        format!("{title} · {site}")
+    };
     format!(
         "<!doctype html>\n\
          <html lang=\"en\">\n\
          <head>\n\
          <meta charset=\"utf-8\">\n\
          <meta name=\"viewport\" content=\"width=device-width, initial-scale=1\">\n\
-         <title>{title} · {site}</title>\n\
+         <title>{doc_title}</title>\n\
          <link rel=\"stylesheet\" href=\"{root}assets/thunk.css\">\n\
          </head>\n\
          <body>\n\
