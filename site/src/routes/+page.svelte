@@ -19,11 +19,29 @@
 
 <section class="hero">
 	<p class="eyebrow label">Offline systems course</p>
-	<h1>thunk</h1>
+	<h1>thunk<sup class="fn" aria-hidden="true">1</sup></h1>
 	<p class="tagline">
 		From true zero to DOOM on a panel. You build the kernel, the driver, and the bus, then watch
 		real hardware come up. Nothing leaves this machine.
 	</p>
+
+	<!-- The soul line: Penn's own definition, set as a datasheet footnote tied
+	     to the wordmark. Small, quiet, undecorated. -->
+	<p class="def">
+		<span class="fn-mark mono" aria-hidden="true">1</span>
+		<span class="def-text mono"
+			>thunk <span class="pos">(n.)</span> - a piece of code set aside to run later, not thrown
+			away.</span
+		>
+	</p>
+
+	<!-- Truth badges: all three are true of this build. Hairlines, no fill. -->
+	<ul class="badges" aria-label="guarantees">
+		<li class="badge mono">AIR-GAPPED</li>
+		<li class="badge mono">NO ACCOUNTS</li>
+		<li class="badge mono">NO TELEMETRY</li>
+	</ul>
+
 	<dl class="readout tnum" aria-label="course size">
 		<div>
 			<dt class="label">Modules</dt>
@@ -40,6 +58,19 @@
 			<dd>{curriculum.checkCount}</dd>
 		</div>
 	</dl>
+
+	<!-- The real ILI9341 bring-up the course teaches, as a quiet ornament:
+	     command bytes carry weight, the one data byte (55, RGB565) sits dimmer.
+	     SWRESET, SLPOUT, COLMOD=55, DISPON | CASET, PASET, RAMWR. -->
+	<div class="initseq" aria-label="ILI9341 init and draw sequence">
+		<span class="iseq-label label">INIT SEQ</span>
+		<span class="bytes mono tnum">
+			<span class="cmd">01</span> <span class="cmd">11</span> <span class="cmd">3A</span>
+			<span class="data">55</span> <span class="cmd">29</span>
+			<span class="mid" aria-hidden="true">&middot;</span>
+			<span class="cmd">2A</span> <span class="cmd">2B</span> <span class="cmd">2C</span>
+		</span>
+	</div>
 </section>
 
 <section class="rack" aria-label="the ladder">
@@ -57,7 +88,12 @@
 <section class="bench-teaser reveal-late">
 	<a class="bench" href="/bench/">
 		<span class="bench-mark" aria-hidden="true">
-			<span class="scan"></span>
+			<span class="smpte">
+				<i style="--c:#38443b"></i><i style="--c:#2c3730"></i><i style="--c:#3d463f"></i><i
+					style="--c:#2f3a34"></i><i style="--c:#434b44"></i><i style="--c:#28312b"></i><i
+					style="--c:#353d37"></i>
+			</span>
+			<span class="standby label">STANDBY</span>
 		</span>
 		<span class="bench-body">
 			<span class="bench-title">The Bench</span>
@@ -84,12 +120,61 @@
 		line-height: 0.95;
 		color: #fff;
 	}
+	.fn {
+		font-family: var(--font-mono);
+		font-weight: 400;
+		font-size: 0.9rem;
+		line-height: 1;
+		vertical-align: super;
+		color: var(--faint);
+		margin-left: 0.15em;
+	}
 	.tagline {
 		margin-top: 1.4rem;
 		font-size: 1.0625rem;
 		line-height: 1.65;
 		color: var(--muted);
 		max-width: 34rem;
+	}
+
+	/* The definition, typeset: a footnote, not a banner. */
+	.def {
+		display: flex;
+		gap: 0.55rem;
+		margin-top: 1.6rem;
+		max-width: 36rem;
+	}
+	.fn-mark {
+		font-size: 0.625rem;
+		line-height: 1.5;
+		color: var(--faint);
+		vertical-align: super;
+		flex: none;
+	}
+	.def-text {
+		font-size: 0.8125rem;
+		line-height: 1.55;
+		color: var(--muted);
+		letter-spacing: 0.01em;
+	}
+	.def-text .pos {
+		color: var(--faint);
+	}
+
+	.badges {
+		list-style: none;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-top: 1.5rem;
+	}
+	.badge {
+		font-size: 0.625rem;
+		letter-spacing: 0.14em;
+		color: var(--faint);
+		border: 1px solid var(--line);
+		border-radius: 2px;
+		padding: 0.32rem 0.55rem;
 	}
 
 	.readout {
@@ -117,6 +202,36 @@
 		width: 1px;
 		height: 2rem;
 		background: var(--line);
+	}
+
+	/* INIT SEQ: a single hairline-ruled line of the real bring-up bytes. */
+	.initseq {
+		display: flex;
+		align-items: baseline;
+		gap: 1rem;
+		margin-top: 2.25rem;
+		padding: 0.6rem 0;
+		border-top: 1px solid var(--line);
+		border-bottom: 1px solid var(--line);
+		max-width: 30rem;
+	}
+	.iseq-label {
+		color: var(--faint);
+		flex: none;
+	}
+	.initseq .bytes {
+		font-size: 0.8125rem;
+		letter-spacing: 0.12em;
+	}
+	.initseq .cmd {
+		color: var(--muted);
+	}
+	.initseq .data {
+		color: var(--faint);
+	}
+	.initseq .mid {
+		color: var(--line);
+		margin-inline: 0.2em;
 	}
 
 	.rack-head {
@@ -158,29 +273,31 @@
 		border-color: #24303e;
 		background: var(--s2);
 	}
+	/* The teaser screen: static SMPTE mini-bars in PVM phosphor tones (muted
+	   greens and greys, never rainbow), captioned STANDBY. */
 	.bench-mark {
-		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
+	}
+	.smpte {
+		display: grid;
+		grid-template-columns: repeat(7, 1fr);
 		width: 46px;
-		height: 34px;
+		height: 30px;
 		border: 1px solid var(--line);
 		border-radius: 2px;
-		background: repeating-linear-gradient(
-			var(--bg) 0,
-			var(--bg) 2px,
-			#0c1219 2px,
-			#0c1219 3px
-		);
 		overflow: hidden;
+		filter: saturate(0.75);
 	}
-	.bench-mark .scan {
-		position: absolute;
-		left: 0;
-		right: 0;
-		top: 30%;
-		height: 1px;
-		background: var(--phosphor);
-		opacity: 0.7;
-		box-shadow: 0 0 8px var(--phosphor-dim);
+	.smpte i {
+		background: var(--c);
+	}
+	.standby {
+		font-size: 0.5rem;
+		letter-spacing: 0.16em;
+		color: var(--faint);
 	}
 	.bench-body {
 		display: flex;
