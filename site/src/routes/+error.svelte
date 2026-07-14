@@ -3,7 +3,7 @@
 </script>
 
 <svelte:head>
-	<title>No signal - thunk</title>
+	<title>NO SIGNAL &middot; thunk</title>
 </svelte:head>
 
 <section class="dead">

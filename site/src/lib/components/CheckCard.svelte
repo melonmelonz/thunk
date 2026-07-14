@@ -8,6 +8,7 @@
 	<div class="chead">
 		<span class="cn tnum" aria-hidden="true">{String(n).padStart(2, '0')}</span>
 		<span class="ck label">{label}</span>
+		<span class="cid mono" aria-hidden="true">{check.id}</span>
 	</div>
 	<p class="prompt">{check.prompt}</p>
 
@@ -48,6 +49,13 @@
 	}
 	.ck {
 		color: var(--faint);
+	}
+	.cid {
+		margin-left: auto;
+		font-size: 0.625rem;
+		letter-spacing: 0.04em;
+		color: var(--faint);
+		opacity: 0.7;
 	}
 	.prompt {
 		font-size: 1rem;

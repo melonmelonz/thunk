@@ -1,5 +1,5 @@
 <svelte:head>
-	<title>The Bench - thunk</title>
+	<title>THE BENCH &middot; thunk</title>
 	<meta name="description" content="The simulated panel and the live bus trace that drew it." />
 </svelte:head>
 

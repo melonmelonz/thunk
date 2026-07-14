@@ -9,10 +9,13 @@
 	const prev = $derived(data.prev);
 	const next = $derived(data.next);
 	const index = $derived(data.index);
+	// Channel language: M0 -> CH-00, lesson 1 -> .01
+	const ch = $derived(String(Number(module.tag.replace(/\D/g, ''))).padStart(2, '0'));
+	const chLesson = $derived(`CH-${ch}.${String(index + 1).padStart(2, '0')}`);
 </script>
 
 <svelte:head>
-	<title>{lesson.title} - {module.tag} {module.title} - thunk</title>
+	<title>{chLesson} &middot; {lesson.title} &middot; thunk</title>
 	<meta name="description" content={`${module.title}, lesson ${index + 1} of ${module.lessonCount}: ${lesson.title}.`} />
 </svelte:head>
 
@@ -189,6 +192,48 @@
 		padding: 0;
 		font-size: inherit;
 		color: var(--muted);
+	}
+
+	/* Key terms as a datasheet. Every lesson closes with an <h2>Key terms</h2>
+	   immediately followed by a <ul> - the only h2 in the corpus directly
+	   adjacent to a list - so `h2:has(+ ul)` targets it precisely without
+	   parsing the injected HTML. The header becomes a small caption and the
+	   list a hairline-boxed table with mono terms. */
+	.prose :global(h2:has(+ ul)) {
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		font-weight: 400;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--faint);
+		margin-bottom: 0.85rem;
+	}
+	.prose :global(h2:has(+ ul) + ul) {
+		list-style: none;
+		padding: 0;
+		margin: 0 0 1.15rem;
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		background: var(--s1);
+		overflow: hidden;
+	}
+	.prose :global(h2:has(+ ul) + ul li) {
+		margin: 0;
+		padding: 0.65rem 1rem;
+		border-top: 1px solid var(--line-soft);
+		font-size: 0.9375rem;
+		color: var(--muted);
+		line-height: 1.5;
+	}
+	.prose :global(h2:has(+ ul) + ul li:first-child) {
+		border-top: none;
+	}
+	.prose :global(h2:has(+ ul) + ul strong) {
+		font-family: var(--font-mono);
+		font-size: 0.8125rem;
+		font-weight: 400;
+		color: var(--text);
+		letter-spacing: 0.01em;
 	}
 
 	.checks {

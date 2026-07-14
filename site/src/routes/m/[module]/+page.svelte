@@ -1,15 +1,18 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import ModuleGlyph from '$lib/components/ModuleGlyph.svelte';
 	let { data }: { data: PageData } = $props();
 	// Derived, not destructured: client-side nav between modules reuses this
 	// component and updates `data` reactively.
 	const module = $derived(data.module);
 	const prevModule = $derived(data.prevModule);
 	const nextModule = $derived(data.nextModule);
+	// Channel language: M0 -> CH-00
+	const ch = $derived(`CH-${String(Number(module.tag.replace(/\D/g, ''))).padStart(2, '0')}`);
 </script>
 
 <svelte:head>
-	<title>{module.tag} {module.title} - thunk</title>
+	<title>{ch} &middot; {module.title} &middot; thunk</title>
 	<meta name="description" content={`${module.title}: ${module.lessonCount} lessons, ${module.checkCount} checks.`} />
 </svelte:head>
 
@@ -20,7 +23,14 @@
 </nav>
 
 <header class="mhead">
-	<p class="eyebrow label">Module {module.tag}</p>
+	<div class="mtop">
+		<span class="mglyph" aria-hidden="true"><ModuleGlyph tag={module.tag} /></span>
+		<p class="eyebrow label">
+			<span class="ch">{ch}</span>
+			<span class="mid" aria-hidden="true">&middot;</span>
+			Module {module.tag}
+		</p>
+	</div>
 	<h1>{module.title}</h1>
 	<p class="counts label tnum">
 		{String(module.lessonCount).padStart(2, '0')} lessons
@@ -87,9 +97,25 @@
 		max-width: 44rem;
 		margin-bottom: 2.5rem;
 	}
+	.mtop {
+		display: flex;
+		align-items: center;
+		gap: 0.7rem;
+		margin-bottom: 0.9rem;
+	}
+	.mglyph {
+		color: var(--muted);
+		display: inline-flex;
+	}
 	.eyebrow {
 		color: var(--phosphor);
-		margin-bottom: 0.9rem;
+	}
+	.eyebrow .ch {
+		color: var(--muted);
+	}
+	.eyebrow .mid {
+		color: var(--faint);
+		margin-inline: 0.15em;
 	}
 	h1 {
 		font-size: clamp(1.9rem, 4.5vw, 2.75rem);
