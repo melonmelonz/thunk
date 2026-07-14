@@ -41,6 +41,13 @@ cargo run -p thunk-cli -- kit         # facilitator kit: pacing guide + answer k
   `/dev/spidev` and GPIO with the same driver code the simulator runs, and adds module M7, First
   Patch, which walks a learner into a first real open-source contribution.
 
+## No hardware required
+
+The course runs at four rungs, from an in-process simulator up to a real panel, and the first
+three need no hardware at all. The third boots a real Linux kernel in QEMU where the static
+`thunk` binary is the only userspace on board (`./scripts/qemu-smoke.sh`, verified in CI).
+See [`docs/PATHS.md`](docs/PATHS.md) for all four, each with its exact command.
+
 ## Workspace
 
 - `thunk-core` — domain logic: content model, check grading, progress, gates, placement.
