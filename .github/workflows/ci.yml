@@ -116,3 +116,27 @@ jobs:
       - name: Verify the binary is static
         run: |
           file target/x86_64-unknown-linux-musl/release/thunk | tee /dev/stderr | grep -Eq 'statically linked|static-pie linked'
+
+  # The no-hardware proof, end to end: boot a real kernel in QEMU (TCG, no
+  # KVM) where the static thunk binary is the only userspace, and assert the
+  # course's bus trace comes back over the serial console. See docs/PATHS.md.
+  qemu:
+    name: qemu boot smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install pinned toolchain + musl target
+        run: |
+          rustup show
+          rustup target add x86_64-unknown-linux-musl
+      - name: Install qemu, busybox, musl-gcc
+        run: sudo apt-get update && sudo apt-get install -y qemu-system-x86 busybox-static musl-tools
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: qemu
+      # The runner's kernel is root-readable only; stage a readable copy.
+      - name: Stage a readable kernel
+        run: sudo install -m 0644 "/boot/vmlinuz-$(uname -r)" /tmp/vmlinuz
+      - name: Boot smoke
+        run: THUNK_QEMU_KERNEL=/tmp/vmlinuz ./scripts/qemu-smoke.sh
