@@ -1,0 +1,223 @@
+/* thunk course site - the Calibrated PVM lab.
+   One phosphor. Hairlines, never shadows. Depth from the surface ladder.
+   Every number is tabular; every accent is earned. */
+
+/* ---- Faces: self-hosted, no network ---------------------------------- */
+
+@font-face {
+	font-family: 'Switzer';
+	src: url('/fonts/switzer-variable.woff2') format('woff2-variations');
+	font-weight: 100 900;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Commit Mono';
+	src: url('/fonts/commit-mono-400.woff2') format('woff2');
+	font-weight: 400;
+	font-style: normal;
+	font-display: swap;
+}
+@font-face {
+	font-family: 'Commit Mono';
+	src: url('/fonts/commit-mono-600.woff2') format('woff2');
+	font-weight: 600;
+	font-style: normal;
+	font-display: swap;
+}
+
+/* ---- Tokens ---------------------------------------------------------- */
+
+:root {
+	/* Surface ladder: borders lighten, black never gets a shadow. */
+	--bg: #0a0e13;
+	--s1: #0e1319;
+	--s2: #111722;
+	--s3: #151c25;
+
+	/* Ink */
+	--text: #c9d4e0;
+	--muted: #7c8a9c;
+	/* Third text tier, tuned up from the draft #4A5563 (2.55:1, failed) to
+	   meet AA on bg and surface-1 where the micro-labels live. Distinguished
+	   from --muted by the uppercase letter-spaced mono register, not luminance
+	   alone. Decorative rules (dividers, dots, rails) use --line / --s3. */
+	--faint: #757f90;
+
+	/* The one color, plus a sparse alt and truth-only red. */
+	--phosphor: #3df0a8;
+	--phosphor-dim: #3df0a833;
+	--cyan: #64d8ff;
+	--err: #ff6b6b;
+
+	/* Hairlines: the grid shows only where it earns it. */
+	--line: #1c2530;
+	--line-soft: #161d27;
+
+	--font-mono: 'Commit Mono', ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+	--font-body: 'Switzer', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+	/* Rhythm */
+	--measure: 68ch;
+	--gutter: clamp(1.25rem, 4vw, 2.5rem);
+	--radius: 3px;
+
+	--ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+
+	color-scheme: dark;
+	font-feature-settings: 'tnum' 1, 'cv01' 1;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	text-rendering: optimizeLegibility;
+}
+
+/* ---- Reset ----------------------------------------------------------- */
+
+*,
+*::before,
+*::after {
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
+}
+
+html {
+	background: var(--bg);
+}
+
+body {
+	background: var(--bg);
+	color: var(--text);
+	font-family: var(--font-body);
+	font-size: 16px;
+	line-height: 1.6;
+	font-weight: 400;
+	min-height: 100vh;
+	-webkit-text-size-adjust: 100%;
+}
+
+/* A faint calibration grain: two nearly-invisible hairline field lines,
+   fixed, so the black reads as an instrument face and not a void. */
+body::before {
+	content: '';
+	position: fixed;
+	inset: 0;
+	pointer-events: none;
+	z-index: 0;
+	background:
+		linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0 / 100% 4px,
+		radial-gradient(120% 80% at 50% -10%, #0f1621 0%, transparent 60%);
+	opacity: 0.35;
+	mask-image: linear-gradient(#000, #000);
+}
+
+a {
+	color: inherit;
+	text-decoration: none;
+}
+
+button {
+	font: inherit;
+	color: inherit;
+	background: none;
+	border: none;
+	cursor: pointer;
+}
+
+h1,
+h2,
+h3,
+h4 {
+	font-weight: 500;
+	line-height: 1.15;
+	letter-spacing: -0.015em;
+}
+
+/* ---- The tells: focus, selection, scrollbar -------------------------- */
+
+:focus-visible {
+	outline: 1px solid var(--phosphor);
+	outline-offset: 2px;
+	border-radius: 1px;
+}
+
+::selection {
+	background: var(--phosphor);
+	color: var(--bg);
+}
+
+* {
+	scrollbar-width: thin;
+	scrollbar-color: var(--s3) transparent;
+}
+*::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+	background: var(--s3);
+	border: 3px solid var(--bg);
+	border-radius: 6px;
+}
+*::-webkit-scrollbar-thumb:hover {
+	background: #1f2a37;
+}
+
+/* ---- Type primitives ------------------------------------------------- */
+
+.mono {
+	font-family: var(--font-mono);
+	font-feature-settings: 'tnum' 1;
+}
+
+/* A small-caps machine label: eyebrows, tags, meta. */
+.label {
+	font-family: var(--font-mono);
+	font-size: 0.6875rem;
+	font-weight: 400;
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--muted);
+}
+
+.tnum {
+	font-variant-numeric: tabular-nums;
+	font-feature-settings: 'tnum' 1;
+}
+
+/* ---- Layout scaffold ------------------------------------------------- */
+
+.wrap {
+	position: relative;
+	z-index: 1;
+	width: 100%;
+	max-width: 74rem;
+	margin-inline: auto;
+	padding-inline: var(--gutter);
+}
+
+.app {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	flex-direction: column;
+	min-height: 100vh;
+}
+
+main {
+	flex: 1 0 auto;
+	padding-block: clamp(2.5rem, 6vw, 5rem) 4rem;
+}
+
+/* ---- Motion ---------------------------------------------------------- */
+
+@media (prefers-reduced-motion: reduce) {
+	*,
+	*::before,
+	*::after {
+		animation-duration: 0.001ms !important;
+		animation-iteration-count: 1 !important;
+		transition-duration: 0.001ms !important;
+		view-transition-name: none !important;
+	}
+}
