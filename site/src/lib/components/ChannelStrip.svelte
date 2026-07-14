@@ -1,7 +1,7 @@
 <script lang="ts">
 	import type { Module } from '$lib/content';
+	import ModuleGlyph from '$lib/components/ModuleGlyph.svelte';
 	let { module, index }: { module: Module; index: number } = $props();
-	const n = $derived(String(index).padStart(2, '0'));
 </script>
 
 <a
@@ -10,7 +10,10 @@
 	style={`--i:${index}`}
 	data-sveltekit-preload-data="hover"
 >
-	<span class="idx tnum" aria-hidden="true">{module.tag}</span>
+	<span class="idx" aria-hidden="true">
+		<ModuleGlyph tag={module.tag} />
+		<span class="tag tnum">{module.tag}</span>
+	</span>
 	<span class="body">
 		<span class="title">{module.title}</span>
 		<span class="counts label">
@@ -19,6 +22,9 @@
 			{String(module.checkCount).padStart(2, '0')} checks
 		</span>
 	</span>
+	<!-- Meter voice: at 0% the channel reads NO SIGNAL. When progress arrives
+	     (S-C) this slot carries the percentage instead. -->
+	<span class="sig label" aria-hidden="true">NO SIGNAL</span>
 	<span class="meter" aria-hidden="true">
 		<span class="rail"></span>
 		<span class="origin"></span>
@@ -51,14 +57,33 @@
 	}
 
 	.idx {
-		font-family: var(--font-mono);
-		font-size: 0.8125rem;
-		letter-spacing: 0.06em;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.3rem;
 		color: var(--faint);
 		transition: color 140ms var(--ease-out);
 	}
+	.idx .tag {
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		letter-spacing: 0.08em;
+	}
 	.strip:hover .idx {
 		color: var(--phosphor);
+	}
+
+	.sig {
+		font-size: 0.5625rem;
+		letter-spacing: 0.14em;
+		color: var(--faint);
+		text-align: right;
+		white-space: nowrap;
+		opacity: 0.75;
+		transition: opacity 140ms var(--ease-out);
+	}
+	.strip:hover .sig {
+		opacity: 1;
 	}
 
 	.body {
@@ -132,6 +157,9 @@
 			display: none;
 		}
 		.meter {
+			display: none;
+		}
+		.sig {
 			display: none;
 		}
 	}
