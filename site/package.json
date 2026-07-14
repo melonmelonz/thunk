@@ -9,7 +9,7 @@
 		"prebuild": "node scripts/build-info.mjs",
 		"build": "vite build",
 		"preview": "vite preview",
-		"prepare": "svelte-kit sync || echo ''",
+		"prepare": "node scripts/build-info.mjs && (svelte-kit sync || echo '')",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},

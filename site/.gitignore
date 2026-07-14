@@ -1,5 +1,8 @@
 node_modules
 
+# Generated build provenance (written by scripts/build-info.mjs at prepare/build)
+/src/lib/build.json
+
 # Output
 .output
 .vercel
