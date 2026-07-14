@@ -140,3 +140,41 @@ jobs:
         run: sudo install -m 0644 "/boot/vmlinuz-$(uname -r)" /tmp/vmlinuz
       - name: Boot smoke
         run: THUNK_QEMU_KERNEL=/tmp/vmlinuz ./scripts/qemu-smoke.sh
+
+  # The public course site (SvelteKit, adapter-static). Two guarantees: the
+  # checked-in content.json is exactly what `thunk export` emits (it can never
+  # drift from the curriculum), and the built site is hermetic - no external
+  # resource ever loads. The markup and styles carry zero external URLs; the
+  # only https strings in the JS runtime are Svelte's inert error-doc links and
+  # W3C XML namespaces, never fetched.
+  site:
+    name: course site (static + hermetic)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - name: Install pinned toolchain
+        run: rustup show
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: site
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+      - name: Export the curriculum
+        run: cargo run -p thunk-cli --locked -- export
+      - name: Content is fresh (regenerated JSON matches the checked-in copy)
+        run: git diff --exit-code site/src/lib/content.json
+      - name: Install site deps
+        run: npm ci --prefix site
+      - name: Build the static site
+        run: npm run build --prefix site
+      - name: Hermetic check (no external URLs in markup or styles)
+        run: '! grep -rE "https?://" site/build --include="*.html" --include="*.css"'
+      - name: Hermetic check (JS carries no phone-home URLs beyond framework internals)
+        run: |
+          bad=$(grep -rhoE "https?://[A-Za-z0-9._~:/?#@!%-]+" site/build --include='*.js' \
+            | grep -vE "w3\.org|svelte\.dev/e/" || true)
+          test -z "$bad" || { echo "unexpected external URLs in JS:"; echo "$bad"; exit 1; }
