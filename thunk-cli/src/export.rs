@@ -175,24 +175,38 @@ mod tests {
         let json = export_json();
         let v: Value = serde_json::from_str(&json).expect("export emits valid JSON");
 
+        // The export must mirror whatever ladder this build carries (7 modules
+        // inside, 8 with the open feature), so the expectations are derived
+        // from the same source of truth, not pinned literals - the content
+        // crate's own suite pins the literals per profile.
+        let want_modules = thunk_content::LADDER.len();
+        let want_lessons: usize = thunk_content::Curriculum::all()
+            .iter()
+            .map(|m| m.lessons.len())
+            .sum();
+        let want_checks: usize = thunk_content::LADDER
+            .iter()
+            .map(|dir| thunk_content::Curriculum::load_checks(dir).len())
+            .sum();
+
         let modules = v["modules"].as_array().expect("modules array");
-        assert_eq!(modules.len(), 7, "seven modules on the inside ladder");
-        assert_eq!(v["moduleCount"], 7);
+        assert_eq!(modules.len(), want_modules, "every module on the ladder");
+        assert_eq!(v["moduleCount"], want_modules);
 
         let lessons: usize = modules
             .iter()
             .map(|m| m["lessons"].as_array().unwrap().len())
             .sum();
-        assert_eq!(lessons, 31, "thirty-one lessons in all");
-        assert_eq!(v["lessonCount"], 31);
+        assert_eq!(lessons, want_lessons, "every lesson in all");
+        assert_eq!(v["lessonCount"], want_lessons);
 
         let checks: usize = modules
             .iter()
             .flat_map(|m| m["lessons"].as_array().unwrap())
             .map(|l| l["checks"].as_array().unwrap().len())
             .sum();
-        assert_eq!(checks, 93, "ninety-three checks in all");
-        assert_eq!(v["checkCount"], 93);
+        assert_eq!(checks, want_checks, "every check in all");
+        assert_eq!(v["checkCount"], want_checks);
     }
 
     #[test]

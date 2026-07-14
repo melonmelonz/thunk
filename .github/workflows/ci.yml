@@ -59,10 +59,12 @@ jobs:
       - uses: Swatinem/rust-cache@v2
         with:
           key: web
-      - name: Generate the site
-        run: cargo run -p thunk-cli --locked -- web --out site
+      # Output dir must NOT be "site" - that is the SvelteKit app's source
+      # tree, whose configs legitimately mention https URLs in comments.
+      - name: Generate the offline bundle
+        run: cargo run -p thunk-cli --locked -- web --out offline-site
       - name: Hermetic check (zero external URLs)
-        run: '! grep -rE "https?://" site/'
+        run: '! grep -rE "https?://" offline-site/'
 
   # The two build profiles must stay separated: the inside (default) graph
   # carries no hardware crate at all, and the open profile builds, lints, and
