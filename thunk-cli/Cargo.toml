@@ -17,6 +17,8 @@ thunk-tui = { path = "../thunk-tui" }
 thunk-web = { path = "../thunk-web" }
 thunk-hw = { path = "../thunk-hw", optional = true }
 clap = { workspace = true }
+serde = { workspace = true }
+serde_json = "1"
 
 [features]
 # The open build: the real spidev/GPIO backend + the M7 module. The inside

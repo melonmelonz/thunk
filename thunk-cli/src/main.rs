@@ -1,5 +1,6 @@
 //! `thunk` command-line front-end. Renders the one content source to the terminal.
 
+mod export;
 mod kit;
 
 use clap::{Parser, Subcommand};
@@ -45,6 +46,13 @@ enum Cmd {
     Web {
         /// Directory to write the site into (created if missing).
         #[arg(long, default_value = "thunk-site")]
+        out: std::path::PathBuf,
+    },
+    /// Write the whole curriculum as one JSON document - the build-time
+    /// content source for the public course site.
+    Export {
+        /// File to write the curriculum JSON into (parent dirs created).
+        #[arg(long, default_value = "site/src/lib/content.json")]
         out: std::path::PathBuf,
     },
     /// Write the facilitator kit: pacing guide + answer key, generated
@@ -112,6 +120,13 @@ fn main() {
             ),
             Err(e) => {
                 eprintln!("thunk: could not write the site: {e}");
+                std::process::exit(1);
+            }
+        },
+        Some(Cmd::Export { out }) => match write_export(&out) {
+            Ok(()) => println!("wrote the curriculum to {}", out.display()),
+            Err(e) => {
+                eprintln!("thunk: could not write the export: {e}");
                 std::process::exit(1);
             }
         },
@@ -210,6 +225,16 @@ fn write_site(dir: &std::path::Path) -> std::io::Result<usize> {
         std::fs::write(&path, body)?;
     }
     Ok(files.len())
+}
+
+/// Write the curriculum JSON to `path`, creating its parent directories.
+fn write_export(path: &std::path::Path) -> std::io::Result<()> {
+    if let Some(parent) = path.parent() {
+        if !parent.as_os_str().is_empty() {
+            std::fs::create_dir_all(parent)?;
+        }
+    }
+    std::fs::write(path, export::export_json())
 }
 
 /// Write the facilitator kit under `dir`, creating it as needed - the same
