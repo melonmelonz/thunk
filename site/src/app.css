@@ -96,19 +96,19 @@ body {
 	-webkit-text-size-adjust: 100%;
 }
 
-/* A faint calibration grain: two nearly-invisible hairline field lines,
-   fixed, so the black reads as an instrument face and not a void. */
+/* Depth, no lines: a single faint top vignette so the black reads as an
+   instrument face and not a void. The old field-line grain (a 4px linear
+   scanline) is gone from every reading/app surface by Penn's order - the only
+   line texture that survives lives on the bench canvas bezel (its SCANLINES
+   toggle). Per spec 3: depth from the surface ladder and hairlines, not grain. */
 body::before {
 	content: '';
 	position: fixed;
 	inset: 0;
 	pointer-events: none;
 	z-index: 0;
-	background:
-		linear-gradient(var(--line-soft) 1px, transparent 1px) 0 0 / 100% 4px,
-		radial-gradient(120% 80% at 50% -10%, #0f1621 0%, transparent 60%);
-	opacity: 0.35;
-	mask-image: linear-gradient(#000, #000);
+	background: radial-gradient(120% 80% at 50% -10%, #0f1621 0%, transparent 60%);
+	opacity: 0.5;
 }
 
 a {
