@@ -11,7 +11,8 @@ DENY='exploit|malware|keylogger|backdoor|rootkit|botnet|ransomware|\bddos\b'
 # which legitimately describe the vocabulary this lint keeps out.
 hits="$(grep -rIniE "$DENY" "$ROOT" \
     --include='*.md' --include='*.rs' --include='*.ron' \
-    --exclude-dir=target --exclude-dir=.git --exclude-dir=docs 2>/dev/null || true)"
+    --exclude-dir=target --exclude-dir=.git --exclude-dir=docs \
+    --exclude-dir=node_modules 2>/dev/null || true)"
 
 if [ -n "$hits" ]; then
     echo "vocab-lint: exploitation vocabulary found; keep the language course-appropriate:"
