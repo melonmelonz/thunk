@@ -176,6 +176,8 @@ jobs:
         run: git diff --exit-code site/src/lib/content.json
       - name: Install site deps
         run: npm ci --prefix site
+      - name: Unit tests (grader parity + XP curve)
+        run: npm test --prefix site
       - name: Build the static site
         run: npm run build --prefix site
       - name: Hermetic check (no external URLs in markup or styles)
