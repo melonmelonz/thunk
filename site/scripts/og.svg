@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+	<!-- The social card, in the Calibrated PVM language: blue-black field, one
+	     phosphor, hairlines. Rasterized by scripts/og.mjs (sharp). Mono is set in
+	     a system monospace at render time; the committed PNG is the artifact. -->
+	<defs>
+		<radialGradient id="halo" cx="30%" cy="0%" r="90%">
+			<stop offset="0%" stop-color="#0F1621" />
+			<stop offset="60%" stop-color="#0A0E13" />
+			<stop offset="100%" stop-color="#0A0E13" />
+		</radialGradient>
+	</defs>
+
+	<rect width="1200" height="630" fill="#0A0E13" />
+	<rect width="1200" height="630" fill="url(#halo)" />
+
+	<!-- Faint calibration field: a few hairlines, upper field only. -->
+	<g stroke="#161D27" stroke-width="1" opacity="0.6">
+		<line x1="0" y1="120" x2="1200" y2="120" />
+		<line x1="0" y1="124" x2="1200" y2="124" />
+	</g>
+
+	<!-- Eyebrow -->
+	<text x="80" y="108" font-family="'JetBrains Mono', monospace" font-size="21"
+		letter-spacing="7" fill="#3DF0A8">OFFLINE SYSTEMS COURSE</text>
+
+	<!-- The wordmark: a lit phosphor tick, then the mark. -->
+	<rect x="80" y="196" width="26" height="132" rx="3" fill="#3DF0A8" />
+	<rect x="80" y="196" width="26" height="132" rx="3" fill="none" stroke="#0A0E13" stroke-width="3" />
+	<text x="132" y="318" font-family="'JetBrains Mono', monospace" font-weight="700"
+		font-size="176" letter-spacing="-6" fill="#F4F8FC">thunk</text>
+	<text x="642" y="228" font-family="'JetBrains Mono', monospace" font-size="34"
+		fill="#757F90">1</text>
+
+	<!-- Tagline -->
+	<text x="82" y="404" font-family="'Liberation Sans', 'Switzer', sans-serif" font-size="38"
+		fill="#C9D4E0">From true zero to DOOM on a panel.</text>
+
+	<!-- The definition, as a datasheet footnote. -->
+	<text x="82" y="460" font-family="'JetBrains Mono', monospace" font-size="24" fill="#7C8A9C">thunk <tspan fill="#757F90">(n.)</tspan> - a piece of code set aside to run later, not thrown away.</text>
+
+	<!-- INIT SEQ strip at the foot, hairline-ruled. -->
+	<line x1="80" y1="524" x2="1120" y2="524" stroke="#1C2530" stroke-width="1" />
+	<line x1="80" y1="586" x2="1120" y2="586" stroke="#1C2530" stroke-width="1" />
+	<text x="82" y="564" font-family="'JetBrains Mono', monospace" font-size="20"
+		letter-spacing="5" fill="#757F90">INIT SEQ</text>
+	<text x="230" y="564" font-family="'JetBrains Mono', monospace" font-size="22"
+		letter-spacing="4" fill="#7C8A9C">01 11 3A <tspan fill="#757F90">55</tspan> 29 <tspan fill="#1C2530">·</tspan> 2A 2B 2C</text>
+	<text x="1120" y="564" text-anchor="end" font-family="'JetBrains Mono', monospace" font-size="20"
+		letter-spacing="4" fill="#3DF0A8">AIR-GAPPED</text>
+</svg>

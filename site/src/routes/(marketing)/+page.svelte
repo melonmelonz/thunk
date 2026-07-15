@@ -9,12 +9,11 @@
 		name="description"
 		content="An offline systems course. From true zero to DOOM on a panel, built and run on your own machine."
 	/>
-	<meta property="og:title" content="thunk" />
+	<meta property="og:title" content="thunk - a systems course, from the ground up" />
 	<meta
 		property="og:description"
 		content="From true zero to DOOM on a panel. An offline systems course."
 	/>
-	<meta property="og:type" content="website" />
 </svelte:head>
 
 <section class="hero">

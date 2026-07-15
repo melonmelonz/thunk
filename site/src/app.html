@@ -5,7 +5,24 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="color-scheme" content="dark" />
 		<meta name="theme-color" content="#0A0E13" />
+		<!-- Icon set (no manifest, no PWA scope): scalable SVG first, PNG
+		     fallbacks at 16/32 for older chrome, apple-touch at 180. -->
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />
+		<link rel="icon" href="%sveltekit.assets%/favicon-32.png" sizes="32x32" type="image/png" />
+		<link rel="icon" href="%sveltekit.assets%/favicon-16.png" sizes="16x16" type="image/png" />
+		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" sizes="180x180" />
+		<!-- Constant social-card wiring. Per-page og:title / og:description /
+		     <title> are set in each route's head; image + card type are fixed.
+		     Paths are root-relative on purpose: the built markup carries no
+		     external URL (the hermetic gate), so no absolute origin here. -->
+		<meta property="og:site_name" content="thunk" />
+		<meta property="og:type" content="website" />
+		<meta property="og:image" content="%sveltekit.assets%/og.png" />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="630" />
+		<meta property="og:image:alt" content="thunk - an offline systems course, from true zero to DOOM on a panel." />
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:image" content="%sveltekit.assets%/og.png" />
 		<!-- The two critical faces: body regular + mono regular. Self-hosted,
 		     no CDN. Everything else loads with font-display: swap. -->
 		<link
@@ -25,6 +42,38 @@
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
+		<!-- JS is required (this is a client-rendered SPA); the failure line is
+		     styled in the language, not a browser-default blank. -->
+		<noscript>
+			<div class="noscript-line">
+				<span class="ns-tick"></span>
+				<span>NO SIGNAL &middot; thunk needs JavaScript to render the instrument. Enable it and reload.</span>
+			</div>
+			<style>
+				.noscript-line {
+					display: flex;
+					align-items: center;
+					gap: 0.7rem;
+					max-width: 40rem;
+					margin: 18vh auto 0;
+					padding: 1rem 1.15rem;
+					font-family: 'Commit Mono', ui-monospace, monospace;
+					font-size: 0.8125rem;
+					letter-spacing: 0.06em;
+					color: #7c8a9c;
+					border: 1px solid #1c2530;
+					border-radius: 3px;
+					background: #0e1319;
+				}
+				.noscript-line .ns-tick {
+					width: 7px;
+					height: 14px;
+					border-radius: 1px;
+					background: #3df0a8;
+					flex: none;
+				}
+			</style>
+		</noscript>
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>

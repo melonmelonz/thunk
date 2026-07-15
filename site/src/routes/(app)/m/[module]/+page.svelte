@@ -14,6 +14,8 @@
 <svelte:head>
 	<title>{ch} &middot; {module.title} &middot; thunk</title>
 	<meta name="description" content={`${module.title}: ${module.lessonCount} lessons, ${module.checkCount} checks.`} />
+	<meta property="og:title" content={`${ch} ${module.title} - thunk`} />
+	<meta property="og:description" content={`${module.lessonCount} lessons, ${module.checkCount} checks.`} />
 </svelte:head>
 
 <header class="mhead">
