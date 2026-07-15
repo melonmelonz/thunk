@@ -2,6 +2,8 @@
 	import { onMount } from 'svelte';
 	import { KIND, loadSim, type Row, type Sim } from '$lib/bench/sim';
 	import { loadDoom, toDoomKey, formatWadProgress, type Doom, type Source } from '$lib/bench/doom';
+	import { parseWindow, formatWindowLine } from '$lib/bench/window';
+	import Meta from '$lib/components/Meta.svelte';
 	import { xp } from '$lib/xp.svelte';
 	import { FINALE_FRAMES } from '$lib/xp-curve';
 
@@ -111,6 +113,12 @@
 	}
 
 	const wadLine = $derived(formatWadProgress(wadLoaded, wadTotal));
+
+	// The panel WINDOW register: the addressable window + pixel format the driver
+	// last set, read straight off the live trace. During DOOM it shows the
+	// letterbox center window (0-239 x 85-234); on the finale, the full frame. The
+	// pedagogy is the point - the RAMWR only fills what CASET/PASET framed.
+	const windowLine = $derived(lit ? formatWindowLine(parseWindow(rows.map((r) => r.text))) : null);
 
 	// ---- DOOM ----------------------------------------------------------------
 	// Flip to DOOM: lazily fetch the WAD (byte progress in the panel), boot the
@@ -454,12 +462,11 @@
 	});
 </script>
 
-<svelte:head>
-	<title>THE BENCH &middot; thunk</title>
-	<meta name="description" content="The simulated panel and the live bus trace that drew it, running the real thunk-sim in your browser." />
-	<meta property="og:title" content="The Bench - thunk" />
-	<meta property="og:description" content="The simulated panel and the live bus trace that drew it, running the real thunk-sim in your browser." />
-</svelte:head>
+<Meta
+	title="THE BENCH · thunk"
+	description="The simulated panel and the live bus trace that drew it, running the real thunk-sim in your browser."
+	ogTitle="The Bench - thunk"
+/>
 
 <header class="head">
 	<p class="eyebrow label">The instrument</p>
@@ -606,6 +613,12 @@
 				<span class="sd" aria-hidden="true">&middot;</span>
 				{#if bootEvents}{fmtEvents(bootEvents)} BOOT EVENTS{:else}AWAITING BOOT{/if}
 			</p>
+
+			<!-- WINDOW register: the CASET/PASET window + COLMOD the driver last set,
+			     derived live from the trace. Present only once the panel is lit. -->
+			{#if windowLine}
+				<p class="window mono tnum" aria-label="addressable window">{windowLine}</p>
+			{/if}
 		</div>
 	</div>
 
@@ -992,6 +1005,12 @@
 	.stats .sd {
 		color: var(--line);
 		margin-inline: 0.3em;
+	}
+	/* WINDOW register: a hair brighter than .stats - it is live, not a constant. */
+	.window {
+		font-size: 0.6875rem;
+		letter-spacing: 0.08em;
+		color: var(--muted);
 	}
 
 	/* ---- The scope (trace + waveform) --------------------------------- */
