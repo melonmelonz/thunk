@@ -17,7 +17,7 @@ A *thunk* is a piece of code that gets set aside and run later, not thrown away.
 
 ## The course site
 
-The whole course also runs in a browser at <https://thunk-course.pages.dev>. It is the entire
+The whole course also runs in a browser at <https://thunk.goolz.org>. It is the entire
 curriculum online, read as documents inside a persistent app shell. The bench is the real
 simulator compiled to WebAssembly, so a virtual panel is driven by the same decoded bus events
 the binary produces. Flip the bench source switch and DOOM (doomgeneric + Freedoom) plays on that
@@ -98,7 +98,7 @@ risk register, and print-ready PDFs.
 Built and tested: the full ladder, the protocol simulator and trace view, both build profiles,
 the web site, and the facilitator kit. The inside build's finale is a deterministic corridor
 scene rendered through the learner-facing display driver; playable DOOM is planned for the open
-build. The course site is live at <https://thunk-course.pages.dev> (2026-07-15).
+build. The course site is live at <https://thunk.goolz.org> (2026-07-15).
 
 ## License
 

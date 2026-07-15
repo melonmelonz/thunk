@@ -12,17 +12,20 @@
 		<link rel="icon" href="%sveltekit.assets%/favicon-16.png" sizes="16x16" type="image/png" />
 		<link rel="apple-touch-icon" href="%sveltekit.assets%/apple-touch-icon.png" sizes="180x180" />
 		<!-- Constant social-card wiring. Per-page og:title / og:description /
-		     <title> are set in each route's head; image + card type are fixed.
-		     Paths are root-relative on purpose: the built markup carries no
-		     external URL (the hermetic gate), so no absolute origin here. -->
+		     og:url / canonical / <title> are set in each route's head via
+		     Meta.svelte; image + card type are fixed here. og:image is ABSOLUTE
+		     against the site's canonical origin (thunk.goolz.org): crawlers need
+		     absolute image URLs. Nothing is fetched from that origin at runtime -
+		     the page's own assets stay same-origin (%sveltekit.assets%); this is
+		     metadata only, which the hermetic CI check allowlists exactly. -->
 		<meta property="og:site_name" content="thunk" />
 		<meta property="og:type" content="website" />
-		<meta property="og:image" content="%sveltekit.assets%/og.png" />
+		<meta property="og:image" content="https://thunk.goolz.org/og.png" />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="630" />
 		<meta property="og:image:alt" content="thunk - an offline systems course, from true zero to DOOM on a panel." />
 		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:image" content="%sveltekit.assets%/og.png" />
+		<meta name="twitter:image" content="https://thunk.goolz.org/og.png" />
 		<!-- The two critical faces: body regular + mono regular. Self-hosted,
 		     no CDN. Everything else loads with font-display: swap. -->
 		<link

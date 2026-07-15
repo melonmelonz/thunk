@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import ModuleGlyph from '$lib/components/ModuleGlyph.svelte';
+	import Meta from '$lib/components/Meta.svelte';
 	let { data }: { data: PageData } = $props();
 	// Derived, not destructured: client-side nav between modules reuses this
 	// component and updates `data` reactively.
@@ -11,12 +12,12 @@
 	const ch = $derived(`CH-${String(Number(module.tag.replace(/\D/g, ''))).padStart(2, '0')}`);
 </script>
 
-<svelte:head>
-	<title>{ch} &middot; {module.title} &middot; thunk</title>
-	<meta name="description" content={`${module.title}: ${module.lessonCount} lessons, ${module.checkCount} checks.`} />
-	<meta property="og:title" content={`${ch} ${module.title} - thunk`} />
-	<meta property="og:description" content={`${module.lessonCount} lessons, ${module.checkCount} checks.`} />
-</svelte:head>
+<Meta
+	title={`${ch} · ${module.title} · thunk`}
+	description={`${module.title}: ${module.lessonCount} lessons, ${module.checkCount} checks.`}
+	ogTitle={`${ch} ${module.title} - thunk`}
+	ogDescription={`${module.lessonCount} lessons, ${module.checkCount} checks.`}
+/>
 
 <header class="mhead">
 	<div class="mtop">

@@ -8,7 +8,7 @@ same binary; nothing is a demo build.
 ## 0. The browser rung: no install at all
 
 Before any of the install rungs, the whole course runs in a browser at
-<https://thunk-course.pages.dev>. Nothing to build, nothing to install: the entire curriculum
+<https://thunk.goolz.org>. Nothing to build, nothing to install: the entire curriculum
 is online and the bench runs the real simulator compiled to WebAssembly, driving a virtual
 panel from the same bus events the binary produces. This is the zero-friction way in; the four
 rungs below are for a machine you can install on.

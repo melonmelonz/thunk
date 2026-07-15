@@ -77,8 +77,12 @@ stays put as the facility artifact.
 
 **Project `thunk-course`** — the course SPA (the public identity).
 
-- Live at `https://thunk-course.pages.dev`; the repo homepage and README point here. SvelteKit SPA
-  (`@sveltejs/adapter-static`, fully prerendered) plus the thunk-sim bench compiled to WebAssembly.
+- Live at the custom domain `https://thunk.goolz.org` (attached to this Pages project; the repo
+  homepage and README point here). The `https://thunk-course.pages.dev` alias stays live as a
+  fallback. Canonical + og:url/og:image meta are absolute against `thunk.goolz.org`; the CI
+  hermetic check allowlists exactly that one origin (metadata only, never fetched at runtime).
+  SvelteKit SPA (`@sveltejs/adapter-static`, fully prerendered) plus the thunk-sim bench compiled
+  to WebAssembly.
 - Production branch `main`, direct `wrangler pages deploy` from `site/build`. CI has a `site` job
   that builds node + wasm and runs the content-freshness check.
 - The bench's DOOM finale serves committed assets under `site/static/doom/` (`doom.js` + `doom.wasm`

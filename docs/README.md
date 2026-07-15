@@ -3,9 +3,9 @@
 Everything for the thunk project lives here. Source code is in the crate folders one level up
 (`thunk-core`, `thunk-content`, `thunk-sim`, `thunk-web`, `thunk-tui`, `thunk-cli`).
 
-**Status (2026-07-15):** the course site is live at <https://thunk-course.pages.dev> and is the
-public face of the project; the offline-bundle demo continues to serve at
-<https://thunk-2dc.pages.dev> as the facility artifact.
+**Status (2026-07-15):** the course site is live at <https://thunk.goolz.org> and is the
+public face of the project (the `thunk-course.pages.dev` alias stays live as a fallback); the
+offline-bundle demo continues to serve at <https://thunk-2dc.pages.dev> as the facility artifact.
 
 ## Product and planning
 - [`PRD.md`](PRD.md) — product requirements document.
