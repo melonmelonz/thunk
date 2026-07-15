@@ -155,8 +155,13 @@ jobs:
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
-      - name: Install pinned toolchain
-        run: rustup show
+      - name: Install pinned toolchain + wasm target
+        # The bench crate (site/wasm) compiles to wasm32; the build's prebuild
+        # step drives wasm-pack (installed as a site devDependency, so npm ci
+        # brings it - no separate slow `cargo install`).
+        run: |
+          rustup show
+          rustup target add wasm32-unknown-unknown
       - uses: Swatinem/rust-cache@v2
         with:
           key: site

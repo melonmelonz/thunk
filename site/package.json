@@ -4,9 +4,10 @@
 	"version": "0.0.1",
 	"type": "module",
 	"scripts": {
-		"predev": "node scripts/build-info.mjs",
+		"wasm": "wasm-pack build wasm --target bundler --out-dir pkg --out-name thunk_wasm",
+		"predev": "node scripts/build-info.mjs && npm run wasm",
 		"dev": "vite dev",
-		"prebuild": "node scripts/build-info.mjs",
+		"prebuild": "node scripts/build-info.mjs && npm run wasm",
 		"build": "vite build",
 		"preview": "vite preview",
 		"prepare": "node scripts/build-info.mjs && (svelte-kit sync || echo '')",
@@ -20,6 +21,8 @@
 		"svelte": "^5.56.1",
 		"svelte-check": "^4.6.0",
 		"typescript": "^6.0.3",
-		"vite": "^8.0.16"
+		"vite": "^8.0.16",
+		"vite-plugin-wasm": "^3.6.0",
+		"wasm-pack": "^0.15.0"
 	}
 }
