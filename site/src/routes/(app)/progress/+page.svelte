@@ -7,6 +7,9 @@
 	const lvl = $derived(String(xp.level).padStart(2, '0'));
 	const xpText = $derived(xp.xp.toLocaleString('en-US'));
 	const nextAt = $derived(xp.level >= MAX_LEVEL ? null : xpForLevel(xp.level + 1));
+	// A fresh card is not a sad empty page: it is a calibrated instrument at rest,
+	// waiting for signal. The standby line says so in the same register as the rail.
+	const fresh = $derived(xp.xp === 0);
 
 	function fmtDate(at: number): string {
 		try {
@@ -58,6 +61,8 @@
 <svelte:head>
 	<title>OPERATOR &middot; thunk</title>
 	<meta name="description" content="Your operator card: level, XP, per-module progress, and achievements. Local only, never sent anywhere." />
+	<meta property="og:title" content="Operator - thunk" />
+	<meta property="og:description" content="Your operator card: level, XP, per-module progress, and achievements. Local only, never sent anywhere." />
 </svelte:head>
 
 <header class="ohead">
@@ -67,6 +72,12 @@
 		Everything the course knows about your run, kept in this browser and nowhere else. No account,
 		no identity - just the instrument reading.
 	</p>
+	{#if fresh}
+		<p class="standby mono">
+			<span class="sb-tick" aria-hidden="true"></span>NO SIGNAL &middot; grade your first check to bring
+			the card up.
+		</p>
+	{/if}
 </header>
 
 <!-- Big level + XP meter. -->
@@ -190,6 +201,25 @@
 		line-height: 1.65;
 		color: var(--muted);
 		max-width: 40rem;
+	}
+	.standby {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+		margin-top: 1.25rem;
+		font-size: 0.6875rem;
+		letter-spacing: 0.12em;
+		color: var(--faint);
+		border: 1px solid var(--line);
+		border-radius: 2px;
+		padding: 0.4rem 0.65rem;
+	}
+	.sb-tick {
+		width: 5px;
+		height: 11px;
+		border-radius: 1px;
+		background: var(--s3);
+		flex: none;
 	}
 
 	section {
