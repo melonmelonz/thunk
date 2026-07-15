@@ -191,9 +191,15 @@
 		}
 	});
 
+	// The command palette's TOGGLE SCANLINES action arrives as a window event.
+	function onCmd(e: Event) {
+		if ((e as CustomEvent<string>).detail === 'toggle-scanlines') scanlines = !scanlines;
+	}
+
 	onMount(() => {
 		ctx = canvasEl.getContext('2d');
 		clearCanvas();
+		window.addEventListener('thunk:cmd', onCmd);
 
 		// Lazy-load the wasm on the bench route only: loadSim dynamically imports
 		// the .wasm, so the 35KB module is a separate chunk fetched on demand,
@@ -232,6 +238,7 @@
 		return () => {
 			stop();
 			cancelStream();
+			window.removeEventListener('thunk:cmd', onCmd);
 		};
 	});
 </script>
@@ -239,6 +246,8 @@
 <svelte:head>
 	<title>THE BENCH &middot; thunk</title>
 	<meta name="description" content="The simulated panel and the live bus trace that drew it, running the real thunk-sim in your browser." />
+	<meta property="og:title" content="The Bench - thunk" />
+	<meta property="og:description" content="The simulated panel and the live bus trace that drew it, running the real thunk-sim in your browser." />
 </svelte:head>
 
 <header class="head">

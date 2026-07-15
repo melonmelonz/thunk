@@ -8,12 +8,52 @@
 	import { onNavigate } from '$app/navigation';
 	import XpToast from '$lib/components/XpToast.svelte';
 	import { xp } from '$lib/xp.svelte';
+	import type { Component } from 'svelte';
 
 	let { children } = $props();
 
 	// Load the persisted XP record after hydration, so the first client render
 	// still matches the prerendered (empty) markup, then meters tick up.
 	onMount(() => xp.hydrate());
+
+	// The command palette. The component (and its filter code + the content it
+	// searches) is dynamic-imported on first open, so it never weighs on the
+	// first route's JS budget. The trigger lives here at the root so / and
+	// Cmd/Ctrl-K work everywhere - the marketing front door included.
+	let paletteOpen = $state(false);
+	let Palette = $state<Component<{ onclose: () => void }> | null>(null);
+
+	async function openPalette() {
+		if (!Palette) {
+			try {
+				Palette = (await import('$lib/components/CommandPalette.svelte')).default;
+			} catch {
+				return; // chunk failed to load: leave the palette shut, no crash
+			}
+		}
+		paletteOpen = true;
+	}
+
+	function onPaletteKey(e: KeyboardEvent) {
+		// Cmd/Ctrl-K from anywhere; / only when not already typing somewhere.
+		if ((e.metaKey || e.ctrlKey) && (e.key === 'k' || e.key === 'K')) {
+			e.preventDefault();
+			void openPalette();
+			return;
+		}
+		if (e.metaKey || e.ctrlKey || e.altKey) return;
+		if (e.key !== '/') return;
+		const t = e.target as HTMLElement | null;
+		const tag = t?.tagName;
+		if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t?.isContentEditable) return;
+		e.preventDefault();
+		void openPalette();
+	}
+
+	onMount(() => {
+		window.addEventListener('keydown', onPaletteKey);
+		return () => window.removeEventListener('keydown', onPaletteKey);
+	});
 
 	// View transitions: pure progressive enhancement. Browsers without
 	// startViewTransition just navigate. Entering the app from `/` crossfades
@@ -45,6 +85,10 @@
 </script>
 
 {@render children?.()}
+
+{#if paletteOpen && Palette}
+	<Palette onclose={() => (paletteOpen = false)} />
+{/if}
 
 <XpToast />
 

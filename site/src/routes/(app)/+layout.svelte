@@ -146,6 +146,13 @@
 		}
 	}
 
+	// The command palette dispatches shell actions as a window CustomEvent, so it
+	// stays decoupled (it never reaches into this component's state directly).
+	function onCmd(e: Event) {
+		const action = (e as CustomEvent<string>).detail;
+		if (action === 'toggle-rail') toggleRail();
+	}
+
 	onMount(() => {
 		try {
 			collapsed = localStorage.getItem('thunk.rail') === '1';
@@ -153,7 +160,11 @@
 			collapsed = false;
 		}
 		window.addEventListener('keydown', onKey);
-		return () => window.removeEventListener('keydown', onKey);
+		window.addEventListener('thunk:cmd', onCmd);
+		return () => {
+			window.removeEventListener('keydown', onKey);
+			window.removeEventListener('thunk:cmd', onCmd);
+		};
 	});
 </script>
 
