@@ -13,7 +13,7 @@
 //! wasm-bindgen, which compiles on the host target.
 
 use thunk_sim::trace::{annotate, waveform};
-use thunk_sim::{boot_finale, finale_tick, Ili9341, SimSpi, TraceEvent};
+use thunk_sim::{boot_finale, finale_tick, Display, Ili9341, SimSpi, TraceEvent};
 use wasm_bindgen::prelude::*;
 
 /// The animation rate the JS rAF loop targets. The sim is 60fps-capable; 30
@@ -80,6 +80,51 @@ fn rgb565_to_rgba(src: &[u16], out: &mut [u8]) {
     }
 }
 
+// ---- External-frame (DOOM) geometry ---------------------------------------
+// The DOOM module hands us 320x200 RGBA frames. They are box-downscaled by
+// exactly 0.75x on both axes to 240x150 and blitted onto the 240x320 portrait
+// panel, vertically centered at y=85 ((320-150)/2). The 85px above and below is
+// letterbox, painted black once at boot; each frame only streams the 240x150
+// window, so the bus trace stays honest (a RAMWR of exactly 240*150 pixels).
+const DOOM_SRC_W: u32 = 320;
+const DOOM_SRC_H: u32 = 200;
+const BLIT_W: u16 = 240;
+const BLIT_H: u16 = 150;
+const BLIT_Y: u16 = 85;
+
+/// Box-downscale an RGBA8888 `sw x sh` frame to `dw x dh` RGB565, averaging in
+/// 8-bit RGB (not in packed 565, whose 5/6/5 quantization compounds under
+/// averaging) then packing once. Each destination pixel averages the source
+/// pixels in its covering box `[dx*sw/dw, (dx+1)*sw/dw)` x the same in y; for
+/// the 320x200->240x150 case that box is 1 or 2 pixels on each axis. Pure and
+/// unit-tested. Panics only in debug if `rgba` is undersized for `sw*sh`.
+fn downscale_rgba_to_565(rgba: &[u8], sw: usize, sh: usize, dw: usize, dh: usize) -> Vec<u16> {
+    debug_assert!(rgba.len() >= sw * sh * 4);
+    let mut out = Vec::with_capacity(dw * dh);
+    for dy in 0..dh {
+        let sy0 = dy * sh / dh;
+        let sy1 = ((dy + 1) * sh / dh).max(sy0 + 1).min(sh);
+        for dx in 0..dw {
+            let sx0 = dx * sw / dw;
+            let sx1 = ((dx + 1) * sw / dw).max(sx0 + 1).min(sw);
+            let (mut r, mut g, mut b, mut n) = (0u32, 0u32, 0u32, 0u32);
+            for sy in sy0..sy1 {
+                let row = sy * sw;
+                for sx in sx0..sx1 {
+                    let i = (row + sx) * 4;
+                    r += rgba[i] as u32;
+                    g += rgba[i + 1] as u32;
+                    b += rgba[i + 2] as u32;
+                    n += 1;
+                }
+            }
+            let (r, g, b) = ((r / n) as u16, (g / n) as u16, (b / n) as u16);
+            out.push(((r >> 3) << 11) | ((g >> 2) << 5) | (b >> 3));
+        }
+    }
+    out
+}
+
 /// The annotated trace of one boot or tick, encoded flat for JS: parallel
 /// `kinds`/`bytes` arrays plus every row's text newline-joined into one string.
 /// JS splits `text` on '\n' and reads `kinds[i]`/`bytes[i]` per row. `bytes[i]`
@@ -89,6 +134,18 @@ pub struct TraceRows {
     kinds: Vec<u8>,
     bytes: Vec<i16>,
     text: String,
+}
+
+impl TraceRows {
+    /// A row set carrying nothing: returned by inert calls (a tick or external
+    /// blit before boot, or a rejected frame).
+    fn empty() -> TraceRows {
+        TraceRows {
+            kinds: Vec::new(),
+            bytes: Vec::new(),
+            text: String::new(),
+        }
+    }
 }
 
 /// Build a `TraceRows` from a recorded bus trace via `annotate()`.
@@ -212,11 +269,7 @@ impl Bench {
     /// append them. A no-op returning empty rows if `boot()` has not run.
     pub fn tick(&mut self) -> TraceRows {
         if !self.booted {
-            return TraceRows {
-                kinds: Vec::new(),
-                bytes: Vec::new(),
-                text: String::new(),
-            };
+            return TraceRows::empty();
         }
         self.frame = self.frame.wrapping_add(1);
         finale_tick(&mut self.spi, self.w, self.h, self.frame);
@@ -261,6 +314,58 @@ impl Bench {
     #[wasm_bindgen]
     pub fn waveform(&self, byte: u8) -> String {
         waveform(byte).join("\n")
+    }
+
+    /// Power on for an external frame source (the DOOM finale): init the panel,
+    /// then paint the whole panel black once. That single full-frame blit draws
+    /// the 85px letterbox bars top and bottom a single time; every later
+    /// `blit_external_frame` only streams the 240x150 center window, so the
+    /// trace stays honest. Returns the boot trace as `TraceRows`, like `boot()`.
+    pub fn boot_doom(&mut self) -> TraceRows {
+        self.spi = SimSpi::new();
+        self.panel = Ili9341::new(self.w as usize, self.h as usize);
+        self.frame = 0;
+        {
+            let mut d = Display::new(&mut self.spi, self.w, self.h);
+            d.init();
+            d.fill(0x0000); // black letterbox, full panel, drawn once
+        }
+        let trace = self.spi.take_trace();
+        self.boot_events = trace.len() as u32;
+        self.panel.replay(&trace);
+        self.paint();
+        self.booted = true;
+        encode_rows(&trace)
+    }
+
+    /// Blit one external RGBA8888 frame (320x200, from the DOOM module) onto the
+    /// panel: box-downscale to 240x150 averaging in RGB, pack RGB565, and drive
+    /// it through the real Display/SpiBus path into the letterboxed center
+    /// window at (0, 85). Advances the frame counter and returns the tick's
+    /// `TraceRows` so the log streams RAMWR while DOOM plays. Rejects any frame
+    /// that is not 320x200 or is undersized (returns empty rows, draws nothing),
+    /// and is inert until `boot_doom()` has run.
+    pub fn blit_external_frame(&mut self, rgba: &[u8], src_w: u32, src_h: u32) -> TraceRows {
+        let need = (DOOM_SRC_W * DOOM_SRC_H * 4) as usize;
+        if !self.booted || src_w != DOOM_SRC_W || src_h != DOOM_SRC_H || rgba.len() < need {
+            return TraceRows::empty();
+        }
+        let pixels = downscale_rgba_to_565(
+            rgba,
+            DOOM_SRC_W as usize,
+            DOOM_SRC_H as usize,
+            BLIT_W as usize,
+            BLIT_H as usize,
+        );
+        {
+            let mut d = Display::new(&mut self.spi, self.w, self.h);
+            d.blit_rect(0, BLIT_Y, BLIT_W, BLIT_H, &pixels);
+        }
+        let trace = self.spi.take_trace();
+        self.frame = self.frame.wrapping_add(1);
+        self.panel.replay(&trace);
+        self.paint();
+        encode_rows(&trace)
     }
 }
 
@@ -363,7 +468,15 @@ mod tests {
         bus.deselect();
         let rows = encode_rows(bus.trace());
         let lines: Vec<&str> = rows.text.split('\n').collect();
-        assert_eq!(lines, ["select v  (transaction begins)", "cmd  2C  RAMWR  (pixel stream follows)", "data F8 00 07 E0", "select ^  (transaction ends)"]);
+        assert_eq!(
+            lines,
+            [
+                "select v  (transaction begins)",
+                "cmd  2C  RAMWR  (pixel stream follows)",
+                "data F8 00 07 E0",
+                "select ^  (transaction ends)"
+            ]
+        );
         assert_eq!(rows.kinds, [KIND_SELECT, KIND_CMD, KIND_DATA, KIND_SELECT]);
         assert_eq!(rows.bytes, [-1, 0x2C, 0xF8, -1]);
     }
@@ -383,5 +496,124 @@ mod tests {
         let p1 = b.frame_ptr();
         let p2 = b.frame_ptr();
         assert_eq!(p1, p2, "pointer is stable across calls");
+    }
+
+    // ---- External-frame (DOOM) path ---------------------------------------
+
+    /// Build a 320x200 RGBA source where every pixel takes the color of a
+    /// closure of (x, y), so downscale boxes have known contents.
+    fn make_src(f: impl Fn(usize, usize) -> [u8; 4]) -> Vec<u8> {
+        let mut v = vec![0u8; 320 * 200 * 4];
+        for y in 0..200 {
+            for x in 0..320 {
+                let px = f(x, y);
+                let i = (y * 320 + x) * 4;
+                v[i..i + 4].copy_from_slice(&px);
+            }
+        }
+        v
+    }
+
+    #[test]
+    fn downscale_averages_a_two_by_two_box_in_rgb() {
+        // Destination (dx=2, dy=2) covers source x in [2,4), y in [2,4): a full
+        // 2x2 box (the 4->1 case). Paint those four source pixels distinct
+        // primaries and leave everything else black; the result must be their
+        // 8-bit RGB average, packed to 565.
+        let src = make_src(|x, y| {
+            match (x, y) {
+                (2, 2) => [0xFF, 0x00, 0x00, 0xFF], // red
+                (3, 2) => [0x00, 0xFF, 0x00, 0xFF], // green
+                (2, 3) => [0x00, 0x00, 0xFF, 0xFF], // blue
+                (3, 3) => [0xFF, 0xFF, 0xFF, 0xFF], // white
+                _ => [0x00, 0x00, 0x00, 0xFF],
+            }
+        });
+        let out = downscale_rgba_to_565(&src, 320, 200, 240, 150);
+        // avg R = (255+0+0+255)/4 = 127; G = (0+255+0+255)/4 = 127;
+        // B = (0+0+255+255)/4 = 127. Pack: (127>>3)=15, (127>>2)=31, (127>>3)=15.
+        let expected = ((15u16) << 11) | ((31u16) << 5) | 15u16;
+        assert_eq!(out[2 * 240 + 2], expected);
+    }
+
+    #[test]
+    fn downscale_output_is_exactly_the_letterbox_window_size() {
+        let src = make_src(|_, _| [0x40, 0x80, 0xC0, 0xFF]);
+        let out = downscale_rgba_to_565(&src, 320, 200, 240, 150);
+        assert_eq!(out.len(), 240 * 150);
+        // A flat source downscales to a flat field: pack 0x40,0x80,0xC0.
+        let expected = ((0x40u16 >> 3) << 11) | ((0x80u16 >> 2) << 5) | (0xC0u16 >> 3);
+        assert!(out.iter().all(|&p| p == expected));
+    }
+
+    #[test]
+    fn external_frame_is_pinned_to_the_center_window() {
+        // A fully-white DOOM frame must light rows 85..=234 (the 150-tall
+        // window at y=85) and leave the letterbox rows above and below black.
+        let mut b = Bench::new(240, 320);
+        b.boot_doom();
+        let white = make_src(|_, _| [0xFF, 0xFF, 0xFF, 0xFF]);
+        b.blit_external_frame(&white, 320, 200);
+        let fb = b.panel.framebuffer();
+        assert_eq!(fb.get_pixel(120, 0), 0x0000, "top letterbox stays black");
+        assert_eq!(fb.get_pixel(120, 84), 0x0000, "row just above window black");
+        assert_eq!(fb.get_pixel(120, 85), 0xFFFF, "window top is lit white");
+        assert_eq!(fb.get_pixel(120, 234), 0xFFFF, "window bottom is lit white");
+        assert_eq!(
+            fb.get_pixel(120, 235),
+            0x0000,
+            "row just below window black"
+        );
+        assert_eq!(
+            fb.get_pixel(120, 319),
+            0x0000,
+            "bottom letterbox stays black"
+        );
+    }
+
+    #[test]
+    fn external_frame_advances_the_counter_and_streams_ramwr() {
+        let mut b = Bench::new(240, 320);
+        b.boot_doom();
+        assert_eq!(b.frame(), 0);
+        let src = make_src(|x, _| [x as u8, 0x00, 0x00, 0xFF]);
+        let rows = b.blit_external_frame(&src, 320, 200);
+        assert_eq!(b.frame(), 1);
+        // The tick's trace is one windowed blit: RAMWR of exactly 240*150 px.
+        let text = rows.text();
+        assert!(text.contains("RAMWR"), "external blit streams a RAMWR");
+        assert!(text.contains("CASET"), "and sets the column window first");
+    }
+
+    #[test]
+    fn external_frame_rejects_wrong_dims_gracefully() {
+        let mut b = Bench::new(240, 320);
+        b.boot_doom();
+        // Right byte length for 160x100 but not the 320x200 the panel expects.
+        let wrong = vec![0xFFu8; 160 * 100 * 4];
+        let rows = b.blit_external_frame(&wrong, 160, 100);
+        assert!(rows.is_empty(), "a wrong-sized frame draws nothing");
+        assert_eq!(b.frame(), 0, "and does not advance the counter");
+    }
+
+    #[test]
+    fn external_frame_before_boot_is_inert() {
+        let mut b = Bench::new(240, 320);
+        let white = make_src(|_, _| [0xFF, 0xFF, 0xFF, 0xFF]);
+        let rows = b.blit_external_frame(&white, 320, 200);
+        assert!(rows.is_empty());
+        assert_eq!(b.frame(), 0);
+    }
+
+    #[test]
+    fn boot_doom_paints_a_black_letterbox_and_arms_the_panel() {
+        let mut b = Bench::new(240, 320);
+        let rows = b.boot_doom();
+        assert!(!rows.is_empty());
+        assert_eq!(b.frame(), 0);
+        // Whole panel is black after the letterbox fill.
+        assert!(b.rgba.chunks_exact(4).all(|p| p[0] | p[1] | p[2] == 0));
+        // init (7) + one full-panel black blit worth of events.
+        assert_eq!(b.boot_events(), 153_620);
     }
 }
