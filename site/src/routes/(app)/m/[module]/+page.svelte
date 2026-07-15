@@ -16,12 +16,6 @@
 	<meta name="description" content={`${module.title}: ${module.lessonCount} lessons, ${module.checkCount} checks.`} />
 </svelte:head>
 
-<nav class="crumbs label" aria-label="breadcrumb">
-	<a href="/">thunk</a>
-	<span class="sl" aria-hidden="true">/</span>
-	<span class="here">{module.tag}</span>
-</nav>
-
 <header class="mhead">
 	<div class="mtop">
 		<span class="mglyph" aria-hidden="true"><ModuleGlyph tag={module.tag} /></span>
@@ -74,25 +68,6 @@
 </nav>
 
 <style>
-	.crumbs {
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
-		margin-bottom: 2rem;
-	}
-	.crumbs a {
-		color: var(--muted);
-	}
-	.crumbs a:hover {
-		color: var(--text);
-	}
-	.crumbs .sl {
-		color: var(--faint);
-	}
-	.crumbs .here {
-		color: var(--phosphor);
-	}
-
 	.mhead {
 		max-width: 44rem;
 		margin-bottom: 2.5rem;

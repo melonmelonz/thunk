@@ -19,14 +19,6 @@
 	<meta name="description" content={`${module.title}, lesson ${index + 1} of ${module.lessonCount}: ${lesson.title}.`} />
 </svelte:head>
 
-<nav class="crumbs label" aria-label="breadcrumb">
-	<a href="/">thunk</a>
-	<span class="sl" aria-hidden="true">/</span>
-	<a href={`/m/${module.id}/`}>{module.tag}</a>
-	<span class="sl" aria-hidden="true">/</span>
-	<span class="here tnum">L{String(index + 1).padStart(2, '0')}</span>
-</nav>
-
 <article class="reading">
 	<header class="lhead">
 		<p class="eyebrow label tnum">
@@ -48,7 +40,7 @@
 	<header class="checks-head">
 		<h2 class="label">Checks</h2>
 		<p class="ch-note">
-			Answer these to prove the lesson landed. Interactive grading arrives in S-C - nothing is ever
+			Answer these to prove the lesson landed. Graded here in the browser by the same rules as the facility binary - nothing is ever
 			sent anywhere.
 		</p>
 	</header>
@@ -77,25 +69,6 @@
 </nav>
 
 <style>
-	.crumbs {
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
-		margin-bottom: 2.25rem;
-	}
-	.crumbs a {
-		color: var(--muted);
-	}
-	.crumbs a:hover {
-		color: var(--text);
-	}
-	.crumbs .sl {
-		color: var(--faint);
-	}
-	.crumbs .here {
-		color: var(--phosphor);
-	}
-
 	.reading {
 		max-width: var(--measure);
 	}

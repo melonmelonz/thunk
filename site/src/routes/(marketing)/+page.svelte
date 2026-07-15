@@ -99,7 +99,7 @@
 			<span class="bench-title">The Bench</span>
 			<span class="bench-sub">The simulated panel and the live bus trace that drew it.</span>
 		</span>
-		<span class="bench-state label">Arriving S-B</span>
+		<span class="bench-state label">Live</span>
 	</a>
 </section>
 

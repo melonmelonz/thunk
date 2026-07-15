@@ -1,6 +1,8 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { KIND, loadSim, type Row, type Sim } from '$lib/bench/sim';
+	import { xp } from '$lib/xp.svelte';
+	import { FINALE_FRAMES } from '$lib/xp-curve';
 
 	// The sim runs at 30fps: reads more like a CRT than 60, and halves the
 	// per-frame sim + convert cost. Mirrors thunk-wasm's TARGET_FPS.
@@ -110,6 +112,7 @@
 			lit = true;
 			booting = false;
 			paint();
+			xp.benchBoot(); // first full boot watched: +10, FIRST BOOT
 			return;
 		}
 
@@ -123,6 +126,7 @@
 					paint();
 					lit = true;
 					booting = false;
+					xp.benchBoot(); // first full boot watched: +10, FIRST BOOT
 				}
 			}, step * (i + 1));
 			streamTimers.push(id);
@@ -137,6 +141,8 @@
 		record(performance.now() - t0);
 		appendRows(incoming);
 		frame = sim.frame;
+		// Finale watched once enough frames have been drawn: +25 (idempotent).
+		if (frame >= FINALE_FRAMES) xp.benchFinale();
 	}
 
 	function record(ms: number) {
@@ -174,6 +180,7 @@
 		selectedRow = i;
 		selectedByte = r.byte;
 		waveformLines = sim ? sim.waveform(r.byte) : [];
+		xp.benchScope(); // first byte scoped: +10, SCOPE JOCKEY
 	}
 
 	// Follow: keep the log pinned to the newest row while follow is on.
@@ -233,12 +240,6 @@
 	<title>THE BENCH &middot; thunk</title>
 	<meta name="description" content="The simulated panel and the live bus trace that drew it, running the real thunk-sim in your browser." />
 </svelte:head>
-
-<nav class="crumbs label" aria-label="breadcrumb">
-	<a href="/">thunk</a>
-	<span class="sl" aria-hidden="true">/</span>
-	<span class="here">Bench</span>
-</nav>
 
 <header class="head">
 	<p class="eyebrow label">The instrument</p>
@@ -395,25 +396,6 @@
 </a>
 
 <style>
-	.crumbs {
-		display: flex;
-		align-items: center;
-		gap: 0.6rem;
-		margin-bottom: 2rem;
-	}
-	.crumbs a {
-		color: var(--muted);
-	}
-	.crumbs a:hover {
-		color: var(--text);
-	}
-	.crumbs .sl {
-		color: var(--faint);
-	}
-	.crumbs .here {
-		color: var(--phosphor);
-	}
-
 	.head {
 		max-width: 44rem;
 		margin-bottom: 2rem;

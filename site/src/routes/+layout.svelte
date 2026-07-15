@@ -1,15 +1,23 @@
 <script lang="ts">
+	// The global layout carries only cross-cutting concerns: the stylesheet, the
+	// view-transition wiring, the once-per-session boot ritual, and the toast
+	// surface. Visible chrome lives in the two route groups - (marketing) for the
+	// front door `/`, (app) for the instrument shell everywhere past it.
 	import '../app.css';
 	import { onMount } from 'svelte';
 	import { onNavigate } from '$app/navigation';
-	import SiteMark from '$lib/components/SiteMark.svelte';
-	import XpMeter from '$lib/components/XpMeter.svelte';
-	import build from '$lib/build.json';
+	import XpToast from '$lib/components/XpToast.svelte';
+	import { xp } from '$lib/xp.svelte';
 
 	let { children } = $props();
 
-	// View transitions: pure progressive enhancement. A subtle crossfade is
-	// defined in CSS; browsers without startViewTransition just navigate.
+	// Load the persisted XP record after hydration, so the first client render
+	// still matches the prerendered (empty) markup, then meters tick up.
+	onMount(() => xp.hydrate());
+
+	// View transitions: pure progressive enhancement. Browsers without
+	// startViewTransition just navigate. Entering the app from `/` crossfades
+	// into the shell; the CSS lift is defined per-group.
 	onNavigate((navigation) => {
 		if (!document.startViewTransition) return;
 		return new Promise((resolve) => {
@@ -20,10 +28,8 @@
 		});
 	});
 
-	// Boot ritual: once per session, on the first load, the header tick warms up
-	// and the hero eyebrow fades up just behind it. Never on later navigations
-	// (SPA nav does not remount this layout, and the flag is set immediately),
-	// never under reduced motion. No typing effects, no blinking cursors.
+	// Boot ritual: once per session, the header tick warms and the hero eyebrow
+	// fades up behind it. Never on later navigations, never under reduced motion.
 	onMount(() => {
 		try {
 			if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return;
@@ -38,92 +44,11 @@
 	});
 </script>
 
-<div class="app">
-	<header class="masthead">
-		<div class="wrap bar">
-			<SiteMark />
-			<XpMeter />
-		</div>
-	</header>
+{@render children?.()}
 
-	<main>
-		<div class="wrap">
-			{@render children?.()}
-		</div>
-	</main>
-
-	<footer class="colophon">
-		<div class="wrap foot">
-			<span class="label">Offline systems course</span>
-			<span class="dot" aria-hidden="true"></span>
-			<span class="license mono">MIT / Apache-2.0</span>
-			<span class="dot" aria-hidden="true"></span>
-			<span class="note">Nothing leaves this machine.</span>
-		</div>
-		<!-- Build plate: real provenance stamped at build time by build-info.mjs. -->
-		<p class="plate mono tnum" aria-label="build provenance">
-			BUILD {build.sha}{#if build.tests}
-				<span class="pd" aria-hidden="true">&middot;</span> {build.tests} TESTS GREEN{/if}
-			<span class="pd" aria-hidden="true">&middot;</span> AIR-GAPPED
-		</p>
-	</footer>
-</div>
+<XpToast />
 
 <style>
-	.masthead {
-		position: sticky;
-		top: 0;
-		z-index: 20;
-		background: color-mix(in srgb, var(--bg) 82%, transparent);
-		backdrop-filter: blur(10px);
-		border-bottom: 1px solid var(--line);
-	}
-	.bar {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		height: 56px;
-	}
-
-	.colophon {
-		border-top: 1px solid var(--line);
-		padding-block: 1.4rem;
-		background: var(--bg);
-	}
-	.foot {
-		display: flex;
-		align-items: center;
-		gap: 0.9rem;
-		flex-wrap: wrap;
-		font-size: 0.8125rem;
-		color: var(--muted);
-	}
-	.license {
-		font-size: 0.75rem;
-		color: var(--faint);
-		letter-spacing: 0.02em;
-	}
-	.note {
-		color: var(--faint);
-	}
-	.dot {
-		width: 3px;
-		height: 3px;
-		border-radius: 50%;
-		background: var(--line);
-	}
-
-	.plate {
-		margin-top: 0.85rem;
-		font-size: 0.6875rem;
-		letter-spacing: 0.14em;
-		color: var(--faint);
-	}
-	.plate .pd {
-		color: var(--line);
-		margin-inline: 0.15em;
-	}
-
 	/* Same-document crossfade + a short lift. Firefox is Level-1; key off the
 	   route, never off transition types. */
 	:global(::view-transition-old(root)),
