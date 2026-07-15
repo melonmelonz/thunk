@@ -250,6 +250,138 @@ main {
 	}
 }
 
+/* ---- Print: lessons as clean paper ----------------------------------- */
+
+/* A lesson should print like a document, not a screenshot of an app: the shell,
+   rail, status bar, palette, and toasts all fall away; ink on white; the measure
+   opens to the full page; checks print as numbered questions with their controls
+   (and answers) stripped; a running footer names the lesson. Classes match by
+   name even through Svelte scoping, so this one global block reaches the shell. */
+@media print {
+	@page {
+		margin: 18mm 16mm 22mm;
+	}
+
+	html,
+	body {
+		background: #fff !important;
+		color: #111 !important;
+	}
+	body::before {
+		display: none !important; /* kill the calibration grain */
+	}
+
+	/* Shell chrome + all overlays: gone. */
+	.rail,
+	.statusbar,
+	.toasts,
+	.cmdk-back,
+	.cmdk,
+	.keymap,
+	.keymap-back,
+	.sheet,
+	.sheet-back,
+	.pager,
+	.bench-teaser,
+	.reading + .checks .actions,
+	.back {
+		display: none !important;
+	}
+
+	/* Open the shell + pane to a single flowing column. */
+	.shell,
+	.shell.collapsed {
+		display: block !important;
+		height: auto !important;
+		overflow: visible !important;
+		grid-template-columns: none !important;
+	}
+	.stage {
+		display: block !important;
+	}
+	.workspace {
+		overflow: visible !important;
+	}
+	.pane {
+		max-width: none !important;
+		margin: 0 !important;
+		padding: 0 !important;
+	}
+	.reading,
+	.checks {
+		max-width: none !important;
+	}
+
+	/* Ink: everything that was light-on-dark becomes dark-on-white. */
+	h1,
+	h2,
+	h3,
+	h4,
+	p,
+	li,
+	dt,
+	dd,
+	strong,
+	.prompt,
+	.reading,
+	.prose,
+	.prose * {
+		color: #111 !important;
+	}
+	.eyebrow,
+	.label,
+	.ck,
+	.cn,
+	.cid {
+		color: #555 !important;
+	}
+	.prose a {
+		color: #111 !important;
+		text-decoration: underline !important;
+	}
+	.prose code,
+	.prose pre {
+		background: #f4f5f6 !important;
+		border-color: #d5d9de !important;
+		color: #111 !important;
+	}
+	.prose h2 {
+		border-top-color: #d5d9de !important;
+	}
+
+	/* Checks -> numbered questions, no interactive answer surface. */
+	.check {
+		background: none !important;
+		border-color: #d5d9de !important;
+		break-inside: avoid;
+	}
+	.check .options,
+	.check .field,
+	.check .actions {
+		display: none !important;
+	}
+
+	/* The running footer: a fixed element repeats on each printed page. */
+	.lesson-print-footer {
+		display: block !important;
+		position: fixed;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		font-family: var(--font-mono);
+		font-size: 9pt;
+		letter-spacing: 0.04em;
+		color: #666 !important;
+		border-top: 1px solid #d5d9de;
+		padding-top: 4pt;
+	}
+}
+
+/* Hidden on screen; the print block above reveals it. */
+.lesson-print-footer {
+	display: none;
+}
+
 /* ---- Motion ---------------------------------------------------------- */
 
 @media (prefers-reduced-motion: reduce) {

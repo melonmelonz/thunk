@@ -17,6 +17,8 @@
 <svelte:head>
 	<title>{chLesson} &middot; {lesson.title} &middot; thunk</title>
 	<meta name="description" content={`${module.title}, lesson ${index + 1} of ${module.lessonCount}: ${lesson.title}.`} />
+	<meta property="og:title" content={`${chLesson} ${lesson.title} - thunk`} />
+	<meta property="og:description" content={`${module.title}, lesson ${index + 1} of ${module.lessonCount}.`} />
 </svelte:head>
 
 <article class="reading">
@@ -50,6 +52,10 @@
 		{/each}
 	</div>
 </section>
+
+<!-- Print-only running footer: thunk · CH-NN.LL · <title>. Hidden on screen
+     (app.css), repeated on each printed page. -->
+<div class="lesson-print-footer" aria-hidden="true">thunk &middot; {chLesson} &middot; {lesson.title}</div>
 
 <nav class="pager" aria-label="lesson">
 	{#if prev}
