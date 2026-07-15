@@ -1,6 +1,10 @@
 [workspace]
 resolver = "2"
 members = ["thunk-core", "thunk-content", "thunk-sim", "thunk-web", "thunk-tui", "thunk-cli", "thunk-hw"]
+# The wasm bench crate wraps thunk-sim for the public course site. It is a
+# standalone crate (own lockfile, wasm-bindgen dep) so the inside build's
+# dependency graph and profile-audit stay byte-identical. See docs/research.
+exclude = ["site/wasm"]
 
 [workspace.package]
 version = "0.1.0"
