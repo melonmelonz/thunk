@@ -67,6 +67,21 @@ keyboard-first (j/k lesson nav, / palette later), print stylesheet for lessons.
 
 ## 4. Product surface (routes)
 
+**AMENDMENT 2026-07-15 (Penn, binding): the app shell.** Penn: "more of a webapp, self
+contained. i love the style and landing page but it reads more as the marketing landing
+page." So: `/` keeps its character as the front door (the rack, the definition, the plate).
+Every route past `/` lives inside a persistent APP SHELL (SvelteKit layout group
+`(app)`): a left channel rail (the ladder as compact strips - glyph, CH-NN, title, meter;
+current channel lit phosphor; collapsible; The Bench and the operator card live at the rail
+foot), a slim top status bar (current channel/lesson eyebrow left, XP meter right - the
+header XP meter moves here inside the app), and the workspace pane where lesson/bench/
+progress render. Lessons read as documents IN a pane (own scroll, measure preserved), not
+as full-page scrolls. Keyboard-first inside the shell: j/k prev-next lesson, g then a
+channel number, [ ] collapse rail, / reserved for the palette (S-D). Mobile: rail becomes
+a bottom sheet toggled from the status bar; nothing hamburger-generic. Entering the app
+("ENTER" from the rack, or any deep link) is a view transition INTO the instrument; leaving
+back to `/` is the only way the marketing register returns.
+
 - `/` - the instrument front: course identity, the ladder as a calibrated rack (each module a
   channel strip: index, title, lesson/check counts, progress meter), live micro-bench teaser
   (small canvas running the corridor, muted), XP meter in the header.
