@@ -10,3 +10,10 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: no-referrer
   X-Frame-Options: DENY
+
+# The DOOM finale assets (module, engine, WAD, source offer) are content-
+# addressed by their committed bytes and only fetched when the bench source
+# switch flips to DOOM. Cache them hard so a returning player never re-downloads
+# the ~9.8MB (gzipped) WAD. Same-origin, so they load under the CSP above.
+/doom/*
+  Cache-Control: public, max-age=31536000, immutable

@@ -1,12 +1,20 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
 	import { KIND, loadSim, type Row, type Sim } from '$lib/bench/sim';
+	import { loadDoom, toDoomKey, formatWadProgress, type Doom, type Source } from '$lib/bench/doom';
 	import { xp } from '$lib/xp.svelte';
 	import { FINALE_FRAMES } from '$lib/xp-curve';
 
-	// The sim runs at 30fps: reads more like a CRT than 60, and halves the
-	// per-frame sim + convert cost. Mirrors thunk-wasm's TARGET_FPS.
+	// The canvas repaints at 30fps: reads more like a CRT than 60, and halves the
+	// per-frame convert cost. Mirrors thunk-wasm's TARGET_FPS. DOOM sims at its
+	// native 35Hz on its own accumulator (below), fully decoupled from paint.
 	const FPS = 30;
+	// DOOM's native simulation rate. dg_tick runs at this cadence regardless of
+	// the 30fps paint; a rAF may run 0, 1, or a few dg ticks to catch the clock.
+	const DOOM_HZ = 35;
+	// dg ticks to pump right after boot so the Freedoom title renders past init
+	// (the engine runs an intro wipe before TITLEPIC lands).
+	const PRIME_TICKS = 10;
 	// The trace log keeps a bounded window of rows in the DOM. A full run streams
 	// ~8 rows per tick forever; hold the last LOG_CAP so scrolling stays cheap.
 	const LOG_CAP = 512;
@@ -37,8 +45,22 @@
 	let selectedByte = $state(-1);
 	let waveformLines = $state<string[]>([]);
 
+	// Frame source: the corridor finale (default) or DOOM. DOOM's module + WAD
+	// are lazy - nothing loads until the switch is flipped to it.
+	let source = $state<Source>('finale');
+	let doom: Doom | null = null;
+	let doomPhase = $state<'unloaded' | 'loading' | 'ready'>('unloaded');
+	let doomError = $state(false);
+	let wadLoaded = $state(0);
+	let wadTotal = $state(0);
+	let focused = $state(false); // panel has keyboard capture (phosphor ring)
+	let panelEl: HTMLDivElement | undefined = $state();
+
 	let raf = 0;
-	let lastFrameTs = 0;
+	let lastTs = 0; // rAF timestamp of the previous frame, for dt accumulation
+	let lastPaintTs = 0; // last canvas repaint, throttled to FPS
+	let doomAccumMs = 0; // unspent real time toward the next 35Hz dg tick
+	let doomPendingRows: Row[] = []; // rows produced by dg ticks between repaints
 	let streamTimers: number[] = [];
 
 	// Rolling paint timing over the last 120 frames (tick + paint), exposed for
@@ -88,11 +110,147 @@
 		streamTimers = [];
 	}
 
+	const wadLine = $derived(formatWadProgress(wadLoaded, wadTotal));
+
+	// ---- DOOM ----------------------------------------------------------------
+	// Flip to DOOM: lazily fetch the WAD (byte progress in the panel), boot the
+	// module, then bring the panel up on the Freedoom title. The module + WAD
+	// are a separate wasm instance; frames cross into thunk-wasm as raw RGBA.
+	async function startDoomLoad() {
+		if (doomPhase !== 'unloaded') return;
+		doomPhase = 'loading';
+		doomError = false;
+		wadLoaded = 0;
+		wadTotal = 0;
+		try {
+			const d = await loadDoom((l, t) => {
+				wadLoaded = l;
+				wadTotal = t;
+			});
+			doom = d;
+			doomPhase = 'ready';
+			if (source === 'doom') bootDoomPanel();
+		} catch (e) {
+			console.error('bench: doom load failed', e);
+			doomError = true;
+			doomPhase = 'unloaded';
+		}
+	}
+
+	// Boot the panel for DOOM: init + a black letterbox once, then pump a few dg
+	// ticks so the title renders. The letterbox bars are drawn a single time;
+	// every later frame streams only the 240x150 center window.
+	function bootDoomPanel() {
+		if (!sim || !doom) return;
+		stop();
+		cancelStream();
+		rows = [];
+		selectedRow = -1;
+		selectedByte = -1;
+		waveformLines = [];
+		doomPendingRows = [];
+		lit = false;
+		booting = true;
+		powered = true;
+
+		const bootRows = sim.bootDoom(); // init + black letterbox
+		bootEvents = sim.bootEvents;
+		let titleRows: Row[] = [];
+		for (let i = 0; i < PRIME_TICKS; i++) {
+			const rgba = doom.tick();
+			titleRows = sim.blitExternalFrame(rgba, doom.width, doom.height);
+		}
+		frame = sim.frame;
+		paint();
+		// Boot trace then the last title frame's stream, capped to the log window.
+		rows = bootRows.concat(titleRows).slice(-LOG_CAP);
+		lit = true;
+		booting = false;
+		// First DOOM boot counts as the finale being watched (existing event,
+		// idempotent). No new achievement - the economy is locked.
+		xp.benchFinale();
+	}
+
+	// One dg tick: advance DOOM, blit the frame through the real bus (streaming
+	// RAMWR), collect its trace rows. Does NOT touch the canvas - paint is on
+	// its own throttle so 35Hz sim and 30fps paint stay decoupled.
+	function doomTick() {
+		if (!sim || !doom) return;
+		const t0 = performance.now();
+		const rgba = doom.tick();
+		const incoming = sim.blitExternalFrame(rgba, doom.width, doom.height);
+		record(performance.now() - t0);
+		for (const r of incoming) doomPendingRows.push(r);
+		if (doomPendingRows.length > LOG_CAP) doomPendingRows = doomPendingRows.slice(-LOG_CAP);
+	}
+
+	function flushDoomRows() {
+		if (doomPendingRows.length) {
+			appendRows(doomPendingRows);
+			doomPendingRows = [];
+		}
+	}
+
+	// Switch frame source. Always pauses first (never leave a loop running across
+	// a source change). Selecting DOOM the first time kicks off the lazy load.
+	function selectSource(next: Source) {
+		if (next === source || !ready || booting) return;
+		stop();
+		cancelStream();
+		source = next;
+		if (next === 'doom') {
+			if (doomPhase === 'ready') bootDoomPanel();
+			else if (doomPhase === 'unloaded') {
+				powered = false;
+				lit = false;
+				startDoomLoad();
+			}
+		} else {
+			// Back to the finale: return to the idle bring-up, awaiting POWER.
+			powered = false;
+			lit = false;
+			focused = false;
+			rows = [];
+			bootEvents = 0;
+			frame = 0;
+			clearCanvas();
+		}
+	}
+
+	// ---- Keyboard capture (DOOM only, while the panel is focused) ------------
+	function onPanelKeyDown(e: KeyboardEvent) {
+		if (source !== 'doom' || !doom || !powered) return;
+		if (e.key === 'Escape') {
+			panelEl?.blur();
+			e.preventDefault();
+			return;
+		}
+		const k = toDoomKey(e);
+		if (k) {
+			doom.keyDown(k);
+			e.preventDefault();
+		}
+	}
+	function onPanelKeyUp(e: KeyboardEvent) {
+		if (source !== 'doom' || !doom) return;
+		const k = toDoomKey(e);
+		if (k) {
+			doom.keyUp(k);
+			e.preventDefault();
+		}
+	}
+
 	// Power on: boot the finale, then stream the boot trace into the log over
 	// ~1s so it reads as a bring-up, not a dump; the panel lights with frame 0
-	// as the stream lands. Pressing POWER again re-boots.
+	// as the stream lands. Pressing POWER again re-boots. On DOOM, POWER re-boots
+	// the panel from the already-loaded module (never re-runs dg_init).
 	function power() {
 		if (!sim || booting) return;
+		if (source === 'doom') {
+			if (doomPhase === 'ready') bootDoomPanel();
+			else if (doomPhase === 'unloaded') startDoomLoad();
+			return;
+		}
 		stop();
 		cancelStream();
 		rows = [];
@@ -151,18 +309,56 @@
 		perf.avgMs = perf.samples.reduce((a, b) => a + b, 0) / perf.samples.length;
 	}
 
+	// One transport step, source-aware: a finale frame, or one DOOM dg tick +
+	// blit + repaint. Used by the STEP button and the paused single-step path.
+	function stepOnce() {
+		if (source === 'doom') {
+			if (!sim || !powered || booting) return;
+			doomTick();
+			paint();
+			flushDoomRows();
+			frame = sim.frame;
+		} else {
+			frameStep();
+		}
+	}
+
 	function loop(ts: number) {
 		raf = requestAnimationFrame(loop);
-		const interval = 1000 / FPS;
-		if (ts - lastFrameTs < interval) return;
-		lastFrameTs = ts;
-		frameStep();
+		const dt = lastTs ? ts - lastTs : 0;
+		lastTs = ts;
+
+		if (source === 'doom') {
+			// Accumulate real time and run dg at 35Hz, catching up at most a few
+			// ticks (a cap keeps a backgrounded tab from spiraling on return).
+			doomAccumMs = Math.min(doomAccumMs + dt, 200);
+			const stepMs = 1000 / DOOM_HZ;
+			let steps = 0;
+			while (doomAccumMs >= stepMs && steps < 3) {
+				doomTick();
+				doomAccumMs -= stepMs;
+				steps++;
+			}
+			// Paint (putImageData) on its own 30fps throttle, decoupled from sim.
+			if (sim && ts - lastPaintTs >= 1000 / FPS) {
+				lastPaintTs = ts;
+				paint();
+				flushDoomRows();
+				frame = sim.frame;
+			}
+		} else {
+			if (ts - lastPaintTs < 1000 / FPS) return;
+			lastPaintTs = ts;
+			frameStep();
+		}
 	}
 
 	function run() {
 		if (!sim || !powered || running || booting) return;
 		running = true;
-		lastFrameTs = 0;
+		lastTs = 0;
+		lastPaintTs = 0;
+		doomAccumMs = 0;
 		raf = requestAnimationFrame(loop);
 	}
 	function stop() {
@@ -212,13 +408,28 @@
 				(window as unknown as { __bench: unknown }).__bench = {
 					power,
 					step: (n = 1) => {
-						for (let i = 0; i < n; i++) frameStep();
+						for (let i = 0; i < n; i++) stepOnce();
 					},
 					run,
 					pause: stop,
 					isLit: () => lit,
 					frame: () => frame,
 					perf: () => perf.avgMs,
+					// DOOM hooks for live verification.
+					selectSource: (s: Source) => selectSource(s),
+					source: () => source,
+					doomPhase: () => doomPhase,
+					wad: () => ({ loaded: wadLoaded, total: wadTotal }),
+					traceText: () => rows.map((r) => r.text).join('\n'),
+					pressDoomKey: (k: number, ms = 90) => {
+						doom?.keyDown(k);
+						return new Promise((res) =>
+							setTimeout(() => {
+								doom?.keyUp(k);
+								res(null);
+							}, ms)
+						);
+					},
 					sampleNonBlack: () => {
 						if (!ctx) return 0;
 						const d = ctx.getImageData(0, 0, canvasEl.width, canvasEl.height).data;
@@ -282,13 +493,39 @@
 			>
 				{running ? 'PAUSE' : 'RUN'}
 			</button>
-			<button class="tbtn" onclick={frameStep} disabled={!powered || running || booting}>STEP</button>
+			<button class="tbtn" onclick={stepOnce} disabled={!powered || running || booting}>STEP</button>
 			<span class="spacer" aria-hidden="true"></span>
 			<span class="frame mono tnum" aria-label="frame counter">FRAME {fmtFrame(frame)}</span>
 		</div>
 
+		{#if source === 'doom' && powered}
+			<p class="keys mono" aria-label="keyboard legend">
+				KEYS <span class="ksep">&middot;</span> ARROWS/WASD move <span class="ksep">&middot;</span> CTRL fire
+				<span class="ksep">&middot;</span> SPACE use <span class="ksep">&middot;</span> ENTER select
+				<span class="ksep">&middot;</span> Y confirm <span class="ksep">&middot;</span> ESC release
+				<span class="ksep">&middot;</span>
+				{#if focused}<span class="kfoc">captured</span>{:else}<span class="kfoc dim">click panel to capture</span>{/if}
+			</p>
+		{/if}
+
 		<div class="stage-wrap">
-			<div class="bezel" class:lit>
+			<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+			<!-- The bezel is only focusable (tabindex 0) while it carries role=
+			     application for DOOM keyboard capture; otherwise tabindex is -1. -->
+			<div
+				class="bezel"
+				class:lit
+				class:focusable={source === 'doom' && powered}
+				class:focused={focused && source === 'doom'}
+				bind:this={panelEl}
+				tabindex={source === 'doom' && powered ? 0 : -1}
+				role={source === 'doom' && powered ? 'application' : undefined}
+				aria-label={source === 'doom' ? 'DOOM panel - click to capture keyboard' : undefined}
+				onkeydown={onPanelKeyDown}
+				onkeyup={onPanelKeyUp}
+				onfocus={() => (focused = true)}
+				onblur={() => (focused = false)}
+			>
 				<div class="glass">
 					<canvas
 						bind:this={canvasEl}
@@ -306,7 +543,17 @@
 								<i style="--c:#38443b"></i><i style="--c:#2c3730"></i><i style="--c:#3d463f"></i><i
 									style="--c:#2f3a34"></i><i style="--c:#434b44"></i>
 							</span>
-							<span class="ns-label label">{booting ? 'BRINGING UP' : 'NO SIGNAL'}</span>
+							<span class="ns-label label">
+								{#if doomError}
+									WAD FETCH FAILED
+								{:else if source === 'doom' && doomPhase === 'loading'}
+									{wadLine}
+								{:else if booting}
+									BRINGING UP
+								{:else}
+									NO SIGNAL
+								{/if}
+							</span>
 						</div>
 					{/if}
 				</div>
@@ -314,9 +561,23 @@
 
 			<div class="metabar">
 				<div class="source" role="group" aria-label="frame source">
-					<button class="src on" disabled aria-pressed="true">FINALE</button>
-					<button class="src" disabled title="DOOM lands in a later session">
-						DOOM<span class="await label">AWAITING WAD</span>
+					<button
+						class="src"
+						class:on={source === 'finale'}
+						onclick={() => selectSource('finale')}
+						disabled={!ready || booting}
+						aria-pressed={source === 'finale'}
+					>
+						FINALE
+					</button>
+					<button
+						class="src"
+						class:on={source === 'doom'}
+						onclick={() => selectSource('doom')}
+						disabled={!ready || booting}
+						aria-pressed={source === 'doom'}
+					>
+						DOOM{#if doomPhase === 'loading'}<span class="await label">LOADING</span>{/if}
 					</button>
 				</div>
 				<button
@@ -328,6 +589,17 @@
 					SCANLINES {scanlines ? 'ON' : 'OFF'}
 				</button>
 			</div>
+
+			{#if source === 'doom'}
+				<p class="licenses mono" aria-label="doom source and licenses">
+					SOURCE + LICENSES <span class="lsep">&middot;</span>
+					<a href="/doom/doomgeneric-src.tar.gz">doomgeneric source</a>
+					<span class="lsep">&middot;</span>
+					<a href="/doom/gpl-2.0.txt">GPL-2.0</a>
+					<span class="lsep">&middot;</span>
+					<a href="/doom/COPYING.txt">Freedoom BSD</a>
+				</p>
+			{/if}
 
 			<p class="stats mono tnum" aria-label="panel format">
 				240&times;320 <span class="sd" aria-hidden="true">&middot;</span> RGB565
@@ -505,6 +777,42 @@
 		white-space: nowrap;
 	}
 
+	/* KEYS legend + licenses line: hairline mono, deliberately quiet. */
+	.keys {
+		font-size: 0.625rem;
+		letter-spacing: 0.08em;
+		color: var(--faint);
+		line-height: 1.5;
+	}
+	.keys .ksep {
+		color: var(--line);
+		margin-inline: 0.15em;
+	}
+	.keys .kfoc {
+		color: var(--phosphor);
+	}
+	.keys .kfoc.dim {
+		color: var(--faint);
+	}
+	.licenses {
+		font-size: 0.625rem;
+		letter-spacing: 0.06em;
+		color: var(--faint);
+	}
+	.licenses a {
+		color: var(--muted);
+		text-decoration: none;
+		border-bottom: 1px solid var(--line);
+		transition: color 140ms var(--ease-out);
+	}
+	.licenses a:hover {
+		color: var(--phosphor);
+	}
+	.licenses .lsep {
+		color: var(--line);
+		margin-inline: 0.2em;
+	}
+
 	/* ---- The panel ---------------------------------------------------- */
 	.stage-wrap {
 		display: flex;
@@ -523,6 +831,20 @@
 	}
 	.bezel.lit {
 		border-color: #232f3d;
+	}
+	.bezel.focusable {
+		cursor: pointer;
+	}
+	/* Keyboard capture: a quiet phosphor ring on the bezel, no new hue. Replaces
+	   the default focus outline so the "instrument is live" reads on the frame. */
+	.bezel.focusable:focus-visible {
+		outline: none;
+	}
+	.bezel.focused {
+		border-color: color-mix(in srgb, var(--phosphor) 60%, var(--line));
+		box-shadow:
+			0 0 0 1px color-mix(in srgb, var(--phosphor) 55%, transparent),
+			0 0 16px color-mix(in srgb, var(--phosphor) 22%, transparent);
 	}
 	.glass {
 		position: relative;
@@ -618,7 +940,17 @@
 		color: var(--faint);
 		padding: 0.35rem 0.7rem;
 		background: var(--s1);
+		cursor: pointer;
+		transition:
+			color 140ms var(--ease-out),
+			background 140ms var(--ease-out);
+	}
+	.src:hover:not(:disabled):not(.on) {
+		color: var(--muted);
+	}
+	.src:disabled {
 		cursor: not-allowed;
+		opacity: 0.5;
 	}
 	.src + .src {
 		border-left: 1px solid var(--line);

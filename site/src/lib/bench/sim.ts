@@ -26,6 +26,14 @@ export interface Sim {
 	boot(): Row[];
 	/** One animation step: draw the next frame, return that tick's trace rows. */
 	tick(): Row[];
+	/** Power on for DOOM: init + paint the black letterbox once, return boot rows. */
+	bootDoom(): Row[];
+	/**
+	 * Blit one external RGBA8888 frame (320x200, from the DOOM module) through
+	 * the real Display/SpiBus path into the letterboxed 240x150 center window.
+	 * Advances the frame counter; returns the tick's trace rows.
+	 */
+	blitExternalFrame(rgba: Uint8Array, w: number, h: number): Row[];
 	/** Blit the current frame to a 2D context (zero-copy view over wasm memory). */
 	paint(ctx: CanvasRenderingContext2D): void;
 	/** The three-line M3 waveform diagram for a byte. */
@@ -45,6 +53,8 @@ interface WasmTraceRows {
 interface WasmBench {
 	boot(): WasmTraceRows;
 	tick(): WasmTraceRows;
+	boot_doom(): WasmTraceRows;
+	blit_external_frame(rgba: Uint8Array, w: number, h: number): WasmTraceRows;
 	waveform(byte: number): string;
 	frame_ptr(): number;
 	frame_len(): number;
@@ -111,6 +121,18 @@ export async function loadSim(w = 240, h = 320): Promise<Sim> {
 		tick() {
 			const t0 = performance.now();
 			const rows = toRows(bench.tick());
+			lastMs = performance.now() - t0;
+			return rows;
+		},
+		bootDoom() {
+			const t0 = performance.now();
+			const rows = toRows(bench.boot_doom());
+			lastMs = performance.now() - t0;
+			return rows;
+		},
+		blitExternalFrame(rgba: Uint8Array, w: number, h: number) {
+			const t0 = performance.now();
+			const rows = toRows(bench.blit_external_frame(rgba, w, h));
 			lastMs = performance.now() - t0;
 			return rows;
 		},
