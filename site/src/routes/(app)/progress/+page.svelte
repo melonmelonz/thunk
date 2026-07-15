@@ -2,6 +2,7 @@
 	import { modules } from '$lib/content';
 	import { xp } from '$lib/xp.svelte';
 	import { ACHIEVEMENTS, levelProgress, xpForLevel, MAX_LEVEL } from '$lib/xp-curve';
+	import Meta from '$lib/components/Meta.svelte';
 
 	const prog = $derived(levelProgress(xp.xp));
 	const lvl = $derived(String(xp.level).padStart(2, '0'));
@@ -58,12 +59,11 @@
 	}
 </script>
 
-<svelte:head>
-	<title>OPERATOR &middot; thunk</title>
-	<meta name="description" content="Your operator card: level, XP, per-module progress, and achievements. Local only, never sent anywhere." />
-	<meta property="og:title" content="Operator - thunk" />
-	<meta property="og:description" content="Your operator card: level, XP, per-module progress, and achievements. Local only, never sent anywhere." />
-</svelte:head>
+<Meta
+	title="OPERATOR · thunk"
+	description="Your operator card: level, XP, per-module progress, and achievements. Local only, never sent anywhere."
+	ogTitle="Operator - thunk"
+/>
 
 <header class="ohead">
 	<p class="eyebrow label">The operator card</p>
@@ -95,6 +95,24 @@
 	</p>
 </section>
 
+<!-- Calibration: test out of prior knowledge. -->
+<section class="calibrate" aria-label="calibration">
+	<a class="cal-link" href="/calibrate/">
+		<span class="cal-mark" aria-hidden="true">
+			<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+				<path d="M2 13h14M9 13V3M4 13V8m10 5V6" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" />
+			</svg>
+		</span>
+		<span class="cal-body">
+			<span class="cal-title mono">CALIBRATION</span>
+			<span class="cal-sub">Test out of what you already know</span>
+		</span>
+		<span class="cal-chev" aria-hidden="true">
+			<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" /></svg>
+		</span>
+	</a>
+</section>
+
 <!-- Per-module channel meters. -->
 <section class="channels" aria-label="module progress">
 	<h2 class="label">Channels</h2>
@@ -107,9 +125,13 @@
 				<span class="cmeter" aria-hidden="true">
 					<span class="cfill" class:done={s.mastered} style={`width:${s.pct}%`}></span>
 				</span>
-				<span class="ccount mono tnum">
-					{String(s.passed).padStart(2, '0')}<span class="cslash">/</span>{String(s.total).padStart(2, '0')}
-				</span>
+				{#if s.placed && s.passed < s.total}
+					<span class="ccount placed mono">PLACED</span>
+				{:else}
+					<span class="ccount mono tnum">
+						{String(s.passed).padStart(2, '0')}<span class="cslash">/</span>{String(s.total).padStart(2, '0')}
+					</span>
+				{/if}
 			</li>
 		{/each}
 	</ul>
@@ -279,6 +301,57 @@
 		color: var(--faint);
 	}
 
+	/* ---- Calibration link ---------------------------------------------- */
+	.cal-link {
+		display: grid;
+		grid-template-columns: auto 1fr auto;
+		align-items: center;
+		gap: 1rem;
+		padding: 0.9rem 1.1rem;
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		background: var(--s1);
+		transition:
+			border-color 160ms var(--ease-out),
+			background 160ms var(--ease-out);
+	}
+	.cal-link:hover {
+		border-color: color-mix(in srgb, var(--phosphor) 35%, var(--line));
+		background: var(--s2);
+	}
+	.cal-mark {
+		display: inline-flex;
+		color: var(--faint);
+		transition: color 160ms var(--ease-out);
+	}
+	.cal-link:hover .cal-mark {
+		color: var(--phosphor);
+	}
+	.cal-body {
+		display: flex;
+		flex-direction: column;
+		gap: 0.2rem;
+		min-width: 0;
+	}
+	.cal-title {
+		font-size: 0.6875rem;
+		letter-spacing: 0.14em;
+		color: var(--phosphor);
+	}
+	.cal-sub {
+		font-size: 0.875rem;
+		color: var(--muted);
+	}
+	.cal-chev {
+		color: var(--faint);
+		display: inline-flex;
+		transition: transform 140ms var(--ease-out);
+	}
+	.cal-link:hover .cal-chev {
+		transform: translateX(2px);
+		color: var(--muted);
+	}
+
 	/* ---- Channels ------------------------------------------------------ */
 	.clist {
 		list-style: none;
@@ -336,6 +409,11 @@
 		font-size: 0.75rem;
 		color: var(--muted);
 		text-align: right;
+	}
+	.ccount.placed {
+		font-size: 0.625rem;
+		letter-spacing: 0.14em;
+		color: var(--phosphor);
 	}
 	.cslash {
 		color: var(--faint);

@@ -1,9 +1,23 @@
 <script lang="ts">
 	import type { Check } from '$lib/content';
-	import { grade } from '$lib/grade';
+	import { grade, type Response } from '$lib/grade';
 	import { xp } from '$lib/xp.svelte';
 
-	let { check, n }: { check: Check; n: number } = $props();
+	// `placement` mode makes this a calibration instrument: no GRADE button, no
+	// pass tick, no store writes. It just collects a response and reports it to
+	// the parent (via `onrespond`), which grades on CONTINUE. Default mode is the
+	// self-graded lesson check, unchanged.
+	let {
+		check,
+		n,
+		placement = false,
+		onrespond
+	}: {
+		check: Check;
+		n: number;
+		placement?: boolean;
+		onrespond?: (r: Response | null) => void;
+	} = $props();
 	const label = $derived(check.kind === 'choice' ? 'Multiple choice' : 'Short answer');
 
 	let picked = $state(-1);
@@ -12,8 +26,24 @@
 
 	// Passed state is the store's, so it survives reload and a passed check keeps
 	// its tick. A previously-passed check shows PASS even before the reader grades.
-	const passed = $derived(xp.isPassed(check.id));
+	// In placement mode there is no pass surface at all - calibration stays quiet.
+	const passed = $derived(placement ? false : xp.isPassed(check.id));
 	const shown = $derived(verdict === 'idle' && passed ? 'pass' : verdict);
+
+	// Placement: report the live response upward (null when nothing answered yet)
+	// so the parent can enable CONTINUE and grade at its own pace.
+	$effect(() => {
+		if (!placement) return;
+		const res: Response | null =
+			check.kind === 'choice'
+				? picked >= 0
+					? { picked }
+					: null
+				: text.trim().length > 0
+					? { text }
+					: null;
+		onrespond?.(res);
+	});
 
 	function onGrade() {
 		const res = check.kind === 'choice' ? { picked } : { text };
@@ -65,18 +95,20 @@
 				autocomplete="off"
 				autocapitalize="off"
 				spellcheck="false"
-				onkeydown={(e) => e.key === 'Enter' && onGrade()}
+				onkeydown={(e) => e.key === 'Enter' && !placement && onGrade()}
 				aria-label="your answer"
 			/>
 		</div>
 	{/if}
 
-	<div class="actions">
-		<button class="grade mono" onclick={onGrade}>GRADE</button>
-		<p class="verdict mono" class:pass={shown === 'pass'} class:fail={shown === 'fail'} aria-live="polite">
-			{#if shown === 'pass'}PASS{:else if shown === 'fail'}NOT YET - REREAD AND TRY AGAIN{:else if shown === 'empty'}{emptyMsg}{/if}
-		</p>
-	</div>
+	{#if !placement}
+		<div class="actions">
+			<button class="grade mono" onclick={onGrade}>GRADE</button>
+			<p class="verdict mono" class:pass={shown === 'pass'} class:fail={shown === 'fail'} aria-live="polite">
+				{#if shown === 'pass'}PASS{:else if shown === 'fail'}NOT YET - REREAD AND TRY AGAIN{:else if shown === 'empty'}{emptyMsg}{/if}
+			</p>
+		</div>
+	{/if}
 </article>
 
 <style>

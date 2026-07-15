@@ -45,6 +45,9 @@ export const AWARD = {
 	CHECK_FIRST_TRY: 15,
 	LESSON: 25,
 	MODULE: 100,
+	// Placement pays the spec's test-out rate: +50 per module placed out, half of
+	// a full check-mastery (+100). Placing out is a shortcut, not the long road.
+	PLACEMENT: 50,
 	BENCH_BOOT: 10,
 	BENCH_SCOPE: 10,
 	BENCH_FINALE: 25
@@ -78,7 +81,7 @@ export const ACHIEVEMENTS: Achievement[] = [
 	{ id: 'upstream', name: 'UPSTREAM', blurb: 'Mastered M6 - Intro to Open Source.' },
 	{ id: 'full-ladder', name: 'FULL LADDER', blurb: 'Every module on the ladder mastered.' },
 	{ id: 'scope-jockey', name: 'SCOPE JOCKEY', blurb: 'Scoped a byte on the live bus trace.' },
-	{ id: 'calibrated', name: 'CALIBRATED', note: 'AWAITING INSTRUMENT' } // placement flow not built yet
+	{ id: 'calibrated', name: 'CALIBRATED', blurb: 'Ran the placement calibration.' }
 ];
 
 /** Module id -> the achievement its mastery grants. M0 has none (POWER ON covers first blood). */
@@ -107,12 +110,25 @@ export interface XpState {
 	attempts: Record<string, number>;
 	/** lesson id -> at. */
 	lessonsCompleted: Record<string, number>;
-	/** module id -> at. */
+	/** module id -> at. Mastered the long way: every check in the module passed. */
 	modulesMastered: Record<string, number>;
+	/**
+	 * module id -> at. Mastered-by-placement: the calibration run passed all three
+	 * of this module's placement items. Read identically to check-mastery by the
+	 * meters and the ladder gate (mastered_or_placed), but paid at the placement
+	 * rate (+50, not +100). A retake never removes an entry here.
+	 */
+	modulesPlaced: Record<string, number>;
 	/** achievement id -> at. */
 	achievements: Record<string, number>;
 	/** bench event key -> at (firstBoot, firstScope, finale). */
 	benchEvents: Record<string, number>;
+	/**
+	 * The furthest lesson the reader has opened, for the CONTINUE affordance. Null
+	 * until the first lesson is visited. Not a required import field (older v1
+	 * records predate it and default to null on import).
+	 */
+	lastLesson: { module: string; lesson: string } | null;
 }
 
 export function newState(): XpState {
@@ -124,8 +140,10 @@ export function newState(): XpState {
 		attempts: {},
 		lessonsCompleted: {},
 		modulesMastered: {},
+		modulesPlaced: {},
 		achievements: {},
-		benchEvents: {}
+		benchEvents: {},
+		lastLesson: null
 	};
 }
 

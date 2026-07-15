@@ -41,6 +41,23 @@ export interface Curriculum {
 export const curriculum = data as Curriculum;
 export const modules = curriculum.modules;
 
+/** The placement (test-out) items: 3 check refs per module, in module order. */
+export const placement = curriculum.placement;
+
+// Flat check index, built once, for the placement flow (which addresses checks
+// by id across modules).
+const CHECK_BY_ID = new Map<string, Check>();
+for (const m of modules) {
+	for (const l of m.lessons) {
+		for (const c of l.checks) CHECK_BY_ID.set(c.id, c);
+	}
+}
+
+/** The Check with this id, anywhere in the curriculum. */
+export function checkById(id: string): Check | undefined {
+	return CHECK_BY_ID.get(id);
+}
+
 export function moduleById(id: string): Module | undefined {
 	return modules.find((m) => m.id === id);
 }

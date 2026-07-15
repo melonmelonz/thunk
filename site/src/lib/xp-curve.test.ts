@@ -69,9 +69,10 @@ describe('achievements table', () => {
 		const iddqd = ACHIEVEMENTS.find((a) => a.id === 'iddqd');
 		expect(iddqd?.blurb).toBeUndefined();
 	});
-	it('CALIBRATED is defined but flagged awaiting its instrument', () => {
+	it('CALIBRATED has its blurb now that the placement flow is built', () => {
 		const cal = ACHIEVEMENTS.find((a) => a.id === 'calibrated');
-		expect(cal?.note).toBe('AWAITING INSTRUMENT');
+		expect(cal?.blurb).toBeTruthy();
+		expect(cal?.note).toBeUndefined();
 	});
 	it('every module-mastery achievement id exists in the table', () => {
 		for (const id of Object.values(MODULE_ACHIEVEMENT)) {

@@ -11,6 +11,7 @@
 import { browser } from '$app/environment';
 import { modules } from './content';
 import type { Check, Module } from './content';
+import { resumeTarget, type FlatLesson } from './resume';
 import {
 	newState,
 	isValidState,
@@ -50,11 +51,17 @@ for (const m of modules) {
 	MODULE_CHECKS.set(m.id, mc);
 }
 
+// Flat course order, built once, for the CONTINUE resume target.
+const ORDER: FlatLesson[] = modules.flatMap((m) =>
+	m.lessons.map((l) => ({ moduleId: m.id, lessonId: l.id }))
+);
+
 export interface ModuleStat {
 	passed: number;
 	total: number;
 	pct: number; // 0..100 integer
-	mastered: boolean;
+	mastered: boolean; // mastered_or_placed: checks all passed OR placed out
+	placed: boolean; // mastered by the placement calibration, not by checks
 	unlocked: boolean;
 }
 
@@ -70,6 +77,14 @@ class XpStore {
 	// matching the server markup, then the meters tick up reactively.
 	hydrate(): void {
 		this.#load();
+	}
+
+	// Any mutator that can fire on mount (recordVisit runs from a lesson $effect)
+	// must load the persisted record FIRST, or an early write would clobber prior
+	// progress with an empty state before hydrate() ran. #load is idempotent
+	// (guarded by #loaded), so calling it here is free once hydrated.
+	#ensureLoaded(): void {
+		if (!this.#loaded) this.#load();
 	}
 
 	// ---- Reactive readouts --------------------------------------------------
@@ -96,23 +111,34 @@ class XpStore {
 		return !!this.state.achievements[id];
 	}
 
+	/** True when a module counts as done: mastered by checks OR placed out. */
+	isModuleDone(id: string): boolean {
+		return !!(this.state.modulesMastered[id] || this.state.modulesPlaced[id]);
+	}
+
 	/** Per-module tally for the rail, index, and operator card. */
 	moduleStat(module: Module, indexInLadder: number): ModuleStat {
 		const ids = MODULE_CHECKS.get(module.id) ?? [];
 		const passed = ids.filter((id) => this.isPassed(id)).length;
 		const total = ids.length;
-		const pct = total > 0 ? Math.round((passed / total) * 100) : 0;
+		const checkMastered = !!this.state.modulesMastered[module.id];
+		const placed = !!this.state.modulesPlaced[module.id];
+		const mastered = checkMastered || placed;
+		// A placed-out module reads as full even with no checks graded, so the
+		// meter matches its MASTERED label (mastered_or_placed parity).
+		const pct = mastered ? 100 : total > 0 ? Math.round((passed / total) * 100) : 0;
 		const prev = modules[indexInLadder - 1];
 		return {
 			passed,
 			total,
 			pct,
-			mastered: !!this.state.modulesMastered[module.id],
-			// Visual gate only. Module N unlocks when N-1 is mastered; the first is
-			// always open. Navigation is NEVER blocked here - a reader can open any
-			// lesson by URL. Gating is the facility binary's job; the site only
-			// *shows* the ladder rule. (See spec section 5 / deliverable 5.)
-			unlocked: indexInLadder === 0 || !!(prev && this.state.modulesMastered[prev.id])
+			mastered,
+			placed,
+			// Visual gate only. Module N unlocks when N-1 is done (mastered OR placed
+			// out); the first is always open. Navigation is NEVER blocked here - a
+			// reader can open any lesson by URL. Gating is the facility binary's job;
+			// the site only *shows* the ladder rule. (Spec section 5 / deliverable 5.)
+			unlocked: indexInLadder === 0 || !!(prev && this.isModuleDone(prev.id))
 		};
 	}
 
@@ -120,6 +146,7 @@ class XpStore {
 	/** Grade press for a check: `correct` decides the award. Idempotent per id. */
 	gradeCheck(check: Check, correct: boolean): void {
 		if (!browser) return;
+		this.#ensureLoaded();
 		this.state.attempts[check.id] = (this.state.attempts[check.id] ?? 0) + 1;
 		if (correct && !this.state.passedChecks[check.id]) {
 			const firstTry = this.state.attempts[check.id] === 1;
@@ -133,21 +160,27 @@ class XpStore {
 	}
 
 	benchBoot(): void {
-		if (!browser || this.state.benchEvents.firstBoot) return;
+		if (!browser) return;
+		this.#ensureLoaded();
+		if (this.state.benchEvents.firstBoot) return;
 		this.state.benchEvents.firstBoot = Date.now();
 		this.#award(AWARD.BENCH_BOOT);
 		this.#grant('first-boot');
 		this.#persist();
 	}
 	benchScope(): void {
-		if (!browser || this.state.benchEvents.firstScope) return;
+		if (!browser) return;
+		this.#ensureLoaded();
+		if (this.state.benchEvents.firstScope) return;
 		this.state.benchEvents.firstScope = Date.now();
 		this.#award(AWARD.BENCH_SCOPE);
 		this.#grant('scope-jockey');
 		this.#persist();
 	}
 	benchFinale(): void {
-		if (!browser || this.state.benchEvents.finale) return;
+		if (!browser) return;
+		this.#ensureLoaded();
+		if (this.state.benchEvents.finale) return;
 		this.state.benchEvents.finale = Date.now();
 		this.#award(AWARD.BENCH_FINALE, { kind: 'xp', label: 'FINALE WATCHED', xp: AWARD.BENCH_FINALE });
 		this.#persist();
@@ -189,8 +222,47 @@ class XpStore {
 		// CLEAN PASS: this module was passed entirely first-try.
 		if (ids.every((id) => this.isFirstTry(id))) this.#grant('clean-pass');
 
-		// FULL LADDER: every module mastered.
-		if (modules.every((m) => this.state.modulesMastered[m.id])) this.#grant('full-ladder');
+		// FULL LADDER: every module done (mastered by checks or placed out).
+		if (modules.every((m) => this.isModuleDone(m.id))) this.#grant('full-ladder');
+	}
+
+	// ---- Placement (the calibration test-out) -------------------------------
+	/**
+	 * Apply a completed calibration run. `passedModuleIds` are the modules whose
+	 * three placement items were all correct. Grants CALIBRATED on the first
+	 * completed run regardless of outcome; marks each newly passed module
+	 * mastered-by-placement and pays the placement rate (+50) once per module.
+	 * Idempotent: a retake never un-masters and never double-pays. XP is silent
+	 * (the calibration report is the surface, not a stack of toasts).
+	 */
+	completePlacement(passedModuleIds: string[]): void {
+		if (!browser) return;
+		this.#ensureLoaded();
+		this.#grant('calibrated'); // first completed run, any outcome
+		for (const id of passedModuleIds) {
+			if (this.state.modulesPlaced[id] || this.state.modulesMastered[id]) continue;
+			this.state.modulesPlaced[id] = Date.now();
+			this.#award(AWARD.PLACEMENT); // silent; the report shows what landed
+		}
+		if (modules.every((m) => this.isModuleDone(m.id))) this.#grant('full-ladder');
+		this.#persist();
+	}
+
+	// ---- CONTINUE (resume the furthest lesson) ------------------------------
+	/** Record the furthest lesson opened, for the CONTINUE affordance. */
+	recordVisit(moduleId: string, lessonId: string): void {
+		if (!browser) return;
+		this.#ensureLoaded();
+		const cur = this.state.lastLesson;
+		if (cur && cur.module === moduleId && cur.lesson === lessonId) return;
+		this.state.lastLesson = { module: moduleId, lesson: lessonId };
+		this.#persist();
+	}
+
+	/** The lesson CONTINUE should resume, or null at the zero state (hidden). */
+	get resume(): FlatLesson | null {
+		const completed = new Set(Object.keys(this.state.lessonsCompleted));
+		return resumeTarget(ORDER, this.state.lastLesson, completed);
 	}
 
 	#grant(id: string): void {
