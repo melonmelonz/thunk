@@ -1,19 +1,21 @@
-<!-- The XP meter: a thin VU-style track, phosphor origin, tabular readout.
-     Non-functional this phase (fill at 0%) - the register arrives in S-C.
-     Rendered now so the header's final geometry is locked. -->
+<!-- The XP meter: a thin VU-style track, phosphor fill, tabular readout. Live off
+     the store; the fill animates its width 200ms on every award. Sits in the
+     marketing header (`/`) and in the app status bar. -->
 <script lang="ts">
-	let { level = 1, xp = 0, fill = 0 }: { level?: number; xp?: number; fill?: number } = $props();
-	const lvl = $derived(String(level).padStart(2, '0'));
-	const xpText = $derived(xp.toLocaleString('en-US'));
+	import { xp } from '$lib/xp.svelte';
+
+	const lvl = $derived(String(xp.level).padStart(2, '0'));
+	const xpText = $derived(xp.xp.toLocaleString('en-US'));
+	const fill = $derived(xp.fill);
 </script>
 
-<div class="xp" aria-label={`level ${lvl}, ${xpText} experience`}>
+<a class="xp" href="/progress/" aria-label={`level ${lvl}, ${xpText} experience - open the operator card`}>
 	<span class="track" aria-hidden="true">
 		<span class="fill" style={`width:${fill}%`}></span>
 		<span class="cap"></span>
 	</span>
 	<span class="read tnum">LVL {lvl} <span class="sep">/</span> {xpText} XP</span>
-</div>
+</a>
 
 <style>
 	.xp {
@@ -33,6 +35,7 @@
 		position: absolute;
 		inset: 0 auto 0 0;
 		background: var(--phosphor);
+		transition: width 200ms var(--ease-out);
 	}
 	/* At 0% the meter still reads as live: a lit origin segment. */
 	.cap {
@@ -50,6 +53,9 @@
 		letter-spacing: 0.08em;
 		color: var(--muted);
 		white-space: nowrap;
+	}
+	.xp:hover .read {
+		color: var(--text);
 	}
 	.sep {
 		color: var(--faint);

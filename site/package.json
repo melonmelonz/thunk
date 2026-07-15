@@ -12,7 +12,8 @@
 		"preview": "vite preview",
 		"prepare": "node scripts/build-info.mjs && (svelte-kit sync || echo '')",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"test": "vitest run"
 	},
 	"devDependencies": {
 		"@sveltejs/adapter-static": "^3.0.10",
@@ -23,6 +24,7 @@
 		"typescript": "^6.0.3",
 		"vite": "^8.0.16",
 		"vite-plugin-wasm": "^3.6.0",
+		"vitest": "^4.1.10",
 		"wasm-pack": "^0.15.0"
 	}
 }
