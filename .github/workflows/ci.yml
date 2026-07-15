@@ -183,9 +183,19 @@ jobs:
       - name: Perf budget (first-route JS < 100KB gzipped; wasm lazy, excluded)
         run: node site/scripts/perf-budget.mjs
       - name: Hermetic check (no external URLs in markup or styles)
-        run: '! grep -rE "https?://" site/build --include="*.html" --include="*.css"'
+        # Allowlist EXACTLY the site's own canonical origin. https://thunk.goolz.org
+        # appears only in <link rel="canonical">, og:url, and og:image meta - the
+        # site's own address, never FETCHED at runtime (every page asset stays
+        # same-origin, %sveltekit.assets%). It is metadata, not an external
+        # resource. Everything else must be zero.
+        run: |
+          bad=$(grep -rhoE "https?://[A-Za-z0-9._~:/?#@!%-]+" site/build --include="*.html" --include="*.css" \
+            | grep -vE "^https://thunk\.goolz\.org" || true)
+          test -z "$bad" || { echo "unexpected external URLs in markup/styles:"; echo "$bad"; exit 1; }
       - name: Hermetic check (JS carries no phone-home URLs beyond framework internals)
+        # Same canonical-origin allowlist: the Meta component's string literals
+        # carry https://thunk.goolz.org into the hydration bundle (metadata only).
         run: |
           bad=$(grep -rhoE "https?://[A-Za-z0-9._~:/?#@!%-]+" site/build --include='*.js' \
-            | grep -vE "w3\.org|svelte\.dev/e/" || true)
+            | grep -vE "w3\.org|svelte\.dev/e/|thunk\.goolz\.org" || true)
           test -z "$bad" || { echo "unexpected external URLs in JS:"; echo "$bad"; exit 1; }
