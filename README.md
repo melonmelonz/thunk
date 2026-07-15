@@ -15,6 +15,20 @@ no network and no hardware.
 
 A *thunk* is a piece of code that gets set aside and run later, not thrown away.
 
+## The course site
+
+The whole course also runs in a browser at <https://thunk-course.pages.dev>. It is the entire
+curriculum online, read as documents inside a persistent app shell. The bench is the real
+simulator compiled to WebAssembly, so a virtual panel is driven by the same decoded bus events
+the binary produces. Progress and XP live only in the visitor's browser; there are no accounts
+and no telemetry.
+
+<p align="center">
+  <img src="docs/screenshots/site/site-index.png" width="32%" alt="The course index as a calibrated rack">
+  <img src="docs/screenshots/site/site-shell-lesson.png" width="32%" alt="A lesson inside the app shell">
+  <img src="docs/screenshots/site/site-bench-run.png" width="32%" alt="The bench running the finale over the simulated bus">
+</p>
+
 ## Build and run
 
 The binary embeds the whole course; nothing is fetched at runtime.
@@ -82,7 +96,7 @@ risk register, and print-ready PDFs.
 Built and tested: the full ladder, the protocol simulator and trace view, both build profiles,
 the web site, and the facilitator kit. The inside build's finale is a deterministic corridor
 scene rendered through the learner-facing display driver; playable DOOM is planned for the open
-build. Local repository; not yet published.
+build. The course site is live at <https://thunk-course.pages.dev> (2026-07-15).
 
 ## License
 

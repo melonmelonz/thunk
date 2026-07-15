@@ -3,12 +3,16 @@
 Everything for the thunk project lives here. Source code is in the crate folders one level up
 (`thunk-core`, `thunk-content`, `thunk-sim`, `thunk-web`, `thunk-tui`, `thunk-cli`).
 
+**Status (2026-07-15):** the course site is live at <https://thunk-course.pages.dev> and is the
+public face of the project; the offline-bundle demo continues to serve at
+<https://thunk-2dc.pages.dev> as the facility artifact.
+
 ## Product and planning
 - [`PRD.md`](PRD.md) — product requirements document.
 - [`DESIGN-SPEC.md`](DESIGN-SPEC.md) — north-star design and architecture.
 - [`HANDOFF.md`](HANDOFF.md) - session handoff: where things stand and what to build next.
 - [`INFRA.md`](INFRA.md) - infrastructure: the two deployment worlds and the go-public checklist.
-- [`PATHS.md`](PATHS.md) - running thunk: the four rungs, from in-process simulator to QEMU to a real panel.
+- [`PATHS.md`](PATHS.md) - running thunk: the browser rung plus the four install rungs, from in-process simulator to QEMU to a real panel.
 - [`superpowers/plans/2026-07-06-thunk-phase1.md`](superpowers/plans/2026-07-06-thunk-phase1.md) — Phase 1 implementation plan.
 - [`superpowers/plans/2026-07-10-thunk-buildout.md`](superpowers/plans/2026-07-10-thunk-buildout.md) - Phase 2 buildout plan (the milestone map).
 - [`superpowers/plans/`](superpowers/plans/) - the six 2026-07-12 milestone plans: mA curriculum, mB gates,

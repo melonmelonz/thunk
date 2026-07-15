@@ -176,4 +176,6 @@ guide and answer key from the embedded curriculum; `thunk progress --export` emi
 mastery CSV). CI runs check, hermetic web, profiles, and static-musl jobs; 131 workspace tests
 pass, with the open-profile suites green as well; fmt, clippy (both profiles), vocab-lint, and
 profile-audit are clean. Not yet built: playable DOOM on the open build (needs network assets).
-Local git only; not yet pushed.
+As of 2026-07-15 the public course site (a SvelteKit SPA with the thunk-sim bench compiled to
+WebAssembly) is live at https://thunk-course.pages.dev and is the project's public face; the
+offline web bundle continues to serve at https://thunk-2dc.pages.dev as the facility artifact.

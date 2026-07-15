@@ -5,6 +5,14 @@ hardware, and sometimes no permission to install anything. So there are four way
 in increasing order of how much machine you have. Every rung runs the same course from the
 same binary; nothing is a demo build.
 
+## 0. The browser rung: no install at all
+
+Before any of the install rungs, the whole course runs in a browser at
+<https://thunk-course.pages.dev>. Nothing to build, nothing to install: the entire curriculum
+is online and the bench runs the real simulator compiled to WebAssembly, driving a virtual
+panel from the same bus events the binary produces. This is the zero-friction way in; the four
+rungs below are for a machine you can install on.
+
 ## 1. The simulator, in-process
 
 The default. The SPI bus, the panel, and the boot sequence are all simulated inside the

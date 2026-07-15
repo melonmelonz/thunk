@@ -63,21 +63,38 @@ real release, not before.
 
 Cloudflare serves the *public, online* half. Two stages:
 
-### Stage 1 — static site (with M-F, no accounts)
+### Stage 1 — static sites (with M-F, no accounts)
 
-The offline web bundle doubles as the public demo site. **Cloudflare Pages**, static assets only:
+There are now **two** Cloudflare Pages projects, both static assets only, no Workers/KV/D1, no
+analytics. The public face moved to the course SPA at cutover (2026-07-15); the offline-bundle demo
+stays put as the facility artifact.
 
-- Project `thunk`, production branch `main`, build output = the M-F web bundle directory.
-- No Workers code, no KV/D1, no analytics scripts. The bundle is already self-contained; Pages just
-  serves it.
-- Custom domain when Penn picks one; Cloudflare-managed TLS; HSTS on.
-- Headers (`_headers` file ships with the bundle): a strict `Content-Security-Policy` with no
-  external origins (`default-src 'self'`), `X-Content-Type-Options: nosniff`,
-  `Referrer-Policy: no-referrer`. The offline constraint makes a no-exceptions CSP free; take it.
+**Project `thunk`** — the offline web bundle, unchanged.
 
-Deploy stays manual (`wrangler pages deploy` from a tagged checkout) until the site matters enough
-to automate; then a deploy workflow keyed to release tags, with the Cloudflare API token stored as
-a GitHub Actions secret scoped to Pages only.
+- Live at `https://thunk-2dc.pages.dev`. Production branch `main`, build output = the M-F web
+  bundle directory. The bundle is self-contained; Pages just serves it. Not deleted or redeployed
+  at cutover; it keeps demonstrating the facility artifact exactly as a reviewer would receive it.
+
+**Project `thunk-course`** — the course SPA (the public identity).
+
+- Live at `https://thunk-course.pages.dev`; the repo homepage and README point here. SvelteKit SPA
+  (`@sveltejs/adapter-static`, fully prerendered) plus the thunk-sim bench compiled to WebAssembly.
+- Production branch `main`, direct `wrangler pages deploy` from `site/build`. CI has a `site` job
+  that builds node + wasm and runs the content-freshness check.
+- Headers: `site/static/_headers` carries the CSP (created 2026-07-15; it was absent, so this is the
+  one site/ file this cutover touches). `default-src 'self'` with no external origins, plus
+  `'wasm-unsafe-eval'` in `script-src` for the bench module and `'unsafe-inline'` retained for the
+  SvelteKit hydration bootstrap and injected styles (adapter-static prerenders without CSP hashing).
+  Also `nosniff`, `no-referrer`, `X-Frame-Options: DENY`. It ships with the **next** site deploy;
+  confirm the live SPA still loads (bench included) after that deploy before tightening the CSP.
+
+The offline bundle does not currently emit its own `_headers`; when it inherits the SPA design
+language its generator should emit the same strict CSP (there the offline constraint makes a
+no-exceptions `default-src 'self'` free, with no `wasm-unsafe-eval` or `unsafe-inline` needed).
+
+Deploy stays manual (`wrangler pages deploy`) until the site matters enough to automate; then a
+deploy workflow keyed to release tags, with the Cloudflare API token stored as a GitHub Actions
+secret scoped to Pages only.
 
 ### Stage 2 — the after-release platform (own sub-spec first)
 
