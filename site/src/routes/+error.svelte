@@ -35,12 +35,17 @@
 </section>
 
 <style>
+	/* The root error page renders with no shell, so it centers itself in the
+	   viewport with proper gutters instead of jamming into the top-left. */
 	.dead {
+		min-height: 100dvh;
 		display: flex;
 		flex-direction: column;
+		justify-content: center;
 		gap: 2.25rem;
-		padding-block: clamp(2rem, 8vw, 5rem);
 		max-width: 34rem;
+		margin-inline: auto;
+		padding: clamp(2rem, 8vw, 5rem) clamp(1.25rem, 5vw, 3rem);
 	}
 	.bars {
 		display: grid;

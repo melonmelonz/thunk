@@ -270,6 +270,13 @@
 <style>
 	.shell {
 		--rail-w: 264px;
+		/* Fixed to the viewport so the shell is the whole window and never adds to
+		   document scroll height: the SvelteKit `display:contents` wrapper between
+		   <body> and here otherwise lets the tall inner pane leak past an
+		   `overflow:hidden` shell and scroll the page into a void. The pane scrolls
+		   inside .workspace instead; the page itself never scrolls. */
+		position: fixed;
+		inset: 0;
 		display: grid;
 		grid-template-columns: var(--rail-w) minmax(0, 1fr);
 		height: 100dvh;
