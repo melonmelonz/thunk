@@ -1,20 +1,33 @@
 <script lang="ts">
-	import { curriculum, modules } from '$lib/content';
+	import { curriculum, modules, moduleById, lessonNeighbours } from '$lib/content';
 	import ChannelStrip from '$lib/components/ChannelStrip.svelte';
+	import { xp } from '$lib/xp.svelte';
+	import Meta from '$lib/components/Meta.svelte';
+
+	// CONTINUE: resume the furthest in-progress lesson. Null (hidden) at the zero
+	// state; empty on the prerendered HTML, appears after the store hydrates.
+	const resume = $derived.by(() => {
+		const r = xp.resume;
+		if (!r) return null;
+		const m = moduleById(r.moduleId);
+		if (!m) return null;
+		const { index } = lessonNeighbours(m, r.lessonId);
+		const lesson = m.lessons[index];
+		if (!lesson) return null;
+		const code =
+			'CH-' +
+			String(Number(m.tag.replace(/\D/g, ''))).padStart(2, '0') +
+			'.' +
+			String(index + 1).padStart(2, '0');
+		return { href: `/m/${m.id}/${lesson.id}/`, code, title: lesson.title };
+	});
 </script>
 
-<svelte:head>
-	<title>thunk - a systems course, from the ground up</title>
-	<meta
-		name="description"
-		content="An offline systems course. From true zero to DOOM on a panel, built and run on your own machine."
-	/>
-	<meta property="og:title" content="thunk - a systems course, from the ground up" />
-	<meta
-		property="og:description"
-		content="From true zero to DOOM on a panel. An offline systems course."
-	/>
-</svelte:head>
+<Meta
+	title="thunk - a systems course, from the ground up"
+	description="An offline systems course. From true zero to DOOM on a panel, built and run on your own machine."
+	ogDescription="From true zero to DOOM on a panel. An offline systems course."
+/>
 
 <section class="hero">
 	<p class="eyebrow label">Offline systems course</p>
@@ -33,6 +46,16 @@
 			away.</span
 		>
 	</p>
+
+	{#if resume}
+		<a class="resume" href={resume.href}>
+			<span class="rs-tick" aria-hidden="true"></span>
+			<span class="rs-word mono">CONTINUE</span>
+			<span class="rs-sep" aria-hidden="true">&middot;</span>
+			<span class="rs-code mono tnum">{resume.code}</span>
+			<span class="rs-title">{resume.title}</span>
+		</a>
+	{/if}
 
 	<!-- Truth badges: all three are true of this build. Hairlines, no fill. -->
 	<ul class="badges" aria-label="guarantees">
@@ -158,6 +181,57 @@
 	}
 	.def-text .pos {
 		color: var(--faint);
+	}
+
+	/* CONTINUE: resume the furthest lesson. Phosphor-edged, quiet, one line. */
+	.resume {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+		margin-top: 1.6rem;
+		padding: 0.5rem 0.85rem;
+		max-width: 100%;
+		border: 1px solid color-mix(in srgb, var(--phosphor) 32%, var(--line));
+		border-radius: 2px;
+		background: color-mix(in srgb, var(--phosphor) 6%, var(--s1));
+		transition:
+			border-color 160ms var(--ease-out),
+			background 160ms var(--ease-out);
+	}
+	.resume:hover {
+		border-color: color-mix(in srgb, var(--phosphor) 55%, var(--line));
+		background: color-mix(in srgb, var(--phosphor) 10%, var(--s1));
+	}
+	.rs-tick {
+		width: 5px;
+		height: 12px;
+		border-radius: 1px;
+		background: var(--phosphor);
+		box-shadow: 0 0 6px var(--phosphor-dim);
+		flex: none;
+	}
+	.rs-word {
+		font-size: 0.625rem;
+		letter-spacing: 0.16em;
+		color: var(--phosphor);
+		flex: none;
+	}
+	.rs-sep {
+		color: var(--faint);
+	}
+	.rs-code {
+		font-size: 0.6875rem;
+		letter-spacing: 0.06em;
+		color: var(--muted);
+		flex: none;
+	}
+	.rs-title {
+		font-size: 0.8125rem;
+		color: var(--text);
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		min-width: 0;
 	}
 
 	.badges {

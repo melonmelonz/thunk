@@ -126,17 +126,39 @@ function chCode(tag: string): string {
 	return 'CH-' + String(Number(tag.replace(/\D/g, ''))).padStart(2, '0');
 }
 
+/** The furthest-lesson resume target, resolved by the caller from the store. */
+export interface ResumeHint {
+	href: string;
+	/** CH-NN.LL code of the lesson to resume. */
+	code: string;
+	/** The lesson title, for the label + keyword match. */
+	title: string;
+}
+
 /**
  * The full command set. Lessons + channels come from the curriculum; the places
  * and actions are fixed. `onBench` gates the SCANLINES toggle to the one route
- * where it means anything.
+ * where it means anything. `resume`, when present (non-zero state), prepends a
+ * CONTINUE item so it surfaces as the top result.
  */
-export function buildItems(opts: { onBench?: boolean } = {}): PaletteItem[] {
+export function buildItems(opts: { onBench?: boolean; resume?: ResumeHint | null } = {}): PaletteItem[] {
 	const items: PaletteItem[] = [];
+
+	if (opts.resume) {
+		items.push({
+			id: 'continue',
+			kind: 'place',
+			label: `CONTINUE - ${opts.resume.code} ${opts.resume.title.toUpperCase()}`,
+			hint: 'RESUME',
+			href: opts.resume.href,
+			keywords: 'resume continue last lesson pick up where'
+		});
+	}
 
 	items.push(
 		{ id: 'place-bench', kind: 'place', label: 'THE BENCH', hint: 'BENCH', href: '/bench/', keywords: 'panel doom sim trace' },
-		{ id: 'place-operator', kind: 'place', label: 'OPERATOR', hint: 'PROGRESS', href: '/progress/', keywords: 'xp level achievements progress card' }
+		{ id: 'place-operator', kind: 'place', label: 'OPERATOR', hint: 'PROGRESS', href: '/progress/', keywords: 'xp level achievements progress card' },
+		{ id: 'place-calibrate', kind: 'place', label: 'CALIBRATION', hint: 'PLACE OUT', href: '/calibrate/', keywords: 'placement test out calibrate skip prior knowledge' }
 	);
 
 	modules.forEach((m) => {

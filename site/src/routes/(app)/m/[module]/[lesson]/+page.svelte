@@ -1,11 +1,19 @@
 <script lang="ts">
 	import type { PageData } from './$types';
 	import CheckCard from '$lib/components/CheckCard.svelte';
+	import Meta from '$lib/components/Meta.svelte';
+	import { xp } from '$lib/xp.svelte';
 	let { data }: { data: PageData } = $props();
 	// Derived, not destructured: client-side nav between lessons reuses this
 	// component and updates `data` reactively.
 	const module = $derived(data.module);
 	const lesson = $derived(data.lesson);
+
+	// Remember the furthest lesson opened, so the front door + palette can offer
+	// CONTINUE. Runs on every lesson mount/nav; the store no-ops on a repeat.
+	$effect(() => {
+		xp.recordVisit(module.id, lesson.id);
+	});
 	const prev = $derived(data.prev);
 	const next = $derived(data.next);
 	const index = $derived(data.index);
@@ -14,12 +22,12 @@
 	const chLesson = $derived(`CH-${ch}.${String(index + 1).padStart(2, '0')}`);
 </script>
 
-<svelte:head>
-	<title>{chLesson} &middot; {lesson.title} &middot; thunk</title>
-	<meta name="description" content={`${module.title}, lesson ${index + 1} of ${module.lessonCount}: ${lesson.title}.`} />
-	<meta property="og:title" content={`${chLesson} ${lesson.title} - thunk`} />
-	<meta property="og:description" content={`${module.title}, lesson ${index + 1} of ${module.lessonCount}.`} />
-</svelte:head>
+<Meta
+	title={`${chLesson} · ${lesson.title} · thunk`}
+	description={`${module.title}, lesson ${index + 1} of ${module.lessonCount}: ${lesson.title}.`}
+	ogTitle={`${chLesson} ${lesson.title} - thunk`}
+	ogDescription={`${module.title}, lesson ${index + 1} of ${module.lessonCount}.`}
+/>
 
 <article class="reading">
 	<header class="lhead">

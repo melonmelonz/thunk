@@ -111,12 +111,24 @@ describe('filterItems', () => {
 });
 
 describe('buildItems', () => {
-	it('includes the two places and the two base actions', () => {
+	it('includes the places (bench, operator, calibrate) and the base actions', () => {
 		const ids = buildItems().map((i) => i.id);
 		expect(ids).toContain('place-bench');
 		expect(ids).toContain('place-operator');
+		expect(ids).toContain('place-calibrate');
 		expect(ids).toContain('act-rail');
 		expect(ids).toContain('act-export');
+	});
+
+	it('omits CONTINUE at the zero state and prepends it (top) when resume is given', () => {
+		expect(buildItems().some((i) => i.id === 'continue')).toBe(false);
+		const items = buildItems({
+			resume: { href: '/m/m1-kernel/02-ring-zero/', code: 'CH-01.02', title: 'Ring Zero' }
+		});
+		expect(items[0].id).toBe('continue');
+		expect(items[0].href).toBe('/m/m1-kernel/02-ring-zero/');
+		expect(items[0].label).toContain('CH-01.02');
+		expect(items[0].label).toContain('RING ZERO');
 	});
 
 	it('gates SCANLINES to the bench', () => {
