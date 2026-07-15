@@ -1,11 +1,18 @@
 <script lang="ts">
 	import type { Module } from '$lib/content';
 	import ModuleGlyph from '$lib/components/ModuleGlyph.svelte';
+	import { xp } from '$lib/xp.svelte';
 	let { module, index }: { module: Module; index: number } = $props();
+	// Real progress from the store: 0% keeps NO SIGNAL, >0 shows the percentage,
+	// full mastery lights the channel. LOCKED is a VISUAL gate only - the link
+	// still works, because the site never blocks a reader; the ladder rule is the
+	// facility binary's to enforce.
+	const stat = $derived(xp.moduleStat(module, index));
 </script>
 
 <a
 	class="strip reveal"
+	class:locked={!stat.unlocked && stat.pct === 0}
 	href={`/m/${module.id}/`}
 	style={`--i:${index}`}
 	data-sveltekit-preload-data="hover"
@@ -22,11 +29,12 @@
 			{String(module.checkCount).padStart(2, '0')} checks
 		</span>
 	</span>
-	<!-- Meter voice: at 0% the channel reads NO SIGNAL. When progress arrives
-	     (S-C) this slot carries the percentage instead. -->
-	<span class="sig label" aria-hidden="true">NO SIGNAL</span>
+	<span class="sig label" class:live={stat.pct > 0} class:lock={!stat.unlocked && stat.pct === 0} aria-hidden="true">
+		{#if stat.mastered}MASTERED{:else if stat.pct > 0}{stat.pct}%{:else if !stat.unlocked}LOCKED{:else}NO SIGNAL{/if}
+	</span>
 	<span class="meter" aria-hidden="true">
 		<span class="rail"></span>
+		<span class="fill" class:done={stat.mastered} style={`width:${stat.pct}%`}></span>
 		<span class="origin"></span>
 	</span>
 	<span class="chev" aria-hidden="true">
@@ -85,6 +93,19 @@
 	.strip:hover .sig {
 		opacity: 1;
 	}
+	.sig.live {
+		color: var(--phosphor);
+		opacity: 1;
+	}
+	.sig.lock {
+		color: var(--faint);
+	}
+	.strip.locked .title {
+		color: var(--muted);
+	}
+	.strip.locked .idx {
+		color: var(--line);
+	}
 
 	.body {
 		display: flex;
@@ -117,6 +138,19 @@
 		inset: 0;
 		background: var(--s3);
 		border-radius: 2px;
+	}
+	.fill {
+		position: absolute;
+		left: 0;
+		top: 0;
+		bottom: 0;
+		background: color-mix(in srgb, var(--phosphor) 65%, transparent);
+		border-radius: 2px;
+		transition: width 200ms var(--ease-out);
+	}
+	.fill.done {
+		background: var(--phosphor);
+		box-shadow: 0 0 6px var(--phosphor-dim);
 	}
 	/* 0% progress: a lit origin tick, so the rail reads as calibrated-to-zero
 	   rather than broken. */
