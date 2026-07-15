@@ -82,14 +82,16 @@
 			if (dir === 1 && target.moduleIndex > 0) {
 				// unlocked when the preceding module is mastered
 				const key = 'thunk.xp.v1';
-				let mastered = false;
+				let done = false;
 				try {
 					const s = JSON.parse(localStorage.getItem(key) ?? '{}');
-					mastered = !!s?.modulesMastered?.[prev?.id ?? ''];
+					const id = prev?.id ?? '';
+					// Done either way: mastered by checks OR placed out (mastered_or_placed).
+					done = !!(s?.modulesMastered?.[id] || s?.modulesPlaced?.[id]);
 				} catch {
-					mastered = false;
+					done = false;
 				}
-				if (!mastered) return;
+				if (!done) return;
 			}
 			void unlocked;
 			void tm;
@@ -99,8 +101,11 @@
 
 	function onKey(e: KeyboardEvent) {
 		if (e.key === 'Escape') {
-			keymapOpen = false;
-			sheetOpen = false;
+			// Close one layer at a time, top-down. (The palette, a higher layer, owns
+			// Escape itself and stops it propagating here, so this is never reached
+			// while the palette is open.)
+			if (keymapOpen) keymapOpen = false;
+			else if (sheetOpen) sheetOpen = false;
 			return;
 		}
 		const t = e.target as HTMLElement | null;

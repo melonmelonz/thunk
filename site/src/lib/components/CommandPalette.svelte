@@ -10,12 +10,31 @@
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
 	import { xp } from '$lib/xp.svelte';
-	import { buildItems, filterItems, type PaletteItem } from '$lib/palette';
+	import { moduleById, lessonNeighbours } from '$lib/content';
+	import { buildItems, filterItems, type PaletteItem, type ResumeHint } from '$lib/palette';
 
 	let { onclose }: { onclose: () => void } = $props();
 
 	const onBench = $derived(page.url.pathname.startsWith('/bench'));
-	const items = $derived(buildItems({ onBench }));
+
+	// The CONTINUE resume target, resolved from the store to a CH-NN.LL label.
+	const resume = $derived.by<ResumeHint | null>(() => {
+		const r = xp.resume;
+		if (!r) return null;
+		const m = moduleById(r.moduleId);
+		if (!m) return null;
+		const { index } = lessonNeighbours(m, r.lessonId);
+		const lesson = m.lessons[index];
+		if (!lesson) return null;
+		const code =
+			'CH-' +
+			String(Number(m.tag.replace(/\D/g, ''))).padStart(2, '0') +
+			'.' +
+			String(index + 1).padStart(2, '0');
+		return { href: `/m/${m.id}/${lesson.id}/`, code, title: lesson.title };
+	});
+
+	const items = $derived(buildItems({ onBench, resume }));
 
 	let query = $state('');
 	let active = $state(0);
@@ -93,6 +112,9 @@
 			e.preventDefault();
 		} else if (e.key === 'Escape') {
 			e.preventDefault();
+			// The palette is the top layer: stop Escape here so the app shell's
+			// global handler doesn't ALSO close the keymap/sheet underneath it.
+			e.stopPropagation();
 			onclose();
 		} else if (e.key === 'ArrowDown') {
 			e.preventDefault();
