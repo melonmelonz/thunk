@@ -81,6 +81,13 @@ stays put as the facility artifact.
   (`@sveltejs/adapter-static`, fully prerendered) plus the thunk-sim bench compiled to WebAssembly.
 - Production branch `main`, direct `wrangler pages deploy` from `site/build`. CI has a `site` job
   that builds node + wasm and runs the content-freshness check.
+- The bench's DOOM finale serves committed assets under `site/static/doom/` (`doom.js` + `doom.wasm`
+  built by `site/wasm-doom/build.sh`, `freedoom1.wad.gz` (gzipped: the raw 27.5MB IWAD exceeds
+  Pages' 25MiB per-file cap, so it ships compressed and the page inflates it with
+  `DecompressionStream`), and the GPL-2.0 source offer
+  `doomgeneric-src.tar.gz` + `COPYING.txt`/`gpl-2.0.txt`). They are behind the source switch and
+  lazy-loaded, so they never touch the first-route budget; `_headers` gives `/doom/*` a
+  one-year immutable cache. The built module/wasm are committed so CI needs no emscripten.
 - Headers: `site/static/_headers` carries the CSP (created 2026-07-15; it was absent, so this is the
   one site/ file this cutover touches). `default-src 'self'` with no external origins, plus
   `'wasm-unsafe-eval'` in `script-src` for the bench module and `'unsafe-inline'` retained for the

@@ -20,8 +20,10 @@ A *thunk* is a piece of code that gets set aside and run later, not thrown away.
 The whole course also runs in a browser at <https://thunk-course.pages.dev>. It is the entire
 curriculum online, read as documents inside a persistent app shell. The bench is the real
 simulator compiled to WebAssembly, so a virtual panel is driven by the same decoded bus events
-the binary produces. Progress and XP live only in the visitor's browser; there are no accounts
-and no telemetry.
+the binary produces. Flip the bench source switch and DOOM (doomgeneric + Freedoom) plays on that
+same panel, its frames streamed through the real driver while the bus trace keeps talking; the
+GPL-2.0 engine source and Freedoom's BSD license are served alongside it under `/doom`. Progress
+and XP live only in the visitor's browser; there are no accounts and no telemetry.
 
 <p align="center">
   <img src="docs/screenshots/site/site-index.png" width="32%" alt="The course index as a calibrated rack">
