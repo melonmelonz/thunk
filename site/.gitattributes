@@ -1,0 +1,7 @@
+# The committed DOOM finale assets are binary (or generated): keep them out of
+# textual diffs and merge. doom.js is emscripten-generated glue - treated as a
+# built artifact, not hand-edited source.
+static/doom/doom.wasm binary
+static/doom/doom.js -diff
+static/doom/freedoom1.wad.gz binary
+static/doom/doomgeneric-src.tar.gz binary
