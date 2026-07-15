@@ -180,6 +180,8 @@ jobs:
         run: npm test --prefix site
       - name: Build the static site
         run: npm run build --prefix site
+      - name: Perf budget (first-route JS < 100KB gzipped; wasm lazy, excluded)
+        run: node site/scripts/perf-budget.mjs
       - name: Hermetic check (no external URLs in markup or styles)
         run: '! grep -rE "https?://" site/build --include="*.html" --include="*.css"'
       - name: Hermetic check (JS carries no phone-home URLs beyond framework internals)
