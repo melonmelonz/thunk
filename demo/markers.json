@@ -1,0 +1,80 @@
+{
+  "url": "https://thunk-course.pages.dev",
+  "mode": "smoke",
+  "wad": "warm",
+  "generatedAt": "2026-07-16T01:49:48.534Z",
+  "beats": [
+    {
+      "beat": 1,
+      "label": "front door + boot ritual",
+      "caption": "// a systems course",
+      "tStartMs": 0
+    },
+    {
+      "beat": 2,
+      "label": "stat readout + the ladder",
+      "caption": "from 1s and 0s, up through Rust",
+      "tStartMs": 1200
+    },
+    {
+      "beat": 3,
+      "label": "enter the app (view transition)",
+      "caption": "learn the machine itself",
+      "tStartMs": 2201
+    },
+    {
+      "beat": 4,
+      "label": "grade a check -> PASS + XP",
+      "caption": "graded here. nothing sent anywhere.",
+      "tStartMs": 3401
+    },
+    {
+      "beat": 5,
+      "label": "/progress -> the bench",
+      "caption": "your run stays in this browser",
+      "tStartMs": 4900
+    },
+    {
+      "beat": 6,
+      "label": "bench POWER, boot trace, panel lights",
+      "caption": "the real simulator, in WebAssembly",
+      "tStartMs": 6101
+    },
+    {
+      "beat": 7,
+      "label": "RUN finale + SCANLINES",
+      "caption": "every frame travels a simulated SPI bus",
+      "tStartMs": 8101
+    },
+    {
+      "beat": 8,
+      "label": "the reveal: FINALE -> DOOM",
+      "caption": "DOOM. on the same bus.",
+      "tStartMs": 10101
+    },
+    {
+      "beat": 9,
+      "label": "DOOM gameplay + RUNGS MONTAGE cue",
+      "caption": "browser. binary. a booted kernel. real hardware.",
+      "tStartMs": 17845
+    },
+    {
+      "beat": 10,
+      "label": "colophon build plate",
+      "caption": "air-gapped. no accounts. no telemetry.",
+      "tStartMs": 23468
+    },
+    {
+      "beat": 11,
+      "label": "front door, clean",
+      "caption": "thunk (n.) - code set aside to run later",
+      "tStartMs": 23616
+    },
+    {
+      "beat": 12,
+      "label": "wordmark + tick",
+      "caption": "thunk.goolz.org",
+      "tStartMs": 23785
+    }
+  ]
+}

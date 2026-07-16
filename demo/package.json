@@ -1,0 +1,15 @@
+{
+  "name": "thunk-demo-film",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "description": "Deterministic Playwright film-driver for the thunk 1:45 tech demo.",
+  "scripts": {
+    "film": "node film.mjs --mode=slow",
+    "smoke": "node film.mjs --mode=smoke",
+    "warm": "node film.mjs --mode=slow --wad=warm"
+  },
+  "dependencies": {
+    "playwright": "^1.61.1"
+  }
+}
