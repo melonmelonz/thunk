@@ -6,7 +6,9 @@ import data from './content.json';
 
 export type Check =
 	| { kind: 'choice'; id: string; prompt: string; options: string[]; answer: number }
-	| { kind: 'short'; id: string; prompt: string; answers: string[] };
+	| { kind: 'short'; id: string; prompt: string; answers: string[] }
+	| { kind: 'order'; id: string; prompt: string; items: string[] }
+	| { kind: 'predict'; id: string; prompt: string; answers: string[]; hint: string };
 
 export interface Lesson {
 	id: string;
