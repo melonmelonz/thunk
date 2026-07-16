@@ -210,6 +210,66 @@ mod tests {
     }
 
     #[test]
+    fn an_empty_trace_annotates_to_no_rows() {
+        assert!(annotate(&[]).is_empty());
+        assert!(row_byte(&[], 0).is_none());
+    }
+
+    #[test]
+    fn select_edges_alone_produce_only_edge_rows_with_no_byte() {
+        let events = [TraceEvent::SelectLow, TraceEvent::SelectHigh];
+        assert_eq!(
+            annotate(&events),
+            vec![
+                "select v  (transaction begins)".to_string(),
+                "select ^  (transaction ends)".to_string(),
+            ]
+        );
+        assert_eq!(row_byte(&events, 0), None);
+        assert_eq!(row_byte(&events, 1), None);
+        assert_eq!(row_byte(&events, 99), None); // out-of-range row is None
+    }
+
+    #[test]
+    fn a_data_run_of_exactly_the_shown_count_is_not_summarized() {
+        // DATA_RUN_SHOWN is the fold threshold: a run of exactly that many
+        // bytes prints them all with no "... (N bytes)" tail; one more folds.
+        let full: Vec<TraceEvent> = (0..DATA_RUN_SHOWN as u8)
+            .map(|i| byte(i, Dc::Data))
+            .collect();
+        let rows = annotate(&full);
+        assert_eq!(rows.len(), 1);
+        assert!(
+            !rows[0].contains("..."),
+            "exactly {DATA_RUN_SHOWN} is not folded"
+        );
+        assert!(rows[0].starts_with("data 00 01"));
+
+        let over: Vec<TraceEvent> = (0..=DATA_RUN_SHOWN as u8)
+            .map(|i| byte(i, Dc::Data))
+            .collect();
+        let rows = annotate(&over);
+        assert!(
+            rows[0].contains(&format!("... ({} bytes)", DATA_RUN_SHOWN + 1)),
+            "one past the threshold folds: {}",
+            rows[0]
+        );
+    }
+
+    #[test]
+    fn row_byte_points_at_the_first_byte_of_each_row() {
+        let events = [
+            TraceEvent::SelectLow,
+            byte(0x2A, Dc::Command),
+            byte(0x11, Dc::Data),
+            byte(0x22, Dc::Data),
+        ];
+        assert_eq!(row_byte(&events, 0), None); // select edge
+        assert_eq!(row_byte(&events, 1), Some(0x2A)); // command row
+        assert_eq!(row_byte(&events, 2), Some(0x11)); // data run's first byte
+    }
+
+    #[test]
     fn waveform_rows_have_equal_width_for_every_byte() {
         for b in 0..=255u8 {
             let [bits, clk, data] = waveform(b);

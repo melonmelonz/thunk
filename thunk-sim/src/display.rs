@@ -150,6 +150,46 @@ mod tests {
     }
 
     #[test]
+    fn a_single_pixel_blit_lands_exactly_where_aimed() {
+        let mut bus = SimSpi::new();
+        let mut d = Display::new(&mut bus, 8, 8);
+        d.init();
+        d.blit_rect(3, 5, 1, 1, &[0x07E0]); // one green pixel at (3,5)
+        let mut panel = Ili9341::new(8, 8);
+        panel.replay(bus.trace());
+        assert_eq!(panel.framebuffer().get_pixel(3, 5), 0x07E0);
+        assert_eq!(panel.framebuffer().get_pixel(2, 5), 0x0000);
+        assert_eq!(panel.framebuffer().get_pixel(3, 4), 0x0000);
+    }
+
+    #[test]
+    fn a_blit_flush_against_the_bottom_right_corner_fills_to_the_edge() {
+        // A 2x2 rectangle whose far corner is the panel's last pixel: the
+        // window math (x + w - 1) must land exactly on the edge, no overflow.
+        let mut bus = SimSpi::new();
+        let mut d = Display::new(&mut bus, 4, 4);
+        d.init();
+        d.blit_rect(2, 2, 2, 2, &[0xF800, 0x07E0, 0x001F, 0xFFFF]);
+        let mut panel = Ili9341::new(4, 4);
+        panel.replay(bus.trace());
+        assert_eq!(panel.framebuffer().get_pixel(2, 2), 0xF800);
+        assert_eq!(panel.framebuffer().get_pixel(3, 2), 0x07E0);
+        assert_eq!(panel.framebuffer().get_pixel(2, 3), 0x001F);
+        assert_eq!(panel.framebuffer().get_pixel(3, 3), 0xFFFF); // the corner
+    }
+
+    #[test]
+    #[should_panic(expected = "pixel count must match")]
+    fn a_blit_with_a_mismatched_pixel_count_is_a_programming_error() {
+        // The pixel slice must match w*h exactly; a mismatch is a caller bug
+        // caught loudly, not silent corruption. (Callers in this crate always
+        // pass exact frames; this pins the contract.)
+        let mut bus = SimSpi::new();
+        let mut d = Display::new(&mut bus, 8, 8);
+        d.blit_rect(0, 0, 2, 2, &[0xF800]); // says 2x2, gives 1 pixel
+    }
+
+    #[test]
     fn fill_covers_the_whole_panel() {
         let mut bus = SimSpi::new();
         let mut d = Display::new(&mut bus, 4, 4);

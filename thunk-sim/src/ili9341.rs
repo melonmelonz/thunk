@@ -311,6 +311,89 @@ mod tests {
     }
 
     #[test]
+    fn ramwr_with_no_explicit_window_writes_from_the_top_left() {
+        // A fresh panel's reset window is the whole panel, so RAMWR before any
+        // CASET/PASET streams from (0,0) row-major - the real chip's behavior.
+        let mut p = Ili9341::new(4, 4);
+        assert_eq!(p.window(), ((0, 0), (3, 3)));
+        cmd(&mut p, 0x2C); // RAMWR straight away
+        data(&mut p, &[0xF8, 0x00, 0x07, 0xE0]); // two pixels
+        assert_eq!(p.framebuffer().get_pixel(0, 0), 0xF800);
+        assert_eq!(p.framebuffer().get_pixel(1, 0), 0x07E0);
+    }
+
+    #[test]
+    fn a_window_whose_end_exceeds_the_panel_never_panics() {
+        // CASET/PASET can name coordinates past the panel edge; write_pixel's
+        // set_pixel is bounds-checked, so out-of-range pixels are dropped, not
+        // a panic. (A real panel with a smaller GRAM does the same.)
+        let mut p = Ili9341::new(4, 4);
+        cmd(&mut p, 0x2A);
+        data(&mut p, &[0x00, 0x00, 0xFF, 0xFF]); // columns 0..=65535
+        cmd(&mut p, 0x2B);
+        data(&mut p, &[0x00, 0x00, 0xFF, 0xFF]); // pages 0..=65535
+        cmd(&mut p, 0x2C);
+        // Stream more pixels than the panel row holds; the huge column window
+        // means the cursor marches along row 0 (0,1,2,3, then off-panel) and
+        // never wraps within these 40 pixels. In-bounds cells land; the rest
+        // are dropped by the bounds check. The point is: no panic.
+        let mut blob = Vec::new();
+        for _ in 0..40 {
+            blob.push(0xFF);
+            blob.push(0xFF);
+        }
+        data(&mut p, &blob);
+        assert_eq!(p.framebuffer().get_pixel(0, 0), 0xFFFF);
+        assert_eq!(p.framebuffer().get_pixel(3, 0), 0xFFFF);
+        assert_eq!(p.framebuffer().get_pixel(0, 1), 0x0000); // cursor never wrapped
+    }
+
+    #[test]
+    fn a_reversed_window_start_after_end_does_not_panic() {
+        // A start > end window is malformed; the cursor logic must still be
+        // panic-free (it writes the one start cell, then wraps to start).
+        let mut p = Ili9341::new(8, 8);
+        cmd(&mut p, 0x2A);
+        data(&mut p, &[0x00, 0x05, 0x00, 0x02]); // columns 5..=2 (reversed)
+        cmd(&mut p, 0x2B);
+        data(&mut p, &[0x00, 0x05, 0x00, 0x02]); // pages 5..=2 (reversed)
+        cmd(&mut p, 0x2C);
+        data(&mut p, &[0x07, 0xE0, 0x00, 0x1F]); // no panic
+        assert_eq!(p.framebuffer().get_pixel(5, 5), 0x001F); // last write wins at start
+    }
+
+    #[test]
+    fn replaying_a_truncated_pixel_stream_leaves_the_panel_consistent() {
+        // A trace cut off mid-pixel (odd number of data bytes after RAMWR):
+        // the dangling high byte is simply never completed. No panic.
+        use crate::spi::{SimSpi, SpiBus};
+        let mut bus = SimSpi::new();
+        bus.select();
+        bus.set_dc(Dc::Command);
+        bus.write(&[0x2C]);
+        bus.set_dc(Dc::Data);
+        bus.write(&[0xF8, 0x00, 0x07]); // one full pixel + a dangling high byte
+                                        // note: no deselect - the trace is truncated mid-transaction
+        let mut p = Ili9341::new(4, 4);
+        p.replay(bus.trace());
+        assert_eq!(p.framebuffer().get_pixel(0, 0), 0xF800);
+        assert_eq!(p.framebuffer().get_pixel(1, 0), 0x0000); // half-pixel dropped
+    }
+
+    #[test]
+    fn colmod_18bpp_is_stored_and_the_pixel_path_still_decodes_16bpp() {
+        // The decoder stores any COLMOD byte but only models the 16bpp pixel
+        // path; an 18bpp declaration does not corrupt subsequent RAMWR decode.
+        let mut p = Ili9341::new(4, 4);
+        cmd(&mut p, 0x3A);
+        data(&mut p, &[0x66]); // 18 bpp declared
+        assert_eq!(p.pixel_format(), 0x66);
+        cmd(&mut p, 0x2C);
+        data(&mut p, &[0xF8, 0x00]);
+        assert_eq!(p.framebuffer().get_pixel(0, 0), 0xF800);
+    }
+
+    #[test]
     fn replay_rebuilds_state_from_a_trace() {
         use crate::spi::{SimSpi, SpiBus};
         let mut bus = SimSpi::new();
