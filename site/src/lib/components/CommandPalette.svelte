@@ -83,6 +83,7 @@
 		switch (item.action) {
 			case 'toggle-rail':
 			case 'toggle-scanlines':
+			case 'save-trace':
 				window.dispatchEvent(new CustomEvent('thunk:cmd', { detail: item.action }));
 				break;
 			case 'export-progress':

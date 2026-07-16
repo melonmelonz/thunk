@@ -3,6 +3,7 @@
 	import { KIND, loadSim, type Row, type Sim } from '$lib/bench/sim';
 	import { loadDoom, toDoomKey, formatWadProgress, type Doom, type Source } from '$lib/bench/doom';
 	import { parseWindow, formatWindowLine } from '$lib/bench/window';
+	import { serializeTrace } from '$lib/bench/trace';
 	import Meta from '$lib/components/Meta.svelte';
 	import { xp } from '$lib/xp.svelte';
 	import { FINALE_FRAMES } from '$lib/xp-curve';
@@ -395,9 +396,31 @@
 		}
 	});
 
-	// The command palette's TOGGLE SCANLINES action arrives as a window event.
+	// SAVE TRACE: download the current annotated trace (exactly the rows shown in
+	// the log) as a plain text file. Client-side Blob, no network. No-op until the
+	// panel is powered and has rows.
+	function saveTrace() {
+		if (!powered || rows.length === 0) return;
+		try {
+			const blob = new Blob([serializeTrace(rows, { frame })], {
+				type: 'text/plain;charset=utf-8'
+			});
+			const url = URL.createObjectURL(blob);
+			const a = document.createElement('a');
+			a.href = url;
+			a.download = 'thunk-trace.txt';
+			a.click();
+			URL.revokeObjectURL(url);
+		} catch {
+			// download denied (rare): nothing to do
+		}
+	}
+
+	// Palette actions arrive as window events: TOGGLE SCANLINES and SAVE TRACE.
 	function onCmd(e: Event) {
-		if ((e as CustomEvent<string>).detail === 'toggle-scanlines') scanlines = !scanlines;
+		const action = (e as CustomEvent<string>).detail;
+		if (action === 'toggle-scanlines') scanlines = !scanlines;
+		else if (action === 'save-trace') saveTrace();
 	}
 
 	onMount(() => {
@@ -626,14 +649,24 @@
 	<div class="scope">
 		<div class="scope-head">
 			<span class="label">Bus trace</span>
-			<button
-				class="follow mono"
-				class:on={follow}
-				onclick={() => (follow = !follow)}
-				aria-pressed={follow}
-			>
-				FOLLOW {follow ? 'ON' : 'OFF'}
-			</button>
+			<div class="scope-tools">
+				<button
+					class="stool mono"
+					onclick={saveTrace}
+					disabled={!powered || rows.length === 0}
+					title="Download the current trace as thunk-trace.txt"
+				>
+					SAVE TRACE
+				</button>
+				<button
+					class="stool follow mono"
+					class:on={follow}
+					onclick={() => (follow = !follow)}
+					aria-pressed={follow}
+				>
+					FOLLOW {follow ? 'ON' : 'OFF'}
+				</button>
+			</div>
 		</div>
 
 		<div class="log" bind:this={logEl} role="log" aria-live="off">
@@ -1029,7 +1062,12 @@
 	.scope-head .label {
 		color: var(--muted);
 	}
-	.follow {
+	.scope-tools {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.4rem;
+	}
+	.stool {
 		font-size: 0.625rem;
 		letter-spacing: 0.12em;
 		color: var(--faint);
@@ -1037,6 +1075,17 @@
 		border-radius: 2px;
 		padding: 0.3rem 0.55rem;
 		background: var(--s1);
+		transition:
+			color 140ms var(--ease-out),
+			border-color 140ms var(--ease-out);
+	}
+	.stool:hover:not(:disabled) {
+		color: var(--muted);
+		border-color: #24303e;
+	}
+	.stool:disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
 	}
 	.follow.on {
 		color: var(--phosphor);
