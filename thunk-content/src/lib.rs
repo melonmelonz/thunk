@@ -424,6 +424,50 @@ mod tests {
     }
 
     #[test]
+    fn the_course_ships_order_and_predict_checks_that_self_validate() {
+        // Lock in that the new check types are actually authored into the
+        // curriculum (not just supported by the enum), and that their canonical
+        // answers grade Correct - the same self-validation the whole bank gets,
+        // pinned to the two new shapes so a regression can't quietly drop them.
+        let mut orders = 0usize;
+        let mut predicts = 0usize;
+        for dir in LADDER {
+            for c in Curriculum::load_checks(dir) {
+                match &c {
+                    Check::Order { items, .. } => {
+                        assert!(
+                            items.len() >= 2,
+                            "an Order check {:?} needs 2+ items",
+                            c.id()
+                        );
+                        orders += 1;
+                    }
+                    Check::Predict { answers, .. } => {
+                        assert!(
+                            !answers.is_empty(),
+                            "a Predict check {:?} needs an answer",
+                            c.id()
+                        );
+                        predicts += 1;
+                    }
+                    _ => {}
+                }
+                assert_eq!(
+                    c.grade(&c.canonical_answer()),
+                    Verdict::Correct,
+                    "check {:?} in {dir}",
+                    c.id()
+                );
+            }
+        }
+        assert!(orders >= 1, "the course must ship at least one Order check");
+        assert!(
+            predicts >= 1,
+            "the course must ship at least one Predict check"
+        );
+    }
+
+    #[test]
     fn every_module_gate_is_satisfiable() {
         use thunk_core::Progress;
         for dir in LADDER {

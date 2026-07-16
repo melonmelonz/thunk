@@ -49,6 +49,12 @@
         options: ["0x07E0", "0xF800", "0x001F"],
         answer: 1,
     ),
+    Predict(
+        id: CheckId("m4-02-redbyte"),
+        prompt: "Pure red is RGB565 0xF800, and the panel streams each pixel two bytes at a time, high byte first. Predict the first byte that lands on the bus.",
+        answers: ["0xF8", "f8", "248", "11111000"],
+        hint: "hex byte, e.g. 0x2C",
+    ),
 
     // --- Lesson 03: the framebuffer ---
     Short(
@@ -98,5 +104,15 @@
         id: CheckId("m4-04-ramwr"),
         prompt: "Which command starts the pixel write into the panel's memory? (its name or its byte)",
         answers: ["ramwr", "0x2c", "2c", "ram write", "memory write", "memory-write"],
+    ),
+    Order(
+        id: CheckId("m4-04-draw"),
+        prompt: "Put the steps to paint a rectangle on the panel in the order the driver sends them.",
+        items: [
+            "Send the column address command (0x2A) with the first and last column",
+            "Send the page address command (0x2B) with the first and last row",
+            "Send the memory-write command RAMWR (0x2C)",
+            "Hold DC high and stream the pixel bytes, high byte first",
+        ],
     ),
 ]

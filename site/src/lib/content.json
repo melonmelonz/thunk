@@ -804,7 +804,7 @@
       "tag": "M4",
       "title": "The Panel",
       "lessonCount": 4,
-      "checkCount": 12,
+      "checkCount": 14,
       "lessons": [
         {
           "id": "01-pixels-and-grids",
@@ -883,6 +883,18 @@
                 "0x001F"
               ],
               "answer": 1
+            },
+            {
+              "kind": "predict",
+              "id": "m4-02-redbyte",
+              "prompt": "Pure red is RGB565 0xF800, and the panel streams each pixel two bytes at a time, high byte first. Predict the first byte that lands on the bus.",
+              "answers": [
+                "0xF8",
+                "f8",
+                "248",
+                "11111000"
+              ],
+              "hint": "hex byte, e.g. 0x2C"
             }
           ]
         },
@@ -966,6 +978,17 @@
                 "ram write",
                 "memory write",
                 "memory-write"
+              ]
+            },
+            {
+              "kind": "order",
+              "id": "m4-04-draw",
+              "prompt": "Put the steps to paint a rectangle on the panel in the order the driver sends them.",
+              "items": [
+                "Send the column address command (0x2A) with the first and last column",
+                "Send the page address command (0x2B) with the first and last row",
+                "Send the memory-write command RAMWR (0x2C)",
+                "Hold DC high and stream the pixel bytes, high byte first"
               ]
             }
           ]
@@ -1404,5 +1427,5 @@
   ],
   "moduleCount": 7,
   "lessonCount": 31,
-  "checkCount": 93
+  "checkCount": 95
 }
