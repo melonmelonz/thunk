@@ -71,6 +71,11 @@
 	// Channel language: M0 -> CH-00, lesson 1 -> .01
 	const ch = $derived(String(Number(module.tag.replace(/\D/g, ''))).padStart(2, '0'));
 	const chLesson = $derived(`CH-${ch}.${String(index + 1).padStart(2, '0')}`);
+
+	// The course's true ending: the last lesson of M7 (First Patch) hands off to
+	// the launchpad, where the reader tries their own real contribution. Kept in
+	// the site layer so M7's authored content stays pure.
+	const isCapstoneEnd = $derived(module.id === 'm7-first-patch' && !next);
 </script>
 
 <Meta
@@ -112,6 +117,26 @@
 		{/each}
 	</div>
 </section>
+
+{#if isCapstoneEnd}
+	<!-- The handoff: from the last lesson into the real thing. -->
+	<aside class="launchpad-cta" aria-label="the launchpad">
+		<div class="lc-body">
+			<p class="lc-eyebrow label">You have read it. Now do it.</p>
+			<h2 class="lc-title">Try your own first patch</h2>
+			<p class="lc-sub">
+				A launchpad, not a certificate: curated on-ramps to a first real issue, a change-description
+				template, a pre-submit checklist, and a private tracker for the one patch that is yours.
+			</p>
+		</div>
+		<a class="lc-go" href="/first-patch/">
+			<span class="lc-word mono">OPEN THE LAUNCHPAD</span>
+			<span class="lc-chev" aria-hidden="true">
+				<svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M5 3l4 4-4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" /></svg>
+			</span>
+		</a>
+	</aside>
+{/if}
 
 <!-- Print-only running footer: thunk · CH-NN.LL · <title>. Hidden on screen
      (app.css), repeated on each printed page. -->
@@ -322,6 +347,72 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.9rem;
+	}
+
+	/* The capstone handoff card: the course's one deliberately warm moment, still
+	   PVM-quiet - a phosphor-edged panel, no gradient, no glow beyond the hairline. */
+	.launchpad-cta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1.25rem;
+		margin-top: 3.5rem;
+		padding: 1.4rem 1.5rem;
+		max-width: var(--measure);
+		border: 1px solid color-mix(in srgb, var(--phosphor) 30%, var(--line));
+		border-radius: var(--radius);
+		background: color-mix(in srgb, var(--phosphor) 5%, var(--s1));
+	}
+	.lc-body {
+		min-width: 0;
+		flex: 1 1 20rem;
+	}
+	.lc-eyebrow {
+		color: var(--phosphor);
+	}
+	.lc-title {
+		margin-top: 0.5rem;
+		font-size: 1.35rem;
+		font-weight: 500;
+		color: #fff;
+		letter-spacing: -0.01em;
+	}
+	.lc-sub {
+		margin-top: 0.6rem;
+		font-size: 0.9375rem;
+		line-height: 1.6;
+		color: var(--muted);
+	}
+	.lc-go {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.6rem;
+		padding: 0.65rem 1.1rem;
+		flex: none;
+		border: 1px solid color-mix(in srgb, var(--phosphor) 45%, var(--line));
+		border-radius: 2px;
+		background: color-mix(in srgb, var(--phosphor) 10%, transparent);
+		transition:
+			background 160ms var(--ease-out),
+			border-color 160ms var(--ease-out);
+	}
+	.lc-go:hover {
+		background: color-mix(in srgb, var(--phosphor) 18%, transparent);
+		border-color: var(--phosphor);
+	}
+	.lc-word {
+		font-size: 0.6875rem;
+		letter-spacing: 0.14em;
+		color: var(--phosphor);
+	}
+	.lc-chev {
+		display: inline-flex;
+		color: var(--phosphor);
+		transition: transform 140ms var(--ease-out);
+	}
+	.lc-go:hover .lc-chev {
+		transform: translateX(2px);
 	}
 
 	.pager {

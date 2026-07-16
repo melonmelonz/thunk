@@ -177,6 +177,20 @@ class XpStore {
 		this.#grant('scope-jockey');
 		this.#persist();
 	}
+	/**
+	 * The launchpad tracker reached MERGED: grant the `merged` achievement (the
+	 * existing quiet ach toast, no confetti). Self-reported and idempotent - a
+	 * merge is public and permanent, so the badge never un-grants. No XP: like
+	 * every achievement, MERGED is a badge, not a payout.
+	 */
+	grantMerged(): void {
+		if (!browser) return;
+		this.#ensureLoaded();
+		if (this.state.achievements['merged']) return;
+		this.#grant('merged');
+		this.#persist();
+	}
+
 	benchFinale(): void {
 		if (!browser) return;
 		this.#ensureLoaded();

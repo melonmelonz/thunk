@@ -49,7 +49,7 @@ describe('level curve', () => {
 });
 
 describe('achievements table', () => {
-	it('has the twelve spec achievements in grid order', () => {
+	it('has the spec achievements in grid order (MERGED closes the set)', () => {
 		expect(ACHIEVEMENTS.map((a) => a.name)).toEqual([
 			'POWER ON',
 			'FIRST BOOT',
@@ -62,8 +62,14 @@ describe('achievements table', () => {
 			'UPSTREAM',
 			'FULL LADDER',
 			'SCOPE JOCKEY',
-			'CALIBRATED'
+			'CALIBRATED',
+			'MERGED'
 		]);
+	});
+
+	it('UPSTREAM is earned by mastering M7 (First Patch), not M6', () => {
+		expect(MODULE_ACHIEVEMENT['m7-first-patch']).toBe('upstream');
+		expect(MODULE_ACHIEVEMENT['m6-open-source']).toBeUndefined();
 	});
 	it('IDDQD carries no blurb (the name is the joke)', () => {
 		const iddqd = ACHIEVEMENTS.find((a) => a.id === 'iddqd');

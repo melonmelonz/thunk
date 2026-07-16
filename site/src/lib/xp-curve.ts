@@ -78,20 +78,29 @@ export const ACHIEVEMENTS: Achievement[] = [
 	{ id: 'bus-master', name: 'BUS MASTER', blurb: 'Mastered M3 - The Bus.' },
 	{ id: 'ramwr', name: 'RAMWR', blurb: 'Mastered M4 - The Panel.' },
 	{ id: 'iddqd', name: 'IDDQD' }, // no blurb, on purpose
-	{ id: 'upstream', name: 'UPSTREAM', blurb: 'Mastered M6 - Intro to Open Source.' },
+	{ id: 'upstream', name: 'UPSTREAM', blurb: 'Mastered M7 - First Patch.' },
 	{ id: 'full-ladder', name: 'FULL LADDER', blurb: 'Every module on the ladder mastered.' },
 	{ id: 'scope-jockey', name: 'SCOPE JOCKEY', blurb: 'Scoped a byte on the live bus trace.' },
-	{ id: 'calibrated', name: 'CALIBRATED', blurb: 'Ran the placement calibration.' }
+	{ id: 'calibrated', name: 'CALIBRATED', blurb: 'Ran the placement calibration.' },
+	// The real ending, off the ladder: a first contribution merged for real,
+	// self-reported in the launchpad tracker. Dry on purpose - no new visual
+	// language, the existing quiet toast.
+	{ id: 'merged', name: 'MERGED', blurb: 'Your first real change, merged upstream.' }
 ];
 
-/** Module id -> the achievement its mastery grants. M0 has none (POWER ON covers first blood). */
+/**
+ * Module id -> the achievement its mastery grants. M0 has none (POWER ON covers
+ * first blood); M6 (Intro to Open Source) has none either - UPSTREAM belongs to
+ * M7, where you actually get a change upstream. Now that M7 (First Patch) is on
+ * the site, UPSTREAM is earned by mastering it.
+ */
 export const MODULE_ACHIEVEMENT: Record<string, string> = {
 	'm1-kernel': 'syscall',
 	'm2-rust': 'no-std',
 	'm3-bus': 'bus-master',
 	'm4-panel': 'ramwr',
 	'm5-doom': 'iddqd',
-	'm6-open-source': 'upstream'
+	'm7-first-patch': 'upstream'
 };
 
 // ---- Persisted state ---------------------------------------------------------

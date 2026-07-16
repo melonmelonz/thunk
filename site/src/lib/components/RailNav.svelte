@@ -86,6 +86,28 @@
 		</a>
 		<a
 			class="chan foot"
+			class:active={path.startsWith('/first-patch')}
+			href="/first-patch/"
+			onclick={onnav}
+			title="The Launchpad - try your own first patch"
+			aria-current={path.startsWith('/first-patch') ? 'page' : undefined}
+		>
+			<span class="edge" aria-hidden="true"></span>
+			<span class="glyph" aria-hidden="true">
+				<!-- A launch: a mark leaving a baseline, up and out. -->
+				<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+					<path d="M9 14V5m0 0L5.5 8.5M9 5l3.5 3.5M3 16h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round" />
+				</svg>
+			</span>
+			{#if !collapsed}
+				<span class="meta">
+					<span class="code mono">LAUNCHPAD</span>
+					<span class="title">First Patch</span>
+				</span>
+			{/if}
+		</a>
+		<a
+			class="chan foot"
 			class:active={path.startsWith('/progress')}
 			href="/progress/"
 			onclick={onnav}

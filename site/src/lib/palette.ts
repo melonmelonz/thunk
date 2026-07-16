@@ -159,6 +159,7 @@ export function buildItems(opts: { onBench?: boolean; resume?: ResumeHint | null
 		{ id: 'place-bench', kind: 'place', label: 'THE BENCH', hint: 'BENCH', href: '/bench/', keywords: 'panel doom sim trace' },
 		{ id: 'place-operator', kind: 'place', label: 'OPERATOR', hint: 'PROGRESS', href: '/progress/', keywords: 'xp level achievements progress card' },
 		{ id: 'place-calibrate', kind: 'place', label: 'CALIBRATION', hint: 'PLACE OUT', href: '/calibrate/', keywords: 'placement test out calibrate skip prior knowledge' },
+		{ id: 'place-launchpad', kind: 'place', label: 'LAUNCHPAD', hint: 'FIRST PATCH', href: '/first-patch/', keywords: 'first patch contribute open source pull request tracker launchpad good first issue' },
 		{ id: 'place-colophon', kind: 'place', label: 'COLOPHON', hint: 'ABOUT', href: '/colophon/', keywords: 'about stack colophon licenses privacy provenance how it runs build' }
 	);
 

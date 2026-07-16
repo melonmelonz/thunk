@@ -50,6 +50,7 @@
 			}
 		}
 		if (p.startsWith('/bench')) return { code: 'BENCH', title: 'THE BENCH', chip: 'BENCH' };
+		if (p.startsWith('/first-patch')) return { code: 'LAUNCHPAD', title: 'FIRST PATCH', chip: 'PATCH' };
 		if (p.startsWith('/progress')) return { code: 'OPERATOR', title: 'PROGRESS', chip: 'OPER' };
 		return { code: '', title: '', chip: 'CH' };
 	});

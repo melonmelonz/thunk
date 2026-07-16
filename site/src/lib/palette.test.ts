@@ -136,6 +136,11 @@ describe('buildItems', () => {
 		expect(colophon?.href).toBe('/colophon/');
 	});
 
+	it('includes the launchpad place everywhere', () => {
+		const launchpad = buildItems().find((i) => i.id === 'place-launchpad');
+		expect(launchpad?.href).toBe('/first-patch/');
+	});
+
 	it('gates SCANLINES and SAVE TRACE to the bench', () => {
 		expect(buildItems({ onBench: false }).some((i) => i.id === 'act-scanlines')).toBe(false);
 		expect(buildItems({ onBench: true }).some((i) => i.id === 'act-scanlines')).toBe(true);
