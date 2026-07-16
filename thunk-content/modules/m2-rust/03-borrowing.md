@@ -61,6 +61,15 @@ fail to compile here. That is the proof lesson 01 promised, made of two parts: o
 holds each value, borrowing says who may touch it, and the compiler checks both before the program
 exists.
 
+Here is the borrow checker as something you can push on. Two bindings, one owned `String`, and
+every rule from these two lessons live at once: move the value and the old name goes dead, take as
+many shared borrows as you like, take a mutable one and it insists on being alone. Every time you
+try to break a rule, the panel refuses with the exact error `rustc` would print, code and all. It
+is a checker you cannot fool, which is the point of having one.
+
+:::widget ownership-move
+:::
+
 ## Key terms
 
 - **borrow** — lending access to a value without giving up ownership.

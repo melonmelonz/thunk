@@ -48,6 +48,14 @@ byte holding the number 65 could be the letter A, or part of a picture, or an in
 nothing about the byte itself says which. Later modules will show how much care the machine takes
 to keep those roles straight.
 
+Here is that one number wearing its four faces. Type a value in binary, decimal, or hex and the
+same byte reads out every way at once, down to the character it stands for. The Bit Lab had you
+build a byte from switches; this lets you name one directly and watch nothing about it commit to a
+meaning.
+
+:::widget byte-decoder
+:::
+
 ## Key terms
 
 - **program** — a list of instructions, stored as bytes like everything else.

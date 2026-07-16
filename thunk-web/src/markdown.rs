@@ -124,8 +124,8 @@ fn ordered_item(line: &str) -> Option<&str> {
 /// The static, JS-free fallback caption emitted into the offline bundle for a
 /// known widget id. `None` for an id this renderer does not recognize, so a
 /// stray or misspelled directive degrades to inert text instead of a figure.
-/// These two ids are the ones `thunk_content::WIDGET_IDS` allowlists; the
-/// content suite pins that no lesson references an id outside that set.
+/// These ids are the ones `thunk_content::WIDGET_IDS` allowlists; the content
+/// suite pins that no lesson references an id outside that set.
 fn widget_caption(id: &str) -> Option<&'static str> {
     Some(match id {
         "spi-scope" => {
@@ -135,6 +135,31 @@ fn widget_caption(id: &str) -> Option<&'static str> {
         "bit-lab" => {
             "An interactive byte: flip eight switches and read it out in binary, \
              decimal, hex, and ASCII (open the course site to use it)."
+        }
+        "byte-decoder" => {
+            "An interactive byte decoder: type a value in binary, decimal, or hex \
+             and watch the same number appear in all four readings plus its \
+             character (open the course site to use it)."
+        }
+        "volatile-memory" => {
+            "An interactive memory model: cut power and the volatile memory row \
+             clears while the storage row keeps its bytes (open the course site \
+             to use it)."
+        }
+        "ownership-move" => {
+            "An interactive borrow checker: move a value between two bindings and \
+             take shared or mutable borrows; illegal moves are refused with the \
+             real compiler error (open the course site to use it)."
+        }
+        "pixel-forge" => {
+            "An interactive RGB565 mixer: set the five red, six green, and five \
+             blue bits and see the 16-bit word, its two bytes, and the resulting \
+             pixel (open the course site to use it)."
+        }
+        "diff-reader" => {
+            "An interactive diff reader: a real unified patch with added and \
+             removed lines, hunk header, and line numbers, plus a reveal of what \
+             the change does (open the course site to use it)."
         }
         _ => return None,
     })
@@ -338,6 +363,34 @@ mod tests {
         assert!(html.contains("data-widget=\"bit-lab\""));
         assert!(html.contains("flip eight switches"));
         assert!(!html.contains("spi-scope"));
+    }
+
+    #[test]
+    fn each_d_b_widget_gets_its_own_caption() {
+        // Every D-B widget renders a hydratable figure with an id-specific,
+        // JS-free fallback caption. A missing arm here would degrade the widget
+        // to inert text in the offline bundle, so pin one distinctive phrase each.
+        let cases = [
+            ("byte-decoder", "type a value"),
+            ("volatile-memory", "cut power"),
+            ("ownership-move", "borrow checker"),
+            ("pixel-forge", "RGB565 mixer"),
+            ("diff-reader", "unified patch"),
+        ];
+        for (id, phrase) in cases {
+            let html = render(&format!(":::widget {id}\n:::\n"));
+            assert!(
+                html.contains(&format!("data-widget=\"{id}\"")),
+                "no figure for {id}"
+            );
+            assert!(html.contains("<figcaption>"), "no caption for {id}");
+            assert!(html.contains(phrase), "caption for {id} missing {phrase:?}");
+            assert!(
+                html.contains("open the course site to use it"),
+                "caption for {id} missing the offline note"
+            );
+            assert!(!html.contains(":::"), "raw directive leaked for {id}");
+        }
     }
 
     #[test]

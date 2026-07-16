@@ -45,9 +45,25 @@ not just ordinary RAM. That is how a program reaches a display's framebuffer: it
 memory into its own address space, and then drawing a pixel is just writing to memory. We build
 exactly that at the end of the course.
 
+## What memory keeps
+
+One property of that memory is worth making physical, because the whole machine is shaped around it.
+Main memory is **volatile**: it holds its bytes only while the power is on. Cut the power and every
+byte in memory is gone. Storage, a disk, is **persistent**: it keeps its bytes with the power off,
+which is why your files outlive a reboot and the contents of memory do not. Anonymous memory being
+"backed by nothing on disk" is exactly this: when it is gone, it is gone.
+
+It is the difference between the desk you clear every night and the shelf that keeps its books. Load
+the memory row up from storage, then cut the power and watch what each row does.
+
+:::widget volatile-memory
+:::
+
 ## Key terms
 
 - **virtual address** — the address a program uses, translated by the page tables.
 - **page** — the 4096-byte unit memory is managed in.
 - **page fault** — the processor asking the kernel to deal with an unmapped access.
 - **mmap** — the syscall that maps memory (anonymous, file-backed, shared, or a device).
+- **volatile** — memory that keeps its bytes only while powered; it clears on power loss.
+- **persistent** — storage that keeps its bytes with the power off, like a disk.

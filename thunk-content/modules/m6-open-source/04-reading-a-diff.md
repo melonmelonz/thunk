@@ -48,6 +48,13 @@ value it returns when the write happens. The closing braces are context. Read th
 answers the reviewer's question precisely: out-of-range writes are refused, in-range behavior is
 unchanged, and callers can now tell which happened.
 
+Here is that same patch to read for yourself, with both line-number columns a reviewer sees and the
+markers colored. Take the walk on your own first; the reveal explains what the change does when you
+want to check.
+
+:::widget diff-reader
+:::
+
 ## The unit of conversation
 
 The diff is the unit of conversation in open source. Proposals arrive as diffs. **Review** happens

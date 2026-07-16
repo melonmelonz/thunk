@@ -72,7 +72,15 @@ pub const LADDER: &[&str] = &[
 /// the validation suite below pins that no lesson references an id outside this
 /// set (and that every allowlisted id is actually used). Add a widget here only
 /// when both the renderer (`thunk_web::markdown`) and the registry know it.
-pub const WIDGET_IDS: &[&str] = &["spi-scope", "bit-lab"];
+pub const WIDGET_IDS: &[&str] = &[
+    "spi-scope",
+    "bit-lab",
+    "byte-decoder",
+    "volatile-memory",
+    "ownership-move",
+    "pixel-forge",
+    "diff-reader",
+];
 
 /// Every `:::widget <id>` directive id referenced in a lesson body, in order of
 /// appearance. Mirrors the directive grammar the constrained renderer accepts:

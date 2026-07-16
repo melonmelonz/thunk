@@ -50,6 +50,14 @@ Split `0xF800` into bytes the way M2 taught, shift and mask, and its **high byte
 The second byte of that mystery transaction was the first half of a pure red pixel, already in
 flight toward the panel. What the `0x2C` in front of it was, lesson four will tell you.
 
+Mix your own and watch the split happen. The three sliders are the 5, 6, and 5 bits; the word they
+pack, the two bytes it becomes, and the pixel that lights all update together. Slide red to full
+and the high byte snaps to `0xF8`, the byte you already met on the wire. Paint the strip and the
+byte count is the stream RAMWR pushes: two bytes per pixel, high byte first.
+
+:::widget pixel-forge
+:::
+
 Where do 76,800 of these `u16` values live while they are being the picture? Lesson three
 answers that.
 
