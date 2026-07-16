@@ -174,6 +174,9 @@
 </script>
 
 <div class="shell" class:collapsed>
+	<!-- Skip link: the first focusable stop, visually hidden until focused, jumps
+	     past the rail + status bar straight to the workspace pane. -->
+	<a class="skip-link" href="#pane">Skip to content</a>
 	<aside class="rail">
 		<div class="rail-head">
 			<SiteMark />
@@ -231,7 +234,9 @@
 		</div>
 
 		<main class="workspace">
-			<div class="pane">
+			<!-- The pane is the skip-link target and a focus stop (tabindex -1), so
+			     "skip to content" lands keyboard focus in the reading column. -->
+			<div class="pane" id="pane" tabindex="-1">
 				{@render children?.()}
 			</div>
 		</main>
@@ -284,6 +289,34 @@
 	}
 	.shell.collapsed {
 		--rail-w: 48px;
+	}
+
+	/* Skip link: off-screen until focused, then a phosphor-edged chip pinned to
+	   the top-left. Keyboard-only; never in the way. */
+	.skip-link {
+		position: absolute;
+		top: 0.5rem;
+		left: 0.5rem;
+		z-index: 200;
+		transform: translateY(-160%);
+		padding: 0.4rem 0.7rem;
+		font-family: var(--font-mono);
+		font-size: 0.6875rem;
+		letter-spacing: 0.1em;
+		color: var(--phosphor);
+		background: var(--s2);
+		border: 1px solid color-mix(in srgb, var(--phosphor) 45%, var(--line));
+		border-radius: 2px;
+		transition: transform 140ms var(--ease-out);
+	}
+	.skip-link:focus-visible {
+		transform: none;
+	}
+	.pane:focus {
+		outline: none;
+	}
+	.pane:focus-visible {
+		outline: none;
 	}
 
 	/* ---- Rail --------------------------------------------------------- */
