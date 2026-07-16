@@ -67,4 +67,46 @@ mod tests {
         let answers = vec![Answer::Choice(0)]; // second item never answered
         assert!(evaluate_placement(&items, &answers).is_empty());
     }
+
+    #[test]
+    fn extra_answers_past_the_items_are_ignored() {
+        // Answers pair with items by position; trailing answers with no item
+        // are surplus and change nothing (no panic, no phantom placement).
+        let items = vec![item("m1", "q1", 0)];
+        let answers = vec![Answer::Choice(0), Answer::Choice(1), Answer::Choice(0)];
+        assert_eq!(
+            evaluate_placement(&items, &answers),
+            vec![ModuleId("m1".into())]
+        );
+    }
+
+    #[test]
+    fn empty_inputs_place_nothing() {
+        assert!(evaluate_placement(&[], &[]).is_empty());
+        // Items but zero answers: every item fails, nothing places.
+        let items = vec![item("m1", "q1", 0), item("m2", "q2", 1)];
+        assert!(evaluate_placement(&items, &[]).is_empty());
+    }
+
+    #[test]
+    fn placed_modules_keep_first_appearance_order_not_answer_correctness() {
+        // Two modules both fully correct, interleaved: the result preserves the
+        // order each module's first item appears, independent of the BTreeMap.
+        let items = vec![
+            item("m2", "q1", 0),
+            item("m1", "q2", 0),
+            item("m2", "q3", 0),
+            item("m1", "q4", 0),
+        ];
+        let answers = vec![
+            Answer::Choice(0),
+            Answer::Choice(0),
+            Answer::Choice(0),
+            Answer::Choice(0),
+        ];
+        assert_eq!(
+            evaluate_placement(&items, &answers),
+            vec![ModuleId("m2".into()), ModuleId("m1".into())]
+        );
+    }
 }

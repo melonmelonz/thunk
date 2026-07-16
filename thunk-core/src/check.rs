@@ -96,6 +96,57 @@ mod tests {
     }
 
     #[test]
+    fn short_answer_normalizes_unicode_case_and_interior_is_left_alone() {
+        // trim + to_lowercase is the whole normalization: leading/trailing
+        // space and letter case do not matter, but interior content does.
+        let c = Check::Short {
+            id: CheckId("m2-01-drop".into()),
+            prompt: "the trait that runs at scope end?".into(),
+            answers: vec!["Drop".into()],
+        };
+        assert_eq!(c.grade(&Answer::Text("  drop ".into())), Verdict::Correct);
+        assert_eq!(c.grade(&Answer::Text("DROP".into())), Verdict::Correct);
+        // Unicode case-folds too: a stored answer with an accented capital is
+        // matched by its lowercase form (to_lowercase is Unicode-aware).
+        let uc = Check::Short {
+            id: CheckId("x".into()),
+            prompt: "p".into(),
+            answers: vec!["Éclair".into()],
+        };
+        assert_eq!(uc.grade(&Answer::Text("éclair".into())), Verdict::Correct);
+        // An empty answer to a non-empty bank is simply wrong, not a panic.
+        assert_eq!(c.grade(&Answer::Text(String::new())), Verdict::Incorrect);
+        assert_eq!(c.grade(&Answer::Text("   ".into())), Verdict::Incorrect);
+    }
+
+    #[test]
+    fn a_choice_index_past_the_options_is_incorrect_not_a_panic() {
+        // Grading never indexes `options`; it compares the chosen index to the
+        // stored answer index. An out-of-range guess is just wrong.
+        let c = Check::Choice {
+            id: CheckId("m1-01-mode".into()),
+            prompt: "p".into(),
+            options: vec!["user".into(), "kernel".into()],
+            answer: 1,
+        };
+        assert_eq!(c.grade(&Answer::Choice(99)), Verdict::Incorrect);
+        assert_eq!(c.grade(&Answer::Choice(1)), Verdict::Correct);
+        // A cross-kind answer (text to a choice check) is wrong, not a panic.
+        assert_eq!(c.grade(&Answer::Text("kernel".into())), Verdict::Incorrect);
+    }
+
+    #[test]
+    fn canonical_answer_of_a_multi_answer_short_is_the_first() {
+        let c = Check::Short {
+            id: CheckId("b".into()),
+            prompt: "p".into(),
+            answers: vec!["mmap".into(), "map".into()],
+        };
+        assert_eq!(c.canonical_answer(), Answer::Text("mmap".into()));
+        assert_eq!(c.grade(&c.canonical_answer()), Verdict::Correct);
+    }
+
+    #[test]
     fn canonical_answer_always_grades_correct() {
         let checks = vec![
             Check::Choice {

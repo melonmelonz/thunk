@@ -58,4 +58,36 @@ mod tests {
         let p = Progress::default();
         assert!(!p.module_mastered(&[]));
     }
+
+    #[test]
+    fn a_duplicated_check_id_needs_only_the_one_pass() {
+        // A malformed check list that names the same id twice is still mastered
+        // by a single correct answer - `all` over a set membership is idempotent.
+        let ids = vec![CheckId("a".into()), CheckId("a".into())];
+        let mut p = Progress::default();
+        assert!(!p.module_mastered(&ids));
+        p.record(&CheckId("a".into()), Verdict::Correct);
+        assert!(p.module_mastered(&ids));
+    }
+
+    #[test]
+    fn recording_the_same_pass_twice_is_idempotent() {
+        let mut p = Progress::default();
+        p.record(&CheckId("a".into()), Verdict::Correct);
+        p.record(&CheckId("a".into()), Verdict::Correct);
+        assert_eq!(p.checks_passed.len(), 1);
+    }
+
+    #[test]
+    fn placement_masters_a_module_whose_checks_were_never_passed() {
+        use crate::content::ModuleId;
+        let checks = vec![CheckId("a".into()), CheckId("b".into())];
+        let m = ModuleId("m3-bus".into());
+        let mut p = Progress::default();
+        assert!(!p.mastered_or_placed(&m, &checks));
+        p.place_module(&m);
+        assert!(p.mastered_or_placed(&m, &checks));
+        // Placement does not fabricate check passes; it is a separate signal.
+        assert!(!p.module_mastered(&checks));
+    }
 }
