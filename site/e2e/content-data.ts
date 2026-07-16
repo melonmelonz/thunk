@@ -24,7 +24,7 @@ export interface Lesson {
 }
 export interface Module {
 	id: string;
-	tag: string; // "M0".."M6"
+	tag: string; // "M0".."M7"
 	title: string;
 	lessonCount: number;
 	checkCount: number;
@@ -103,6 +103,7 @@ export const staticRoutes = [
 	{ url: '/', kind: 'marketing' as const },
 	{ url: '/bench/', kind: 'app' as const },
 	{ url: '/calibrate/', kind: 'app' as const },
+	{ url: '/first-patch/', kind: 'app' as const },
 	{ url: '/progress/', kind: 'app' as const },
 	{ url: '/colophon/', kind: 'app' as const }
 ];

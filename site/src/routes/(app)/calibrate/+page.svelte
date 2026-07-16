@@ -28,6 +28,10 @@
 	let newlyPlaced = $state<Set<string>>(new Set());
 
 	const total = items.length;
+	// Placement covers M0-M6 only - you cannot test out of your first contribution
+	// (M7). Report against the number of PLACEABLE modules, not the whole ladder,
+	// so "of N" never promises a module the calibration can't reach.
+	const placeable = new Set(placement.map((p) => p.module)).size;
 	const item = $derived(items[index]);
 	const done = $derived(xp.hasAchievement('calibrated'));
 
@@ -95,7 +99,7 @@
 			<button class="btn primary mono" onclick={start}>{done ? 'RUN AGAIN' : 'START CALIBRATION'}</button>
 			<a class="btn mono" href="/progress/">BACK TO OPERATOR</a>
 		</div>
-		<p class="foot mono">{total} items &middot; {modules.length} modules &middot; graded in this browser, nothing sent anywhere.</p>
+		<p class="foot mono">{total} items &middot; {placeable} modules &middot; graded in this browser, nothing sent anywhere.</p>
 	</section>
 {:else if phase === 'run'}
 	<section class="run" aria-label="calibration">
@@ -128,7 +132,7 @@
 {:else}
 	<section class="report" aria-label="calibration report">
 		<p class="eyebrow label">Calibration report</p>
-		<h1>{placedCount === 0 ? 'Nothing placed out' : `Placed out of ${placedCount} of ${modules.length}`}</h1>
+		<h1>{placedCount === 0 ? 'Nothing placed out' : `Placed out of ${placedCount} of ${placeable}`}</h1>
 		<p class="lede">
 			{#if placedCount === 0}
 				No module cleared all three this run. Nothing changed - the ladder is exactly where you

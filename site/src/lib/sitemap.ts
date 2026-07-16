@@ -12,8 +12,15 @@
 import type { Module } from './content';
 import { SITE_ORIGIN } from './meta';
 
-/** The five fixed top-level routes, in nav order. */
-export const FIXED_PATHS = ['/', '/bench/', '/calibrate/', '/progress/', '/colophon/'];
+/** The fixed top-level routes, in nav order. */
+export const FIXED_PATHS = [
+	'/',
+	'/bench/',
+	'/calibrate/',
+	'/first-patch/',
+	'/progress/',
+	'/colophon/'
+];
 
 /**
  * Every real route path, in a stable order: the fixed pages, then each module

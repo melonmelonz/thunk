@@ -2,10 +2,11 @@ import { describe, it, expect } from 'vitest';
 import { modules } from './content';
 import { FIXED_PATHS, sitemapPaths, sitemapUrls, sitemapXml } from './sitemap';
 
-// The real curriculum: 7 modules, 31 lessons. The sitemap covers the 5 fixed
-// pages (/, /bench, /calibrate, /progress, /colophon) plus each module channel
-// and every lesson: 5 + 7 + 31 = 43 URLs.
-const EXPECTED = 5 + 7 + 31;
+// The real curriculum (open profile): 8 modules, 34 lessons. The sitemap covers
+// the 6 fixed pages (/, /bench, /calibrate, /first-patch, /progress, /colophon)
+// plus each module channel and every lesson: 6 + 8 + 34 = 48 URLs. The count is
+// derived from FIXED_PATHS + the live curriculum so it can never silently drift.
+const EXPECTED = FIXED_PATHS.length + modules.length + modules.reduce((n, m) => n + m.lessons.length, 0);
 
 describe('sitemap route list', () => {
 	it('lists every real route once, in a stable order', () => {
@@ -19,8 +20,9 @@ describe('sitemap route list', () => {
 			expect(paths).toContain(`/m/${m.id}/`);
 			for (const l of m.lessons) expect(paths).toContain(`/m/${m.id}/${l.id}/`);
 		}
-		// The new colophon route is present.
+		// The new colophon + launchpad routes are present.
 		expect(paths).toContain('/colophon/');
+		expect(paths).toContain('/first-patch/');
 	});
 
 	it('every non-root path carries a trailing slash', () => {

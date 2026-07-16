@@ -6,7 +6,7 @@
   M0 IEC power symbol      M1 dot inside two square rings
   M2 gear missing a tooth  M3 clock wave over data bits
   M4 3x3 grid, one lit     M5 one-point corridor
-  M6 branch merging
+  M6 branch merging        M7 a diff: a removed line over an added line
 -->
 <script lang="ts">
 	let { tag, size = 24 }: { tag: string; size?: number } = $props();
@@ -71,6 +71,14 @@
 			[8, 1], [8, 2], [8, 3], [8, 4], [7, 5], // right line converging
 			[5, 6, 2, 2], // merge node
 			[5, 8], [5, 9], [5, 10], [5, 11] // the single trunk
+		],
+		// A unified diff: a removed line (minus + hunk) sitting over an added line
+		// (plus + hunk) - the shape of a patch, the DiffReader in miniature.
+		M7: [
+			[1, 3, 3, 1], // minus sign
+			[5, 3, 6, 1], // the removed line's content
+			[2, 7, 1, 3], [1, 8, 3, 1], // plus sign (vertical + horizontal)
+			[5, 8, 6, 1] // the added line's content
 		]
 	};
 

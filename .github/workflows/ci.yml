@@ -170,8 +170,11 @@ jobs:
           node-version: 22
           cache: npm
           cache-dependency-path: site/package-lock.json
-      - name: Export the curriculum
-        run: cargo run -p thunk-cli --locked -- export
+      # The public SPA is the internet, so it goes all the way to M7 (First
+      # Patch): export WITH the open feature. The offline `web` bundle above stays
+      # default (M0-M6) - only the site content carries the eighth module.
+      - name: Export the curriculum (open profile - includes M7)
+        run: cargo run -p thunk-cli --locked --features open -- export
       - name: Content is fresh (regenerated JSON matches the checked-in copy)
         run: git diff --exit-code site/src/lib/content.json
       # The bench crate is excluded from the workspace, so `cargo test --workspace`
@@ -190,21 +193,27 @@ jobs:
       - name: Perf budget (first-route JS < 100KB gzipped; wasm lazy, excluded)
         run: node site/scripts/perf-budget.mjs
       - name: Hermetic check (no external URLs in markup or styles)
-        # Allowlist EXACTLY the site's own canonical origin. https://thunk.goolz.org
-        # appears only in <link rel="canonical">, og:url, and og:image meta - the
-        # site's own address, never FETCHED at runtime (every page asset stays
-        # same-origin, %sveltekit.assets%). It is metadata, not an external
-        # resource. Everything else must be zero.
+        # Allowlist the site's own canonical origin PLUS the launchpad's curated
+        # out-link destinations. https://thunk.goolz.org appears only in
+        # <link rel="canonical">, og:url, and og:image meta - the site's own
+        # address, never FETCHED. The out-link hosts (github.com, kernelnewbies.org,
+        # outreachy.org, linuxfoundation.org) appear ONLY as <a target=_blank
+        # rel=noopener> hrefs on /first-patch: on-ramps a human CLICKS to go find a
+        # first issue. They are never fetched by the site - the air-gap principle is
+        # "never phone home", and an anchor the reader clicks is not that. Anything
+        # else must be zero, so the grep stays meaningful.
         run: |
           bad=$(grep -rhoE "https?://[A-Za-z0-9._~:/?#@!%-]+" site/build --include="*.html" --include="*.css" \
-            | grep -vE "^https://thunk\.goolz\.org" || true)
+            | grep -vE "^https://([a-z0-9-]+\.)*(thunk\.goolz\.org|github\.com|kernelnewbies\.org|outreachy\.org|linuxfoundation\.org)(/|\$)" || true)
           test -z "$bad" || { echo "unexpected external URLs in markup/styles:"; echo "$bad"; exit 1; }
       - name: Hermetic check (JS carries no phone-home URLs beyond framework internals)
-        # Same canonical-origin allowlist: the Meta component's string literals
-        # carry https://thunk.goolz.org into the hydration bundle (metadata only).
+        # Same allowlist: the Meta component carries https://thunk.goolz.org into the
+        # hydration bundle (metadata), and the /first-patch component compiles the
+        # curated out-link hrefs into its lazy chunk (anchors a human clicks, never
+        # fetched). Everything else - any real phone-home URL - still fails.
         run: |
           bad=$(grep -rhoE "https?://[A-Za-z0-9._~:/?#@!%-]+" site/build --include='*.js' \
-            | grep -vE "w3\.org|svelte\.dev/e/|thunk\.goolz\.org" || true)
+            | grep -vE "w3\.org|svelte\.dev/e/|thunk\.goolz\.org|github\.com|kernelnewbies\.org|outreachy\.org|linuxfoundation\.org" || true)
           test -z "$bad" || { echo "unexpected external URLs in JS:"; echo "$bad"; exit 1; }
 
   # End-to-end: drive the built site in a real chromium exactly as a reader would
