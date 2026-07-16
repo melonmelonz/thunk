@@ -1,8 +1,10 @@
 <script lang="ts">
 	import type { PageData } from './$types';
+	import { mount, unmount } from 'svelte';
 	import CheckCard from '$lib/components/CheckCard.svelte';
 	import Meta from '$lib/components/Meta.svelte';
 	import { xp } from '$lib/xp.svelte';
+	import { widgetLoader } from '$lib/widgets/registry';
 	let { data }: { data: PageData } = $props();
 	// Derived, not destructured: client-side nav between lessons reuses this
 	// component and updates `data` reactively.
@@ -13,6 +15,55 @@
 	// CONTINUE. Runs on every lesson mount/nav; the store no-ops on a repeat.
 	$effect(() => {
 		xp.recordVisit(module.id, lesson.id);
+	});
+
+	// The prose column holds the rendered lesson HTML, including any
+	// `<figure class="widget" data-widget="...">` placeholder the constrained
+	// renderer emitted for a `:::widget <id>` directive.
+	let proseEl = $state<HTMLDivElement>();
+
+	// Hydrate every widget placeholder after the lesson renders: dynamic-import
+	// its component (code-split, so it never touches the first-route JS budget)
+	// and mount it into the figure, replacing the static fallback caption. Re-runs
+	// on lesson nav (depends on lesson.id). Handles: reduced motion (passed to the
+	// widget), a failed import (the caption stays, no crash), and unmount on
+	// navigation (the cleanup tears every mounted instance down).
+	$effect(() => {
+		void lesson.id; // re-hydrate when the lesson changes
+		const host = proseEl;
+		if (!host) return;
+		const reducedMotion =
+			typeof window !== 'undefined' &&
+			!!window.matchMedia &&
+			window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		let cancelled = false;
+		const mounted: Record<string, unknown>[] = [];
+		const figures = host.querySelectorAll<HTMLElement>('figure.widget[data-widget]');
+		for (const fig of figures) {
+			const id = fig.dataset.widget;
+			const load = id ? widgetLoader(id) : undefined;
+			if (!load) continue; // unknown id: leave the caption in place
+			load()
+				.then((mod) => {
+					if (cancelled || !fig.isConnected) return;
+					fig.replaceChildren(); // drop the fallback caption
+					mounted.push(mount(mod.default, { target: fig, props: { reducedMotion } }));
+				})
+				.catch((err) => {
+					// A failed chunk fetch leaves the readable caption; never crash.
+					console.error(`widget "${id}" failed to load`, err);
+				});
+		}
+		return () => {
+			cancelled = true;
+			for (const inst of mounted) {
+				try {
+					unmount(inst);
+				} catch {
+					/* already detached by an {@html} swap on nav */
+				}
+			}
+		};
 	});
 	const prev = $derived(data.prev);
 	const next = $derived(data.next);
@@ -40,8 +91,9 @@
 	</header>
 
 	<!-- Body rendered by the pinned constrained-dialect renderer in thunk-web
-	     and carried through the export. No client-side markdown parser. -->
-	<div class="prose">
+	     and carried through the export. No client-side markdown parser. Any
+	     :::widget placeholder figures inside are hydrated by the $effect above. -->
+	<div class="prose" bind:this={proseEl}>
 		{@html lesson.bodyHtml}
 	</div>
 </article>
@@ -179,6 +231,31 @@
 		padding: 0;
 		font-size: inherit;
 		color: var(--muted);
+	}
+
+	/* A widget placeholder. Before hydration (and in the JS-free offline bundle)
+	   it shows only its <figcaption> as a quiet, hairline-boxed note; once the
+	   lesson page mounts the Svelte instrument, the caption is replaced and the
+	   figure just frames it with the reading rhythm's vertical space. */
+	.prose :global(figure.widget) {
+		margin: 1.8rem 0;
+	}
+	.prose :global(figure.widget:has(figcaption:only-child)) {
+		border: 1px solid var(--line);
+		border-radius: var(--radius);
+		background: var(--s1);
+		padding: 0.9rem 1.1rem;
+	}
+	.prose :global(figure.widget > figcaption:only-child) {
+		font-family: var(--font-mono);
+		font-size: 0.75rem;
+		line-height: 1.6;
+		letter-spacing: 0.02em;
+		color: var(--muted);
+	}
+	.prose :global(figure.widget > figcaption:only-child)::before {
+		content: '▚ ';
+		color: var(--faint);
 	}
 
 	/* Key terms as a datasheet. Every lesson closes with an <h2>Key terms</h2>
