@@ -58,12 +58,29 @@
 	// View transitions: pure progressive enhancement. Browsers without
 	// startViewTransition just navigate. Entering the app from `/` crossfades
 	// into the shell; the CSS lift is defined per-group.
+	//
+	// Hardened against the two races that leave a page blank (the new root
+	// snapshot stuck at opacity 0): (1) an overlapping navigation started while
+	// a transition is still running interrupts it - so we skip the transition
+	// for a nav that arrives mid-flight and just navigate; (2) navigation.complete
+	// rejecting on an interrupted/redirected nav would reject the update callback
+	// and can strand the pseudo-element - so we swallow it. Either way the DOM
+	// always ends up visible; the worst case is a nav with no crossfade.
+	let transitioning = false;
 	onNavigate((navigation) => {
-		if (!document.startViewTransition) return;
+		if (!document.startViewTransition || transitioning) return;
+		transitioning = true;
 		return new Promise((resolve) => {
-			document.startViewTransition(async () => {
+			const t = document.startViewTransition(async () => {
 				resolve();
-				await navigation.complete;
+				try {
+					await navigation.complete;
+				} catch {
+					// interrupted or redirected: let the DOM settle, never stall
+				}
+			});
+			t.finished.finally(() => {
+				transitioning = false;
 			});
 		});
 	});
