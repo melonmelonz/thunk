@@ -14,7 +14,8 @@ type WidgetModule = { default: Component<Record<string, unknown>> };
 
 export const widgetRegistry: Record<string, () => Promise<WidgetModule>> = {
 	'spi-scope': () => import('./SpiScope.svelte') as Promise<WidgetModule>,
-	'bit-lab': () => import('./BitLab.svelte') as Promise<WidgetModule>
+	'bit-lab': () => import('./BitLab.svelte') as Promise<WidgetModule>,
+	'byte-decoder': () => import('./ByteDecoder.svelte') as Promise<WidgetModule>
 };
 
 /** The loader for a widget id, or undefined for an id the site cannot render. */
