@@ -59,6 +59,7 @@ describe('achievements table', () => {
 			'BUS MASTER',
 			'RAMWR',
 			'IDDQD',
+			'MERIT',
 			'UPSTREAM',
 			'FULL LADDER',
 			'SCOPE JOCKEY',
@@ -67,9 +68,9 @@ describe('achievements table', () => {
 		]);
 	});
 
-	it('UPSTREAM is earned by mastering M7 (First Patch), not M6', () => {
+	it('M6 earns MERIT and M7 earns UPSTREAM (every content module M1-M7 is badged)', () => {
+		expect(MODULE_ACHIEVEMENT['m6-open-source']).toBe('merit');
 		expect(MODULE_ACHIEVEMENT['m7-first-patch']).toBe('upstream');
-		expect(MODULE_ACHIEVEMENT['m6-open-source']).toBeUndefined();
 	});
 	it('IDDQD carries no blurb (the name is the joke)', () => {
 		const iddqd = ACHIEVEMENTS.find((a) => a.id === 'iddqd');

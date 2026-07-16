@@ -11,7 +11,7 @@
 	// A fresh card is not a sad empty page: it is a calibrated instrument at rest,
 	// waiting for signal. The standby line says so in the same register as the rail.
 	const fresh = $derived(xp.xp === 0);
-	// Earned tally for the achievements header (EARNED NN / 12).
+	// Earned tally for the achievements header (EARNED NN / total).
 	const earnedCount = $derived(ACHIEVEMENTS.filter((a) => xp.hasAchievement(a.id)).length);
 
 	function fmtDate(at: number): string {
