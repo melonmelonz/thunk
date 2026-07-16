@@ -121,13 +121,46 @@ fn ordered_item(line: &str) -> Option<&str> {
     line[digits..].strip_prefix(". ")
 }
 
+/// The static, JS-free fallback caption emitted into the offline bundle for a
+/// known widget id. `None` for an id this renderer does not recognize, so a
+/// stray or misspelled directive degrades to inert text instead of a figure.
+/// These two ids are the ones `thunk_content::WIDGET_IDS` allowlists; the
+/// content suite pins that no lesson references an id outside that set.
+fn widget_caption(id: &str) -> Option<&'static str> {
+    Some(match id {
+        "spi-scope" => {
+            "An interactive SPI waveform: drag a byte and watch each bit latch \
+             on the clock's rising edge (open the course site to use it)."
+        }
+        "bit-lab" => {
+            "An interactive byte: flip eight switches and read it out in binary, \
+             decimal, hex, and ASCII (open the course site to use it)."
+        }
+        _ => return None,
+    })
+}
+
+/// A widget directive placeholder: a labeled `<figure>` the site hydrates and
+/// the offline bundle shows as its static caption. JS-free and valid on its own.
+fn widget_figure(id: &str, caption: &str) -> String {
+    format!(
+        "<figure class=\"widget\" data-widget=\"{}\"><figcaption>{}</figcaption></figure>\n",
+        esc(id),
+        esc(caption),
+    )
+}
+
 /// Render the constrained lesson dialect to HTML.
 pub fn render(md: &str) -> String {
+    let lines: Vec<&str> = md.lines().collect();
     let mut out = String::with_capacity(md.len() * 2);
     let mut block = Block::None;
     let mut in_fence = false;
 
-    for line in md.lines() {
+    let mut idx = 0;
+    while idx < lines.len() {
+        let line = lines[idx];
+        idx += 1;
         if in_fence {
             if line.starts_with("```") {
                 out.push_str("</code></pre>\n");
@@ -143,6 +176,21 @@ pub fn render(md: &str) -> String {
             out.push_str("<pre><code>");
             in_fence = true;
             continue;
+        }
+        // A widget directive: `:::widget <id>` on its own line, closed by a bare
+        // `:::` on the next. A well-formed directive whose id this renderer knows
+        // becomes a hydratable placeholder figure; anything else (no id, unknown
+        // id, or a missing close) falls through and renders as inert prose, never
+        // a panic.
+        if let Some(rest) = line.strip_prefix(":::widget ") {
+            let id = rest.trim();
+            let closed = lines.get(idx).map(|l| l.trim() == ":::").unwrap_or(false);
+            if let (true, Some(caption)) = (closed, widget_caption(id)) {
+                flush(&mut block, &mut out);
+                idx += 1; // consume the closing `:::`
+                out.push_str(&widget_figure(id, caption));
+                continue;
+            }
         }
         if line.trim().is_empty() {
             flush(&mut block, &mut out);
@@ -274,6 +322,66 @@ mod tests {
     }
 
     #[test]
+    fn widget_directive_renders_a_hydratable_figure() {
+        let html = render(":::widget spi-scope\n:::\n");
+        assert!(html.contains("<figure class=\"widget\" data-widget=\"spi-scope\">"));
+        assert!(html.contains("<figcaption>"));
+        assert!(html.contains("open the course site to use it"));
+        // The figure closes and nothing leaks the raw directive markers.
+        assert!(html.contains("</figure>"));
+        assert!(!html.contains(":::"));
+    }
+
+    #[test]
+    fn bit_lab_directive_gets_its_own_caption() {
+        let html = render(":::widget bit-lab\n:::\n");
+        assert!(html.contains("data-widget=\"bit-lab\""));
+        assert!(html.contains("flip eight switches"));
+        assert!(!html.contains("spi-scope"));
+    }
+
+    #[test]
+    fn a_directive_flushes_the_surrounding_prose() {
+        let html = render("Before it.\n\n:::widget spi-scope\n:::\n\nAfter it.\n");
+        assert!(html.contains("<p>Before it.</p>"));
+        assert!(html.contains("<figure class=\"widget\" data-widget=\"spi-scope\">"));
+        assert!(html.contains("<p>After it.</p>"));
+        // Order preserved: figure between the two paragraphs.
+        let fig = html.find("<figure").unwrap();
+        assert!(html.find("Before it.").unwrap() < fig);
+        assert!(fig < html.find("After it.").unwrap());
+    }
+
+    #[test]
+    fn an_unknown_widget_id_is_inert_text_not_a_figure() {
+        // A misspelled or not-yet-registered id must never panic and must never
+        // emit a figure the site can't hydrate; it degrades to escaped prose.
+        let html = render(":::widget no-such-widget\n:::\n");
+        assert!(!html.contains("<figure"));
+        assert!(html.contains(":::widget no-such-widget"));
+    }
+
+    #[test]
+    fn a_directive_missing_its_close_is_inert() {
+        // No trailing `:::`: not a directive. Rendered as ordinary prose.
+        let html = render(":::widget spi-scope\nand then some prose\n");
+        assert!(!html.contains("<figure"));
+        assert!(html.contains(":::widget spi-scope"));
+    }
+
+    #[test]
+    fn a_directive_inside_a_fence_is_left_verbatim() {
+        // Documenting the directive in a code block must not trigger a figure.
+        let html = render("```\n:::widget spi-scope\n:::\n```\n");
+        assert!(!html.contains("<figure"));
+        assert!(html.contains(":::widget spi-scope"));
+        assert_eq!(
+            html.matches("<pre>").count(),
+            html.matches("</pre>").count()
+        );
+    }
+
+    #[test]
     fn every_real_lesson_renders_without_panicking_and_balanced() {
         for m in thunk_content::Curriculum::all() {
             for l in &m.lessons {
@@ -290,7 +398,18 @@ mod tests {
                     "{}",
                     l.id.0
                 );
+                assert_eq!(
+                    html.matches("<figure").count(),
+                    html.matches("</figure>").count(),
+                    "{}",
+                    l.id.0
+                );
                 assert!(!html.contains("```"), "unrendered fence in {}", l.id.0);
+                assert!(
+                    !html.contains(":::widget"),
+                    "unrendered widget in {}",
+                    l.id.0
+                );
             }
         }
     }
