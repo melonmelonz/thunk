@@ -13,7 +13,9 @@ const content = JSON.parse(
 
 export type ChoiceCheck = { kind: 'choice'; id: string; prompt: string; options: string[]; answer: number };
 export type ShortCheck = { kind: 'short'; id: string; prompt: string; answers: string[] };
-export type Check = ChoiceCheck | ShortCheck;
+export type OrderCheck = { kind: 'order'; id: string; prompt: string; items: string[] };
+export type PredictCheck = { kind: 'predict'; id: string; prompt: string; answers: string[]; hint: string };
+export type Check = ChoiceCheck | ShortCheck | OrderCheck | PredictCheck;
 
 export interface Lesson {
 	id: string;

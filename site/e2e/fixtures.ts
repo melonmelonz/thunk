@@ -44,8 +44,28 @@ export async function answerCheckCorrect(scope: Locator, check: Check): Promise<
 	if (check.kind === 'choice') {
 		// The radio itself is opacity:0 / pointer-events:none; click its label.
 		await scope.locator('label.opt').nth(check.answer).click();
+	} else if (check.kind === 'order') {
+		await solveOrder(scope, check);
 	} else {
+		// short + predict: a plain text field graded against the accepted list.
 		await scope.locator('input[type="text"]').first().fill(check.answers[0]);
+	}
+}
+
+/**
+ * Drive an Order check to its correct sequence through the keyboard-first move
+ * controls (selection sort: for each target slot, click the up control of the
+ * row that belongs there until it lands). n is tiny, so O(n^2) clicks is fine.
+ */
+export async function solveOrder(scope: Locator, check: { items: string[] }): Promise<void> {
+	const rows = () => scope.locator('ol.order > li.oitem');
+	for (let target = 0; target < check.items.length; target++) {
+		for (let guard = 0; guard <= check.items.length; guard++) {
+			const labels = await rows().locator('.olabel').allInnerTexts();
+			const cur = labels.findIndex((t) => t.trim() === check.items[target].trim());
+			if (cur === target) break;
+			await rows().nth(cur).locator('.omove[data-move$=":-1"]').click();
+		}
 	}
 }
 
@@ -54,6 +74,9 @@ export async function answerCheckWrong(scope: Locator, check: Check): Promise<vo
 	if (check.kind === 'choice') {
 		const wrong = (check.answer + 1) % check.options.length;
 		await scope.locator('label.opt').nth(wrong).click();
+	} else if (check.kind === 'order') {
+		// The seeded order is always non-identity, so an untouched Order card is
+		// already a wrong answer - nothing to do.
 	} else {
 		await scope.locator('input[type="text"]').first().fill('definitely-not-the-answer-xyzzy');
 	}
