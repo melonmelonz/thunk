@@ -35,6 +35,13 @@ data   ________________|       |_______|               |_________________
 bit        0       0       1       0       1       1       0       0
 ```
 
+Do not just read this one. Drive it. Set any byte, and step the clock one edge at
+a time to watch each bit latch on the rising edge and the value build up, most
+significant bit first. It is the exact signal the bench streams.
+
+:::widget spi-scope
+:::
+
 Walk it tick by tick, reading the data row at each rising clock edge:
 
 - Ticks 1 and 2: data is low. Two 0s. These are bits 7 and 6.

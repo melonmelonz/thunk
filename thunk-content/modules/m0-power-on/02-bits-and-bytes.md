@@ -50,6 +50,13 @@ The machine never knows the difference. It holds bytes. Whether those bytes are 
 or a note depends entirely on the agreed-upon numbering being used to read them. Nothing in the
 machine is anything but numbers.
 
+Here is a byte you can hold in your hands. Flip the eight switches and watch the same pattern read
+out four ways: binary, decimal, hex, and the letter it stands for. Try to build the number 65, and
+watch the letter A appear.
+
+:::widget bit-lab
+:::
+
 ## Key terms
 
 - **bit** — a single 0 or 1, the smallest piece of information the machine holds.

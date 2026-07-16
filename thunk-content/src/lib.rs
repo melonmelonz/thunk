@@ -66,6 +66,25 @@ pub const LADDER: &[&str] = &[
     "m7-first-patch",
 ];
 
+/// The interactive widgets the lessons may embed via a `:::widget <id>`
+/// directive. This is the single source of truth the content and the site
+/// share: the site's `$lib/widgets/registry.ts` mounts exactly these ids, and
+/// the validation suite below pins that no lesson references an id outside this
+/// set (and that every allowlisted id is actually used). Add a widget here only
+/// when both the renderer (`thunk_web::markdown`) and the registry know it.
+pub const WIDGET_IDS: &[&str] = &["spi-scope", "bit-lab"];
+
+/// Every `:::widget <id>` directive id referenced in a lesson body, in order of
+/// appearance. Mirrors the directive grammar the constrained renderer accepts:
+/// a `:::widget <id>` line whose id is the trimmed remainder.
+pub fn widget_ids_in(body: &str) -> Vec<String> {
+    body.lines()
+        .filter_map(|l| l.strip_prefix(":::widget "))
+        .map(|rest| rest.trim().to_string())
+        .filter(|id| !id.is_empty())
+        .collect()
+}
+
 /// The placement diagnostic covers M0-M6 on every build: knowledge modules
 /// you can test out of. Nobody tests out of doing the first contribution.
 pub const PLACEMENT_LADDER: &[&str] = &[
@@ -367,6 +386,33 @@ mod tests {
             }
         }
         assert_eq!(items.len(), PLACEMENT_LADDER.len() * 3);
+    }
+
+    #[test]
+    fn every_widget_directive_references_a_known_id() {
+        // Content/site drift guard: a lesson can only embed a widget the
+        // registry (and the renderer) can render. Every allowlisted id must also
+        // earn its place by being used at least once - a dead id is a bug.
+        let mut used = std::collections::BTreeSet::new();
+        for dir in LADDER {
+            let m = Curriculum::load_module(dir);
+            for l in &m.lessons {
+                for id in widget_ids_in(&l.body) {
+                    assert!(
+                        WIDGET_IDS.contains(&id.as_str()),
+                        "lesson {} in {dir} references unknown widget {id:?}",
+                        l.id.0
+                    );
+                    used.insert(id);
+                }
+            }
+        }
+        for id in WIDGET_IDS {
+            assert!(
+                used.contains(*id),
+                "allowlisted widget {id:?} is embedded in no lesson"
+            );
+        }
     }
 
     #[test]
