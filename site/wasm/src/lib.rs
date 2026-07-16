@@ -405,7 +405,7 @@ mod tests {
     fn boot_paints_a_non_black_panel() {
         let mut b = Bench::new(240, 320);
         let rows = b.boot();
-        assert!(rows.len() > 0);
+        assert!(!rows.is_empty());
         assert_eq!(b.frame(), 0);
         // The finale's frame zero is not all black.
         assert!(b.rgba.chunks_exact(4).any(|p| p[0] | p[1] | p[2] != 0));
@@ -534,6 +534,50 @@ mod tests {
         // B = (0+0+255+255)/4 = 127. Pack: (127>>3)=15, (127>>2)=31, (127>>3)=15.
         let expected = ((15u16) << 11) | ((31u16) << 5) | 15u16;
         assert_eq!(out[2 * 240 + 2], expected);
+    }
+
+    #[test]
+    fn downscale_of_a_one_pixel_box_passes_the_source_through() {
+        // Destination (dx=0, dy=0) covers source x in [0,1), y in [0,1): a
+        // single source pixel (the 1->1 case that occurs where 320/240 lands on
+        // an integer). Its color must survive unaveraged, only 565-quantized.
+        let src = make_src(|x, y| {
+            if (x, y) == (0, 0) {
+                [0x28, 0x50, 0x88, 0xFF]
+            } else {
+                [0x00, 0x00, 0x00, 0xFF]
+            }
+        });
+        let out = downscale_rgba_to_565(&src, 320, 200, 240, 150);
+        let expected = ((0x28u16 >> 3) << 11) | ((0x50u16 >> 2) << 5) | (0x88u16 >> 3);
+        assert_eq!(out[0], expected);
+    }
+
+    #[test]
+    fn downscale_averages_a_horizontal_gradient_within_each_box() {
+        // A source that ramps by column: pixel x has red = x (mod 256). Each
+        // 240-wide destination pixel dx covers source columns [dx*4/3,(dx+1)*4/3)
+        // and averages them. For dx=3 that box is columns [4,5) = a single
+        // column 4, so red = 4; for dx=0 it is column 0 only, red = 0. This
+        // pins the box math, not just a flat field.
+        let src = make_src(|x, _| [x as u8, 0, 0, 0xFF]);
+        let out = downscale_rgba_to_565(&src, 320, 200, 240, 150);
+        // dx=0 -> cols [0,1): red 0 -> r5 0.
+        assert_eq!((out[0] >> 11) & 0x1f, 0);
+        // dx=3 -> cols [4,5): red 4 -> r5 = 4>>3 = 0. dx=6 -> cols [8,9): red 8
+        // -> r5 = 8>>3 = 1. Use a box whose average clears the 5-bit floor.
+        let dx = 30; // cols [40, 41): a single column, red = 40 -> r5 = 40>>3 = 5
+        assert_eq!((out[dx] >> 11) & 0x1f, 5);
+    }
+
+    #[test]
+    fn downscale_max_channel_values_do_not_overflow_the_average() {
+        // Every source pixel fully white: the per-box sums (up to 2x2=4 pixels
+        // of 255) stay well inside u32, and the average is exactly 255 -> 565
+        // all-ones. A regression guard against summing in a narrow type.
+        let src = make_src(|_, _| [0xFF, 0xFF, 0xFF, 0xFF]);
+        let out = downscale_rgba_to_565(&src, 320, 200, 240, 150);
+        assert!(out.iter().all(|&p| p == 0xFFFF));
     }
 
     #[test]
