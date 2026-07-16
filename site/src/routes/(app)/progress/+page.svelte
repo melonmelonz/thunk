@@ -11,6 +11,8 @@
 	// A fresh card is not a sad empty page: it is a calibrated instrument at rest,
 	// waiting for signal. The standby line says so in the same register as the rail.
 	const fresh = $derived(xp.xp === 0);
+	// Earned tally for the achievements header (EARNED NN / 12).
+	const earnedCount = $derived(ACHIEVEMENTS.filter((a) => xp.hasAchievement(a.id)).length);
 
 	function fmtDate(at: number): string {
 		try {
@@ -139,7 +141,13 @@
 
 <!-- Achievements grid. -->
 <section class="ach" aria-label="achievements">
-	<h2 class="label">Achievements</h2>
+	<div class="ach-head">
+		<h2 class="label">Achievements</h2>
+		<span class="earned mono tnum" aria-label={`${earnedCount} of ${ACHIEVEMENTS.length} achievements earned`}>
+			EARNED {String(earnedCount).padStart(2, '0')} <span class="eslash" aria-hidden="true">/</span>
+			{String(ACHIEVEMENTS.length).padStart(2, '0')}
+		</span>
+	</div>
 	<ul class="agrid">
 		{#each ACHIEVEMENTS as a (a.id)}
 			{@const earned = xp.hasAchievement(a.id)}
@@ -200,7 +208,10 @@
 			<button class="tbtn mono" onclick={() => { resetArmed = false; resetWord = ''; }}>CANCEL</button>
 		</div>
 	{/if}
-	<p class="tfoot mono">Local only. Nothing here is ever sent anywhere.</p>
+	<p class="tfoot mono">
+		Local only. Nothing here is ever sent anywhere.
+		<a class="colophon-link" href="/colophon/">How this runs, and what it stores</a>
+	</p>
 </section>
 
 <style>
@@ -421,6 +432,26 @@
 	}
 
 	/* ---- Achievements -------------------------------------------------- */
+	.ach-head {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 1rem;
+	}
+	.ach-head h2.label {
+		margin-bottom: 0;
+	}
+	.earned {
+		font-size: 0.6875rem;
+		letter-spacing: 0.14em;
+		color: var(--faint);
+		white-space: nowrap;
+	}
+	.earned .eslash {
+		color: var(--line);
+		margin-inline: 0.15em;
+	}
 	.agrid {
 		list-style: none;
 		display: grid;
@@ -567,6 +598,14 @@
 		font-size: 0.625rem;
 		letter-spacing: 0.1em;
 		color: var(--faint);
+	}
+	.colophon-link {
+		color: var(--muted);
+		border-bottom: 1px solid var(--line);
+		transition: color 140ms var(--ease-out);
+	}
+	.colophon-link:hover {
+		color: var(--phosphor);
 	}
 
 	@media (max-width: 560px) {
