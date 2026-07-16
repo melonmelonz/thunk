@@ -44,6 +44,10 @@ pub enum Action {
     Backspace,
     Submit,
     NextCheck,
+    /// Move the selected Order item up one place (carrying the cursor with it).
+    MoveUp,
+    /// Move the selected Order item down one place.
+    MoveDown,
     Tick,
 }
 
@@ -57,6 +61,10 @@ pub struct App {
     pub check_idx: usize,
     pub selected: usize,
     pub input: String,
+    /// The working order for the current Order check: item indices in the order
+    /// the learner has placed them. Empty for non-Order checks. Reset (to a
+    /// deterministic shuffle) whenever the current check changes.
+    pub order: Vec<usize>,
     pub last_verdict: Option<Verdict>,
     pub should_quit: bool,
     /// The full course ladder: every module's id and check ids, in order.
@@ -136,6 +144,7 @@ impl App {
             check_idx: 0,
             selected: 0,
             input: String::new(),
+            order: Vec::new(),
             last_verdict: None,
             should_quit: false,
             ladder,
@@ -260,9 +269,13 @@ impl App {
         let Some(item) = self.current_placement_item() else {
             return;
         };
+        // Placement banks are authored from Choice/Short only (the diagnostic
+        // is quick-answer by design); Order/Predict arms are here for
+        // exhaustiveness and behave sensibly if one is ever added.
         let answer = match &item.check {
             Check::Choice { .. } => Answer::Choice(self.selected),
-            Check::Short { .. } => Answer::Text(self.input.clone()),
+            Check::Short { .. } | Check::Predict { .. } => Answer::Text(self.input.clone()),
+            Check::Order { .. } => Answer::Order(self.order.clone()),
         };
         self.placement_answers.push(answer);
         self.reset_check_input();
@@ -291,6 +304,14 @@ impl App {
         self.selected = 0;
         self.input.clear();
         self.last_verdict = None;
+        // Seed the Order working set from the current check: a deterministic
+        // shuffle (reverse of the authored order) so the check is a real task
+        // rather than pre-solved, and stable across redraws. Empty for every
+        // other kind.
+        self.order = match self.checks.get(self.check_idx) {
+            Some(Check::Order { items, .. }) => (0..items.len()).rev().collect(),
+            _ => Vec::new(),
+        };
     }
 
     pub fn update(&mut self, action: Action) {
@@ -371,17 +392,37 @@ impl App {
                         }
                     }
                 }
-                _ => {
-                    if let Some(Check::Choice { options, .. }) = self.checks.get(self.check_idx) {
+                _ => match self.checks.get(self.check_idx) {
+                    // Choice moves the pick down its options; Order moves the
+                    // reorder cursor down its items.
+                    Some(Check::Choice { options, .. }) => {
                         if self.selected + 1 < options.len() {
                             self.selected += 1;
                         }
                     }
-                }
+                    Some(Check::Order { items, .. }) => {
+                        if self.selected + 1 < items.len() {
+                            self.selected += 1;
+                        }
+                    }
+                    _ => {}
+                },
             },
             Action::Char(c) => self.input.push(c),
             Action::Backspace => {
                 self.input.pop();
+            }
+            Action::MoveUp => {
+                if self.selected > 0 && self.selected < self.order.len() {
+                    self.order.swap(self.selected, self.selected - 1);
+                    self.selected -= 1;
+                }
+            }
+            Action::MoveDown => {
+                if self.selected + 1 < self.order.len() {
+                    self.order.swap(self.selected, self.selected + 1);
+                    self.selected += 1;
+                }
             }
             Action::Submit => {
                 if self.scene == Scene::Placement {
@@ -389,7 +430,10 @@ impl App {
                 } else if let Some(c) = self.checks.get(self.check_idx) {
                     let answer = match c {
                         Check::Choice { .. } => Answer::Choice(self.selected),
-                        Check::Short { .. } => Answer::Text(self.input.clone()),
+                        Check::Short { .. } | Check::Predict { .. } => {
+                            Answer::Text(self.input.clone())
+                        }
+                        Check::Order { .. } => Answer::Order(self.order.clone()),
                     };
                     let v = c.grade(&answer);
                     self.progress.record(c.id(), v);
@@ -623,6 +667,68 @@ mod tests {
     }
 
     #[test]
+    fn an_order_check_seeds_a_shuffled_working_order_and_reorders_to_correct() {
+        let mut app = test_app();
+        // Stand a synthetic Order check in front of the classroom (m4 is locked
+        // at the start of a fresh run, so we drive the state machine directly).
+        app.checks = vec![Check::Order {
+            id: CheckId("m0-01-order".into()),
+            prompt: "put these in order".into(),
+            items: vec!["a".into(), "b".into(), "c".into()],
+        }];
+        app.check_idx = 0;
+        app.update(Action::OpenChecks); // resets, seeding the working order
+
+        // The seed is the reverse of the authored order: a genuine task, and
+        // deterministically NOT already correct.
+        assert_eq!(app.order, vec![2, 1, 0]);
+        assert_eq!(
+            app.current_check()
+                .unwrap()
+                .grade(&Answer::Order(app.order.clone())),
+            Verdict::Incorrect
+        );
+
+        // Reorder [2,1,0] -> [0,1,2]. Cursor starts on row 0 (item 2); move it
+        // to the bottom, then move item 0 (now on row 1 after the first swap
+        // lands it) up to the top.
+        // Row 0 holds index 2; push it down twice to the end.
+        app.update(Action::MoveDown); // [1,2,0], cursor at row 1
+        app.update(Action::MoveDown); // [1,0,2], cursor at row 2
+        assert_eq!(app.order, vec![1, 0, 2]);
+        // Put the cursor on row 0 (index 1) and swap it with row 1 (index 0).
+        app.update(Action::SelectPrev); // cursor row 1
+        app.update(Action::SelectPrev); // cursor row 0
+        app.update(Action::MoveDown); // [0,1,2], cursor row 1
+        assert_eq!(app.order, vec![0, 1, 2]);
+
+        app.update(Action::Submit);
+        assert_eq!(app.last_verdict, Some(Verdict::Correct));
+        assert_eq!(app.passed_count(), 1);
+    }
+
+    #[test]
+    fn a_predict_check_grades_a_typed_answer_like_short() {
+        let mut app = test_app();
+        app.checks = vec![Check::Predict {
+            id: CheckId("m0-01-predict".into()),
+            prompt: "predict the byte".into(),
+            answers: vec!["0xF8".into(), "f8".into()],
+            hint: "hex byte".into(),
+        }];
+        app.check_idx = 0;
+        app.update(Action::OpenChecks);
+        // Predict seeds no working order (that is Order's alone).
+        assert!(app.order.is_empty());
+        for ch in "0xf8".chars() {
+            app.update(Action::Char(ch));
+        }
+        app.update(Action::Submit);
+        assert_eq!(app.last_verdict, Some(Verdict::Correct));
+        assert_eq!(app.passed_count(), 1);
+    }
+
+    #[test]
     fn lesson_navigation_clamps() {
         let mut app = test_app();
         app.update(Action::EnterModule);
@@ -688,6 +794,7 @@ mod tests {
                     app.input = answers[0].clone();
                     app.update(Action::Submit);
                 }
+                other => panic!("placement bank is Choice/Short only, got {other:?}"),
             }
             app.update(Action::NextCheck);
         }
@@ -744,6 +851,7 @@ mod tests {
             match &item.check {
                 Check::Choice { answer, .. } => app.selected = *answer,
                 Check::Short { answers, .. } => app.input = answers[0].clone(),
+                other => panic!("placement bank is Choice/Short only, got {other:?}"),
             }
             app.update(Action::Submit);
         }

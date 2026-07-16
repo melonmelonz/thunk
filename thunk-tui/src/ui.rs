@@ -125,9 +125,15 @@ fn render_modules(f: &mut Frame, area: Rect, app: &App) {
     f.render_widget(Paragraph::new(lines), inner);
 }
 
-/// The body of one check: prompt, then options or the typed answer so far.
-/// Shared by the checks scene and the placement scene.
-fn check_body_lines(c: &Check, selected: usize, input: &str) -> Vec<Line<'static>> {
+/// The body of one check: prompt, then options / the typed answer / the
+/// reorderable list. Shared by the checks scene and the placement scene.
+/// `order` is the working item order for an Order check (empty otherwise).
+fn check_body_lines(
+    c: &Check,
+    selected: usize,
+    input: &str,
+    order: &[usize],
+) -> Vec<Line<'static>> {
     let mut lines: Vec<Line> = Vec::new();
     lines.push(Line::from(Span::styled(
         c.prompt().to_string(),
@@ -149,8 +155,45 @@ fn check_body_lines(c: &Check, selected: usize, input: &str) -> Vec<Line<'static
                 lines.push(Line::from(Span::styled(format!("{marker}{opt}"), style)));
             }
         }
+        // Predict reads like Short in the classroom: a monospace-ish prompt for
+        // a typed value. The grading is the same helper; only the framing (and
+        // the hint) differ.
         Check::Short { .. } => {
             lines.push(Line::from(format!("your answer: {input}_")));
+        }
+        Check::Predict { hint, .. } => {
+            if !hint.is_empty() {
+                lines.push(Line::from(Span::styled(
+                    format!("expected: {hint}"),
+                    Style::default().fg(Color::DarkGray),
+                )));
+            }
+            lines.push(Line::from(format!("predict: {input}_")));
+        }
+        Check::Order { items, .. } => {
+            // Render the items in the learner's current order, numbered, with
+            // the reorder cursor on the selected row.
+            for (pos, &idx) in order.iter().enumerate() {
+                let is_sel = pos == selected;
+                let marker = if is_sel { "> " } else { "  " };
+                let text = items.get(idx).map(String::as_str).unwrap_or("");
+                let style = if is_sel {
+                    Style::default()
+                        .fg(Color::Cyan)
+                        .add_modifier(Modifier::BOLD)
+                } else {
+                    Style::default()
+                };
+                lines.push(Line::from(Span::styled(
+                    format!("{marker}{}. {text}", pos + 1),
+                    style,
+                )));
+            }
+            lines.push(Line::from(""));
+            lines.push(Line::from(Span::styled(
+                "up/down to pick a step  ·  [ and ] to move it  ·  enter to submit",
+                Style::default().fg(Color::DarkGray),
+            )));
         }
     }
     lines.push(Line::from(""));
@@ -167,7 +210,9 @@ fn render_placement(f: &mut Frame, area: Rect, app: &App) {
     f.render_widget(block, area);
     let mut lines: Vec<Line> = Vec::new();
     if let Some(item) = app.current_placement_item() {
-        lines.extend(check_body_lines(&item.check, app.selected, &app.input));
+        // Placement banks carry no Order checks, so an empty working order is
+        // always right here.
+        lines.extend(check_body_lines(&item.check, app.selected, &app.input, &[]));
     }
     lines.push(Line::from(Span::styled(
         "answers here do not change module progress; they only place you",
@@ -201,7 +246,7 @@ fn render_checks(f: &mut Frame, area: Rect, app: &App) {
 
     let mut lines: Vec<Line> = Vec::new();
     if let Some(c) = app.current_check() {
-        lines.extend(check_body_lines(c, app.selected, &app.input));
+        lines.extend(check_body_lines(c, app.selected, &app.input, &app.order));
         if let Some(v) = app.last_verdict {
             let (text, color) = match v {
                 Verdict::Correct => ("correct", Color::Green),
@@ -306,6 +351,7 @@ fn render_help(f: &mut Frame, area: Rect) {
         Line::from("reader:  j/k scroll   n/p next/prev lesson   m/esc modules"),
         Line::from("         c checks     s panel view     ? help"),
         Line::from("checks:  up/down pick an option, or type a short answer"),
+        Line::from("         order checks: up/down pick a step, [ and ] move it"),
         Line::from("         enter submit   n next check   esc back"),
         Line::from("placement: enter submits each item   esc abandons the run"),
         Line::from("panel:   t trace view   any other key returns to the reader"),
@@ -322,7 +368,7 @@ fn render_footer(f: &mut Frame, area: Rect, app: &App) {
     let keys = match app.scene {
         Scene::Modules => "j/k select  enter open  p placement  q quit",
         Scene::Reader => "j/k scroll  n/p lesson  c checks  s panel  m modules  ? help  q quit",
-        Scene::Checks => "up/down or type  enter submit  n next  esc back",
+        Scene::Checks => "up/down pick or type  [ ] reorder  enter submit  n next  esc back",
         Scene::Panel => "t trace  any other key back  q quit",
         Scene::Trace => "j/k move  esc back  q quit",
         Scene::Help => "any key back",

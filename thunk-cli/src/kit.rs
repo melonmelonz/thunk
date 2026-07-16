@@ -5,15 +5,17 @@ use crate::ladder_tag;
 use thunk_content::Curriculum;
 use thunk_core::Check;
 
-/// The answer as a facilitator reads it aloud: the text of the correct
-/// option for Choice, the canonical accepted answer for Short. This renders
-/// exactly what `Check::canonical_answer` grades as `Correct`.
-fn answer_text(c: &Check) -> &str {
+/// The answer as a facilitator reads it aloud: the text of the correct option
+/// for Choice, the canonical accepted answer for Short/Predict, and the correct
+/// sequence (joined with arrows) for Order. This renders exactly what
+/// `Check::canonical_answer` grades as `Correct`.
+fn answer_text(c: &Check) -> String {
     match c {
         Check::Choice {
             options, answer, ..
-        } => &options[*answer],
-        Check::Short { answers, .. } => &answers[0],
+        } => options[*answer].clone(),
+        Check::Short { answers, .. } | Check::Predict { answers, .. } => answers[0].clone(),
+        Check::Order { items, .. } => items.join(" -> "),
     }
 }
 
@@ -94,7 +96,10 @@ pub fn answer_key_md() -> String {
                     c.prompt(),
                     answer_text(c)
                 ));
-                if let Check::Short { answers, .. } = c {
+                // Short and Predict both accept an alternate list; the key
+                // spells them out so a facilitator can honor a learner's
+                // equivalent phrasing (or byte spelling) on the spot.
+                if let Check::Short { answers, .. } | Check::Predict { answers, .. } = c {
                     if answers.len() > 1 {
                         s.push_str(&format!("  Also accepted: {}\n", answers[1..].join(", ")));
                     }

@@ -87,19 +87,25 @@ fn map_key(app: &App, code: KeyCode) -> Option<Action> {
             _ => None,
         },
         Scene::Checks => {
-            // Short checks capture typing; Choice checks navigate options.
-            let is_short = matches!(app.current_check(), Some(thunk_core::Check::Short { .. }));
+            // Short and Predict capture typing; Choice and Order navigate with
+            // the arrows (Order adds [ / ] to move the picked step).
+            let is_typed = matches!(
+                app.current_check(),
+                Some(thunk_core::Check::Short { .. } | thunk_core::Check::Predict { .. })
+            );
             match code {
                 KeyCode::Esc => Some(Action::Back),
                 KeyCode::Enter => Some(Action::Submit),
                 KeyCode::Tab => Some(Action::NextCheck),
-                _ if is_short => match code {
+                _ if is_typed => match code {
                     KeyCode::Char(c) => Some(Action::Char(c)),
                     KeyCode::Backspace => Some(Action::Backspace),
                     _ => None,
                 },
                 KeyCode::Up => Some(Action::SelectPrev),
                 KeyCode::Down => Some(Action::SelectNext),
+                KeyCode::Char('[') => Some(Action::MoveUp),
+                KeyCode::Char(']') => Some(Action::MoveDown),
                 KeyCode::Char('n') => Some(Action::NextCheck),
                 KeyCode::Char('q') => Some(Action::Quit),
                 _ => None,
@@ -123,7 +129,7 @@ fn map_key(app: &App, code: KeyCode) -> Option<Action> {
             // and items advance on submit rather than by `n`/Tab.
             let is_short = matches!(
                 app.current_placement_item().map(|i| &i.check),
-                Some(thunk_core::Check::Short { .. })
+                Some(thunk_core::Check::Short { .. } | thunk_core::Check::Predict { .. })
             );
             match code {
                 KeyCode::Esc => Some(Action::OpenModules),

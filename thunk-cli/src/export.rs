@@ -36,6 +36,17 @@ enum CheckJson {
         prompt: String,
         answers: Vec<String>,
     },
+    Order {
+        id: String,
+        prompt: String,
+        items: Vec<String>,
+    },
+    Predict {
+        id: String,
+        prompt: String,
+        answers: Vec<String>,
+        hint: String,
+    },
 }
 
 impl From<&Check> for CheckJson {
@@ -60,6 +71,22 @@ impl From<&Check> for CheckJson {
                 id: id.0.clone(),
                 prompt: prompt.clone(),
                 answers: answers.clone(),
+            },
+            Check::Order { id, prompt, items } => CheckJson::Order {
+                id: id.0.clone(),
+                prompt: prompt.clone(),
+                items: items.clone(),
+            },
+            Check::Predict {
+                id,
+                prompt,
+                answers,
+                hint,
+            } => CheckJson::Predict {
+                id: id.0.clone(),
+                prompt: prompt.clone(),
+                answers: answers.clone(),
+                hint: hint.clone(),
             },
         }
     }
@@ -244,6 +271,49 @@ mod tests {
             .map(|a| a.as_str().unwrap().to_string())
             .collect();
         assert!(answers.contains(&"1".to_string()));
+    }
+
+    #[test]
+    fn order_checks_carry_their_items_in_authored_order() {
+        let v: Value = serde_json::from_str(&export_json()).unwrap();
+        let check = v["modules"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .flat_map(|m| m["lessons"].as_array().unwrap())
+            .flat_map(|l| l["checks"].as_array().unwrap())
+            .find(|c| c["id"] == "m4-04-draw")
+            .expect("m4-04-draw is present");
+        assert_eq!(check["kind"], "order");
+        let items = check["items"].as_array().expect("items array");
+        assert_eq!(items.len(), 4, "the draw sequence has four steps");
+        assert!(
+            items[0].as_str().unwrap().contains("0x2A"),
+            "the authored order leads with the column address command"
+        );
+        assert!(items[2].as_str().unwrap().contains("RAMWR"));
+    }
+
+    #[test]
+    fn predict_checks_carry_answers_and_a_hint() {
+        let v: Value = serde_json::from_str(&export_json()).unwrap();
+        let check = v["modules"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .flat_map(|m| m["lessons"].as_array().unwrap())
+            .flat_map(|l| l["checks"].as_array().unwrap())
+            .find(|c| c["id"] == "m4-02-redbyte")
+            .expect("m4-02-redbyte is present");
+        assert_eq!(check["kind"], "predict");
+        let answers: Vec<String> = check["answers"]
+            .as_array()
+            .unwrap()
+            .iter()
+            .map(|a| a.as_str().unwrap().to_string())
+            .collect();
+        assert!(answers.contains(&"0xF8".to_string()));
+        assert!(!check["hint"].as_str().unwrap().is_empty(), "hint carries");
     }
 
     #[test]
