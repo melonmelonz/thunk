@@ -37,9 +37,10 @@ pub fn frame(w: u16, h: u16, t: u32) -> Vec<u16> {
             // Perspective depth: far (center) is large, near (edge) is small.
             let depth = (256 * 32 / m).clamp(1, 4096);
             // Bands travel toward the viewer as t grows. `t` is a frame
-            // counter that only ever grows; make the wraparound explicit
-            // rather than let a debug build panic once t >= 2^30.
-            let band = ((depth as u32 + t.wrapping_mul(4)) / 32) % 2;
+            // counter that only ever grows; make the wraparound explicit at
+            // both the multiply AND the add, rather than let a debug build
+            // panic once t is large enough that 4*t + depth crosses 2^32.
+            let band = (depth as u32).wrapping_add(t.wrapping_mul(4)) / 32 % 2;
             // Brightness falls off as the inverse of depth: the nearest
             // clamped depth is 32, and 992 = 31 * 32 (full shade x nearest
             // depth), so at depth 32 this divides out to shade 31 - the near
@@ -103,6 +104,44 @@ mod tests {
         let g = ((c >> 5) & 0x3f) as u32;
         let b = (c & 0x1f) as u32;
         r * 2 + g + b * 2 // channel-width-adjusted, good enough to compare
+    }
+
+    #[test]
+    fn frame_never_panics_across_a_grid_of_sizes_and_times() {
+        // The finale runs in a debug build (the wasm bench, the CLI). Every
+        // product and shift in `frame` must stay in range for tiny panels, odd
+        // panels, and a frame counter that has grown to the u32 ceiling - the
+        // `t.wrapping_mul(4)` is the guard the loop below exercises.
+        for &(w, h) in &[(1u16, 1u16), (1, 2), (2, 1), (3, 3), (240, 320), (321, 241)] {
+            for &t in &[0u32, 1, 15, 16, 31, 1_000_000, u32::MAX - 1, u32::MAX] {
+                let f = frame(w, h, t);
+                assert_eq!(f.len(), w as usize * h as usize, "{w}x{h} @ {t}");
+                // Determinism holds at the ceiling too.
+                assert_eq!(f, frame(w, h, t), "nondeterministic at {w}x{h} @ {t}");
+            }
+        }
+    }
+
+    #[test]
+    fn a_zero_dimension_frame_is_empty_not_a_panic() {
+        assert!(frame(0, 10, 5).is_empty());
+        assert!(frame(10, 0, 5).is_empty());
+        assert!(frame(0, 0, 0).is_empty());
+    }
+
+    #[test]
+    fn shade_stays_inside_five_bits_for_every_cell() {
+        // Every channel packed into RGB565 must fit its field: r/b in 0..=31
+        // (5 bits) and g in 0..=63 (6 bits). A cell whose shade math overran a
+        // field would bleed into the neighbouring channel; assert it never does.
+        let f = frame(64, 48, 9);
+        for &c in &f {
+            let r = (c >> 11) & 0x1f;
+            let g = (c >> 5) & 0x3f;
+            let b = c & 0x1f;
+            // Reassembling must reproduce the pixel exactly (no stray high bits).
+            assert_eq!((r << 11) | (g << 5) | b, c);
+        }
     }
 
     #[test]
