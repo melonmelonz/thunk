@@ -18,12 +18,53 @@ pub enum Check {
         prompt: String,
         answers: Vec<String>,
     },
+    /// Arrange items into the correct sequence. `items` is authored in the
+    /// CORRECT order; a renderer shuffles them for display and the learner
+    /// reorders. The answer is the submitted permutation of item indices, and
+    /// it grades Correct only when it equals the identity order (0,1,2,...).
+    Order {
+        id: CheckId,
+        prompt: String,
+        items: Vec<String>,
+    },
+    /// Predict an output value (a byte, a pixel, a number). Identical grading
+    /// to Short - trim + lowercase against an accepted list - but authored and
+    /// presented as a prediction (monospace input, often a hex/byte value).
+    /// Kept a distinct variant so lessons can frame it and the UI can differ,
+    /// while the grading helper stays shared so the two can never drift.
+    Predict {
+        id: CheckId,
+        prompt: String,
+        answers: Vec<String>,
+        /// A short note on the expected shape (e.g. "hex byte") shown as the
+        /// input's placeholder. May be empty.
+        hint: String,
+    },
 }
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum Answer {
     Choice(usize),
     Text(String),
+    /// A submitted ordering: the item indices in the order the learner placed
+    /// them. Correct when it matches the authored (identity) order.
+    Order(Vec<usize>),
+}
+
+/// The one short-answer normalization, shared by Short and Predict so the two
+/// can never grade differently: trim + Unicode-aware lowercase, accept on any
+/// listed answer. This is the exact rule the TS grader (`site/src/lib/grade.ts`)
+/// and the offline `check.js` mirror.
+fn answers_accept(answers: &[String], text: &str) -> bool {
+    let norm = text.trim().to_lowercase();
+    answers.iter().any(|x| x.trim().to_lowercase() == norm)
+}
+
+/// Whether a submitted permutation is the identity order over `n` items - the
+/// authored order reproduced exactly. Length must match, and each slot must
+/// hold its own index.
+fn is_identity_order(perm: &[usize], n: usize) -> bool {
+    perm.len() == n && perm.iter().enumerate().all(|(i, &v)| v == i)
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -35,12 +76,18 @@ pub enum Verdict {
 impl Check {
     pub fn id(&self) -> &CheckId {
         match self {
-            Check::Choice { id, .. } | Check::Short { id, .. } => id,
+            Check::Choice { id, .. }
+            | Check::Short { id, .. }
+            | Check::Order { id, .. }
+            | Check::Predict { id, .. } => id,
         }
     }
     pub fn prompt(&self) -> &str {
         match self {
-            Check::Choice { prompt, .. } | Check::Short { prompt, .. } => prompt,
+            Check::Choice { prompt, .. }
+            | Check::Short { prompt, .. }
+            | Check::Order { prompt, .. }
+            | Check::Predict { prompt, .. } => prompt,
         }
     }
     /// The canonical answer, used for self-validation and demos.
@@ -48,16 +95,27 @@ impl Check {
         match self {
             Check::Choice { answer, .. } => Answer::Choice(*answer),
             Check::Short { answers, .. } => Answer::Text(answers[0].clone()),
+            Check::Order { items, .. } => Answer::Order((0..items.len()).collect()),
+            Check::Predict { answers, .. } => Answer::Text(answers[0].clone()),
         }
     }
     pub fn grade(&self, a: &Answer) -> Verdict {
-        let ok = match (self, a) {
-            (Check::Choice { answer, .. }, Answer::Choice(i)) => i == answer,
-            (Check::Short { answers, .. }, Answer::Text(t)) => {
-                let norm = t.trim().to_lowercase();
-                answers.iter().any(|x| x.trim().to_lowercase() == norm)
+        // Matched on `self` (not the (self, a) pair) so the compiler forces a
+        // grading arm for every Check variant - no catch-all that could let a
+        // new variant grade silently. Each arm accepts only its own Answer
+        // shape; a cross-kind answer (e.g. Text to an Order check) is wrong,
+        // never a panic.
+        let ok = match self {
+            Check::Choice { answer, .. } => matches!(a, Answer::Choice(i) if i == answer),
+            Check::Short { answers, .. } => {
+                matches!(a, Answer::Text(t) if answers_accept(answers, t))
             }
-            _ => false,
+            Check::Order { items, .. } => {
+                matches!(a, Answer::Order(perm) if is_identity_order(perm, items.len()))
+            }
+            Check::Predict { answers, .. } => {
+                matches!(a, Answer::Text(t) if answers_accept(answers, t))
+            }
         };
         if ok {
             Verdict::Correct
@@ -160,9 +218,125 @@ mod tests {
                 prompt: "p".into(),
                 answers: vec!["mmap".into(), "map".into()],
             },
+            Check::Order {
+                id: CheckId("c".into()),
+                prompt: "p".into(),
+                items: vec!["one".into(), "two".into(), "three".into()],
+            },
+            Check::Predict {
+                id: CheckId("d".into()),
+                prompt: "p".into(),
+                answers: vec!["0xF8".into(), "f8".into()],
+                hint: "hex byte".into(),
+            },
         ];
         for c in &checks {
             assert_eq!(c.grade(&c.canonical_answer()), Verdict::Correct);
+        }
+    }
+
+    // --- Order ---------------------------------------------------------------
+
+    fn order_check() -> Check {
+        Check::Order {
+            id: CheckId("m4-04-draw-order".into()),
+            prompt: "put the steps in order".into(),
+            items: vec![
+                "set the column window".into(),
+                "set the row window".into(),
+                "send RAMWR".into(),
+                "stream the pixels".into(),
+            ],
+        }
+    }
+
+    #[test]
+    fn order_grades_correct_only_on_the_exact_authored_order() {
+        let c = order_check();
+        // The identity permutation is the authored order: Correct.
+        assert_eq!(c.grade(&Answer::Order(vec![0, 1, 2, 3])), Verdict::Correct);
+        // The canonical answer is that identity, and it round-trips.
+        assert_eq!(c.canonical_answer(), Answer::Order(vec![0, 1, 2, 3]));
+        assert_eq!(c.grade(&c.canonical_answer()), Verdict::Correct);
+    }
+
+    #[test]
+    fn order_rejects_any_transposition_or_wrong_shape() {
+        let c = order_check();
+        // Any single swap is wrong.
+        assert_eq!(
+            c.grade(&Answer::Order(vec![1, 0, 2, 3])),
+            Verdict::Incorrect
+        );
+        assert_eq!(
+            c.grade(&Answer::Order(vec![0, 1, 3, 2])),
+            Verdict::Incorrect
+        );
+        // A full reverse is wrong.
+        assert_eq!(
+            c.grade(&Answer::Order(vec![3, 2, 1, 0])),
+            Verdict::Incorrect
+        );
+        // A too-short or too-long submission is wrong, not a panic.
+        assert_eq!(c.grade(&Answer::Order(vec![0, 1, 2])), Verdict::Incorrect);
+        assert_eq!(
+            c.grade(&Answer::Order(vec![0, 1, 2, 3, 0])),
+            Verdict::Incorrect
+        );
+        // A cross-kind answer (Text / Choice to an Order check) is wrong.
+        assert_eq!(c.grade(&Answer::Text("0 1 2 3".into())), Verdict::Incorrect);
+        assert_eq!(c.grade(&Answer::Choice(0)), Verdict::Incorrect);
+    }
+
+    // --- Predict -------------------------------------------------------------
+
+    #[test]
+    fn predict_has_short_grading_semantics_including_alternates() {
+        let c = Check::Predict {
+            id: CheckId("m4-02-redbyte".into()),
+            prompt: "predict the first byte of pure red on the wire".into(),
+            answers: vec!["0xF8".into(), "f8".into(), "248".into()],
+            hint: "hex byte".into(),
+        };
+        // Canonical is the first accepted answer, and it round-trips Correct.
+        assert_eq!(c.canonical_answer(), Answer::Text("0xF8".into()));
+        assert_eq!(c.grade(&c.canonical_answer()), Verdict::Correct);
+        // trim + lowercase, exactly like Short.
+        assert_eq!(c.grade(&Answer::Text("  0XF8 ".into())), Verdict::Correct);
+        // Every alternate is accepted.
+        assert_eq!(c.grade(&Answer::Text("f8".into())), Verdict::Correct);
+        assert_eq!(c.grade(&Answer::Text("248".into())), Verdict::Correct);
+        // A near miss is wrong; an empty answer is wrong, not a panic.
+        assert_eq!(c.grade(&Answer::Text("0xF9".into())), Verdict::Incorrect);
+        assert_eq!(c.grade(&Answer::Text(String::new())), Verdict::Incorrect);
+        // A cross-kind answer (Order / Choice to a Predict check) is wrong.
+        assert_eq!(c.grade(&Answer::Order(vec![0])), Verdict::Incorrect);
+        assert_eq!(c.grade(&Answer::Choice(0)), Verdict::Incorrect);
+    }
+
+    #[test]
+    fn predict_and_short_agree_on_the_same_answer_bank() {
+        // The shared helper is the whole point: a Predict and a Short with the
+        // same accepted list grade identically for every input.
+        let answers = vec!["ramwr".into(), "0x2c".into(), "2c".into()];
+        let short = Check::Short {
+            id: CheckId("s".into()),
+            prompt: "p".into(),
+            answers: answers.clone(),
+        };
+        let predict = Check::Predict {
+            id: CheckId("p".into()),
+            prompt: "p".into(),
+            answers,
+            hint: String::new(),
+        };
+        for probe in ["RAMWR", " 0X2C ", "2c", "caset", "", "   "] {
+            let a = Answer::Text(probe.into());
+            assert_eq!(
+                short.grade(&a),
+                predict.grade(&a),
+                "short and predict disagree on {probe:?}"
+            );
         }
     }
 }
