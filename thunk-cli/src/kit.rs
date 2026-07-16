@@ -160,6 +160,26 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "open")]
+    #[test]
+    fn the_open_kit_documents_m7() {
+        // On the open build the facilitator kit must cover M7 - the pacing
+        // guide names it and the answer key holds every M7 answer - so a
+        // facilitator running the open profile is not missing a module's key.
+        let pacing = pacing_md();
+        assert!(pacing.contains("M7"), "pacing guide names the M7 rung");
+        assert!(pacing.contains("First Patch"), "pacing names M7's title");
+        let key = answer_key_md();
+        for c in thunk_content::Curriculum::load_checks("m7-first-patch") {
+            assert!(key.contains(&c.id().0), "answer key missing {}", c.id().0);
+            assert!(
+                key.contains(answer_text(&c).trim()),
+                "answer key missing the answer to {}",
+                c.id().0
+            );
+        }
+    }
+
     #[test]
     fn the_answer_key_carries_every_check_and_its_canonical_answer() {
         let md = answer_key_md();

@@ -262,6 +262,35 @@ mod tests {
         );
     }
 
+    #[cfg(feature = "open")]
+    #[test]
+    fn the_open_export_carries_m7_and_the_inside_export_does_not() {
+        // The export mirrors the build's ladder. On the open build M7 (First
+        // Patch) must appear as its own module, with lessons and checks, so the
+        // public site's open profile can render it; the placement list must
+        // still stop at M6 (nobody tests out of the first contribution).
+        let v: Value = serde_json::from_str(&export_json()).unwrap();
+        let modules = v["modules"].as_array().unwrap();
+        assert_eq!(v["moduleCount"], 8, "open ladder is M0..M7");
+        let m7 = modules
+            .iter()
+            .find(|m| m["id"] == "m7-first-patch")
+            .expect("open export includes M7");
+        assert_eq!(m7["tag"], "M7");
+        assert!(
+            m7["lessonCount"].as_u64().unwrap() >= 1,
+            "M7 carries lessons"
+        );
+        assert!(
+            !v["placement"]
+                .as_array()
+                .unwrap()
+                .iter()
+                .any(|p| p["module"] == "m7-first-patch"),
+            "placement never covers M7"
+        );
+    }
+
     #[test]
     fn placement_lists_three_check_ids_per_module() {
         let v: Value = serde_json::from_str(&export_json()).unwrap();
