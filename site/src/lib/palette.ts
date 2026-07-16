@@ -158,7 +158,8 @@ export function buildItems(opts: { onBench?: boolean; resume?: ResumeHint | null
 	items.push(
 		{ id: 'place-bench', kind: 'place', label: 'THE BENCH', hint: 'BENCH', href: '/bench/', keywords: 'panel doom sim trace' },
 		{ id: 'place-operator', kind: 'place', label: 'OPERATOR', hint: 'PROGRESS', href: '/progress/', keywords: 'xp level achievements progress card' },
-		{ id: 'place-calibrate', kind: 'place', label: 'CALIBRATION', hint: 'PLACE OUT', href: '/calibrate/', keywords: 'placement test out calibrate skip prior knowledge' }
+		{ id: 'place-calibrate', kind: 'place', label: 'CALIBRATION', hint: 'PLACE OUT', href: '/calibrate/', keywords: 'placement test out calibrate skip prior knowledge' },
+		{ id: 'place-colophon', kind: 'place', label: 'COLOPHON', hint: 'ABOUT', href: '/colophon/', keywords: 'about stack colophon licenses privacy provenance how it runs build' }
 	);
 
 	modules.forEach((m) => {
@@ -189,14 +190,24 @@ export function buildItems(opts: { onBench?: boolean; resume?: ResumeHint | null
 		{ id: 'act-export', kind: 'action', label: 'EXPORT PROGRESS', hint: 'ACTION', action: 'export-progress', keywords: 'download json backup operator' }
 	);
 	if (opts.onBench) {
-		items.push({
-			id: 'act-scanlines',
-			kind: 'action',
-			label: 'TOGGLE SCANLINES',
-			hint: 'ACTION',
-			action: 'toggle-scanlines',
-			keywords: 'crt bench panel'
-		});
+		items.push(
+			{
+				id: 'act-save-trace',
+				kind: 'action',
+				label: 'SAVE TRACE',
+				hint: 'ACTION',
+				action: 'save-trace',
+				keywords: 'download bus trace txt export log'
+			},
+			{
+				id: 'act-scanlines',
+				kind: 'action',
+				label: 'TOGGLE SCANLINES',
+				hint: 'ACTION',
+				action: 'toggle-scanlines',
+				keywords: 'crt bench panel'
+			}
+		);
 	}
 
 	return items;

@@ -30,6 +30,8 @@
 			<span class="license mono">MIT / Apache-2.0</span>
 			<span class="dot" aria-hidden="true"></span>
 			<span class="note">Nothing leaves this machine.</span>
+			<span class="dot" aria-hidden="true"></span>
+			<a class="colophon-link" href="/colophon/">Colophon</a>
 		</div>
 		<!-- Build plate: real provenance stamped at build time by build-info.mjs. -->
 		<p class="plate mono tnum" aria-label="build provenance">
@@ -76,6 +78,14 @@
 	}
 	.note {
 		color: var(--faint);
+	}
+	.colophon-link {
+		color: var(--muted);
+		border-bottom: 1px solid var(--line);
+		transition: color 140ms var(--ease-out);
+	}
+	.colophon-link:hover {
+		color: var(--phosphor);
 	}
 	.dot {
 		width: 3px;

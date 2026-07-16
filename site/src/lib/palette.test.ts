@@ -131,9 +131,17 @@ describe('buildItems', () => {
 		expect(items[0].label).toContain('RING ZERO');
 	});
 
-	it('gates SCANLINES to the bench', () => {
+	it('includes the colophon place everywhere', () => {
+		const colophon = buildItems().find((i) => i.id === 'place-colophon');
+		expect(colophon?.href).toBe('/colophon/');
+	});
+
+	it('gates SCANLINES and SAVE TRACE to the bench', () => {
 		expect(buildItems({ onBench: false }).some((i) => i.id === 'act-scanlines')).toBe(false);
 		expect(buildItems({ onBench: true }).some((i) => i.id === 'act-scanlines')).toBe(true);
+		expect(buildItems({ onBench: false }).some((i) => i.id === 'act-save-trace')).toBe(false);
+		const save = buildItems({ onBench: true }).find((i) => i.id === 'act-save-trace');
+		expect(save?.action).toBe('save-trace');
 	});
 
 	it('emits a channel and lessons for every module, all navigable', () => {
