@@ -1,67 +1,56 @@
-# thunk - 1:30 demo script (Person -> Problem -> Possibility -> Product -> Proof -> Payoff)
+# thunk - 1:30 demo script
 
-Draft 1. The spoken spine for the demo; pairs with the shot list in `DEMO-VIDEO.md` (this is the
-voiceover/story, that is the camera plan). Penn's voice: plain, concrete, no em dashes, no
-manufactured aphorisms. "Marcus" is an illustrative composite, not a real person. Timings assume
-a calm, deliberate read (~105 spoken words per minute) so the on-screen product breathes; the VO
-sits under the music, and the DOOM reveal gets a beat of near-silence.
+Draft 2. Rewritten to sound normal, not like a movie trailer. The emphasis is career and open
+source, not hardware. It opens on the story that makes the case: three developers, same job, and
+the one with a real contribution gets the call. Penn's voice: plain, concrete, no em dashes, no
+manufactured aphorisms. Pairs with the shot list in `DEMO-VIDEO.md`.
 
-Total spoken: ~155 words. Read at demo pace with visual pauses, that lands at ~1:30.
-
----
-
-## PERSON  (0:00 - 0:12)
-**Visual:** black; the phosphor tick warms up; the wordmark and the definition fade in.
-**VO:** "Marcus is coming home in a few months. He wants work that lasts, and a skill nobody can
-take back."
-
-## PROBLEM  (0:12 - 0:32)
-**Visual:** the crowded web-dev track; a rejected application; a locked-down facility machine.
-**VO:** "Every coding program he can reach teaches the same crowded web track. The work that
-actually pays sits close to the metal, and that work needs hardware. Hardware does not clear a
-prison. So the door stays shut, and his record cuts his callbacks in half."
-
-## POSSIBILITY  (0:32 - 0:44)
-**Visual:** a merged pull request; a green check; a name on a commit.
-**VO:** "But a merged open-source contribution is public, permanent, and it never asks where you
-have been. The review judges the patch, not the person."
-
-## PRODUCT  (0:44 - 0:58)
-**Visual:** the thunk front door; the ladder, M0 through M7.
-**VO:** "So we built thunk. A free course that teaches computing from ones and zeros up through
-Rust. All of it is simulated, so it runs on a locked-down machine with no hardware and nothing
-leaving the room. It ends by walking you into your first real patch."
-
-## PROOF  (0:58 - 1:18)
-**Visual:** flip the Bit Lab switches; drag the SPI scope and watch it latch; POWER the bench, the
-boot trace streams, DOOM plays on the virtual panel with the bus trace live underneath; the
-launchpad.
-**VO:** "You do not read about the machine. You operate it. Flip the bits. Watch the bus. Then the
-payoff runs right in your browser. DOOM, drawn on a simulated panel, every pixel crossing a bus you
-built. And the course hands you a real issue, a template, and a checklist, pointed at your first
-contribution."
-
-## PAYOFF  (1:18 - 1:30)
-**Visual:** the tracker steps to MERGED; back to the wordmark and the address.
-**VO:** "Marcus walks out with a patch merged under his name. Not a certificate that says he showed
-up. A history. thunk dot goolz dot org."
+~170 spoken words. Read at a normal, unhurried pace with the product on screen, that lands at ~1:30.
 
 ---
 
-## Alt payoff lines (pick one; all in Penn's register)
-- "Not a certificate that says he showed up. A history."  *(current)*
+## THE STORY  (0:00 - 0:18)
+**On screen:** three developer profiles side by side; two have personal projects, one has a merged
+pull request in a real repo.
+**VO:** "Three people apply for the same Rust job. All three can write Rust. All three have
+projects on their GitHub. One of them also has a merged open-source contribution. A real change,
+in software other people use, reviewed and accepted by strangers. That is the one who gets the
+call. A personal project says trust me. A merged contribution is proof."
+
+## WHO IT'S FOR  (0:18 - 0:30)
+**On screen:** the thunk front door.
+**VO:** "thunk is for people who want to be that third developer. It is built for folks coming home
+from prison, and it works for anyone starting from zero."
+
+## THE COURSE  (0:30 - 0:50)
+**On screen:** the ladder; a lesson; a widget being used; a quick glance at the bench.
+**VO:** "It teaches programming from the ground up, through Rust. You do not just read and answer
+questions. You work the machine yourself, right in the browser, so it sticks. But that is not the
+point. Where it ends is the point."
+
+## THE ENDING  (0:50 - 1:14)
+**On screen:** the launchpad; the tracker stepping to MERGED.
+**VO:** "thunk walks you into your first real open-source contribution. It helps you find an issue
+you can actually fix, gives you a template and a checklist, and tracks it from the day you pick it
+up to the day it gets merged. Not a certificate that says you showed up. A contribution with your
+name on it, out in the open, that anyone can check."
+
+## PAYOFF  (1:14 - 1:30)
+**On screen:** back to the three profiles, the one with the contribution; the wordmark and the
+address.
+**VO:** "That is the difference between hoping someone believes your resume and handing them proof.
+Start at zero, finish with a contribution. thunk dot goolz dot org."
+
+---
+
+## Alt payoff lines (pick one)
+- "Start at zero, finish with a contribution."  *(current)*
 - "You do not graduate with a promise. You graduate with a history."  *(Penn's own value-prop line)*
-- "His name is on the code, in software people use, and it is still there."
+- "The kind of proof a background check cannot argue with."
 
-## The "movie trailer" compression (if you want a tighter 4-beat cut for a teaser)
-- **Who?** Marcus, coming home, wants a skill nobody can take back.
-- **What's wrong?** The work that pays needs hardware, and hardware does not clear a prison.
-- **What changed?** thunk: the whole machine, simulated, from ones and zeros up through Rust.
-- **Why does it matter?** He walks out with a patch merged under his name, not a certificate.
-
-## Notes for the rewrite pass
-- If a real learner will front the video instead of a composite, swap "Marcus" for their words and
-  drop the third-person framing; the beats hold either way.
-- PROOF is the longest beat on purpose; it is where the product does the talking. Trim the VO here
-  first if the cut runs long, and let the DOOM-on-the-bus shot carry it in silence.
-- Keep the address spoken slowly at the very end, over the wordmark, then cut to black.
+## Notes
+- Hardware and DOOM are deliberately one glance in THE COURSE, not the centerpiece. If the cut has
+  room and you want a beat of the bench running, add it there, but do not let it pull focus from the
+  contribution.
+- THE STORY is the whole pitch. If you only keep 20 seconds, keep that.
+- Read the address slowly at the very end, over the wordmark, then cut.
