@@ -91,6 +91,49 @@ function seedScript() {
 	}
 }
 
+// ---- Cinematic transitions --------------------------------------------------
+// A black veil injected on EVERY page load (opacity 1 by default), so a fresh
+// navigation never flashes its first paint - the new scene starts black and the
+// driver fades it in. Between scenes the driver fades the old page to black
+// first, so every cut is a clean dip to black, not a hard jump.
+function veilInit() {
+	const add = () => {
+		if (document.getElementById('__veil')) return;
+		const o = document.createElement('div');
+		o.id = '__veil';
+		o.style.cssText =
+			'position:fixed;inset:0;z-index:2147483647;background:#05070b;opacity:1;pointer-events:none';
+		(document.body || document.documentElement).appendChild(o);
+	};
+	if (document.body) add();
+	else document.addEventListener('DOMContentLoaded', add);
+}
+async function reveal(page, ms = 360) {
+	await page.evaluate((ms) => {
+		const o = document.getElementById('__veil');
+		if (o) {
+			o.style.transition = `opacity ${ms}ms cubic-bezier(0.22,1,0.36,1)`;
+			requestAnimationFrame(() => (o.style.opacity = '0'));
+		}
+	}, ms);
+	await sleep(ms + 30);
+}
+async function veil(page, ms = 260) {
+	await page.evaluate((ms) => {
+		let o = document.getElementById('__veil');
+		if (!o) {
+			o = document.createElement('div');
+			o.id = '__veil';
+			o.style.cssText =
+				'position:fixed;inset:0;z-index:2147483647;background:#05070b;opacity:0;pointer-events:none';
+			document.body.appendChild(o);
+		}
+		o.style.transition = `opacity ${ms}ms cubic-bezier(0.22,1,0.36,1)`;
+		requestAnimationFrame(() => (o.style.opacity = '1'));
+	}, ms);
+	await sleep(ms + 30);
+}
+
 async function waitBench(page, fn, { timeout = 30000, poll = 100 } = {}) {
 	const deadline = nowMs() + timeout;
 	for (;;) {
@@ -126,6 +169,7 @@ async function run() {
 		recordVideo: { dir: RAW, size: { width: 1920, height: 1080 } }
 	});
 	await context.addInitScript(seedScript);
+	await context.addInitScript(veilInit);
 	const page = await context.newPage();
 	const result = { gradePassed: false, litNonBlack: -1, doomLoaded: false, cheat: false, merged: false, fallbacks: [] };
 
@@ -135,26 +179,31 @@ async function run() {
 		// ===== 1. THE STORY - three applicants, one Rust job =====
 		mark('STORY: three developers');
 		await page.goto(`${CARD}?p=story#story`, { waitUntil: 'load' });
-		await T(15500); // the reveal lands ~5s in; hold on "proof"
+		await reveal(page, 600); // fade up from black into the card
+		await T(15000); // the reveal lands ~5s in; hold on "proof"
 
 		// ===== 2. WHO IT'S FOR - the front door, boot ritual =====
 		mark('WHO: front door + boot ritual');
+		await veil(page);
 		await page.goto(`${URL}/`, { waitUntil: 'domcontentloaded' });
 		await page.evaluate(() => { try { sessionStorage.removeItem('thunk.booted'); } catch {} });
 		await page.goto(`${URL}/`, { waitUntil: 'domcontentloaded' }); // fresh load -> boot ritual fires
 		await page.locator('.hero h1').first().waitFor({ state: 'visible' }).catch(() => {});
-		await T(4500);
+		await reveal(page); // fade from black onto the warming boot ritual
+		await T(4200);
 		await page.locator('.def-text, .readout').first().scrollIntoViewIfNeeded().catch(() => {});
-		await T(6500);
+		await T(6300);
 
 		// ===== 3. THE COURSE - work the machine yourself =====
 		// 3a. the ladder + into a lesson
 		mark('COURSE: the ladder');
 		await page.locator('.rack, .ladder').first().scrollIntoViewIfNeeded().catch(() => {});
 		await T(2500);
+		await veil(page);
 		await page.goto(`${URL}/m/m5-doom/02-frames-to-the-panel/`, { waitUntil: 'domcontentloaded' });
 		await page.locator('.reading h1').first().waitFor({ state: 'visible' }).catch(() => {});
-		await T(2500);
+		await reveal(page);
+		await T(2400);
 
 		// 3b. DRIVE A WIDGET - the Frame Budget: sweep the clock across the deadline
 		mark('COURSE: drive the Frame Budget widget');
@@ -184,9 +233,11 @@ async function run() {
 
 		// 3d. grade a check -> PASS + XP toast (on "The Machine")
 		mark('COURSE: grade a check, XP toast');
+		await veil(page);
 		await page.goto(`${URL}/m/m0-power-on/01-the-machine/`, { waitUntil: 'domcontentloaded' });
 		const card = page.locator('article.check', { has: page.locator('.cid', { hasText: 'm0-01-memory' }) }).first();
 		await card.scrollIntoViewIfNeeded().catch(() => {});
+		await reveal(page);
 		await T(1200);
 		await card.locator('label.opt').nth(2).click().catch(() => {});
 		await T(700);
@@ -197,8 +248,10 @@ async function run() {
 
 		// 3e. the bench: POWER, the finale over the simulated bus, SCANLINES
 		mark('COURSE: the WebAssembly bench powers up');
+		await veil(page);
 		await page.goto(`${URL}/bench/`, { waitUntil: 'domcontentloaded' });
 		if (!(await benchReady(page))) result.fallbacks.push('bench: __bench never ready');
+		await reveal(page);
 		await T(800);
 		await page.locator('button.tbtn.primary', { hasText: 'POWER' }).click().catch(async () => {
 			await page.evaluate(() => window.__bench.power());
@@ -247,9 +300,11 @@ async function run() {
 
 		// ===== 4. THE ENDING - the first-patch tracker reaches MERGED =====
 		mark('ENDING: the launchpad');
+		await veil(page);
 		await page.goto(`${URL}/first-patch/`, { waitUntil: 'domcontentloaded' });
-		await page.locator('.stepper, h1').first().scrollIntoViewIfNeeded().catch(() => {});
-		await T(3200);
+		await page.locator('.stepper').first().scrollIntoViewIfNeeded().catch(() => {});
+		await reveal(page);
+		await T(3000);
 		mark('ENDING: tracker steps to MERGED');
 		// Walk chose -> merged (5 advances), pausing so each stage reads.
 		for (let i = 0; i < 5; i++) {
@@ -265,15 +320,20 @@ async function run() {
 
 		// ===== 5. PAYOFF - a Konami degauss flourish, then the wordmark =====
 		mark('PAYOFF: Konami degauss');
+		await veil(page);
 		await page.goto(`${URL}/`, { waitUntil: 'domcontentloaded' });
 		await page.locator('.hero h1').first().waitFor({ state: 'visible' }).catch(() => {});
+		await reveal(page);
 		await T(1400);
 		for (const k of KONAMI) { await page.keyboard.press(k); await sleep(70); }
-		await T(1600); // the shudder + sweep
+		await T(1700); // the shudder + sweep
 
 		mark('PAYOFF: wordmark + address');
+		await veil(page, 320);
 		await page.goto(`${CARD}?p=payoff#payoff`, { waitUntil: 'load' });
-		await T(6800); // wordmark up ~2s, address ~3.3s, blackout ~5.2s
+		await reveal(page, 500);
+		await T(6600); // wordmark up ~2s, address ~3.3s, blackout ~5.2s
+		await sleep(700); // hold on black
 
 		mark('END');
 	} catch (err) {
@@ -292,10 +352,17 @@ async function run() {
 
 		if (vpath) {
 			console.log(`\nraw webm -> ${vpath}\ntranscoding to H.264...`);
+			// Probe the real duration so the tail fade lands exactly on the end.
+			const probe = spawnSync('ffprobe', ['-v', 'error', '-show_entries', 'format=duration', '-of', 'default=nk=1:nw=1', vpath], { encoding: 'utf8' });
+			const dur = parseFloat((probe.stdout || '').trim()) || total / 1000;
+			const foStart = Math.max(0, dur - 0.9).toFixed(2);
+			const vf = `fps=30,scale=1920:1080:flags=lanczos,format=yuv420p,fade=t=in:st=0:d=0.6,fade=t=out:st=${foStart}:d=0.9`;
 			const ff = spawnSync('ffmpeg', [
 				'-y', '-i', vpath,
-				'-vf', 'fps=30,scale=1920:1080:flags=lanczos,format=yuv420p',
-				'-c:v', 'libx264', '-preset', 'slow', '-crf', '18', '-movflags', '+faststart', '-an',
+				'-vf', vf,
+				'-c:v', 'libx264', '-preset', 'veryslow', '-crf', '16',
+				'-color_primaries', 'bt709', '-color_trc', 'bt709', '-colorspace', 'bt709',
+				'-movflags', '+faststart', '-an',
 				MP4
 			], { stdio: 'inherit' });
 			if (ff.status === 0) console.log(`\nDONE -> ${MP4}`);
