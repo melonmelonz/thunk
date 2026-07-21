@@ -8,6 +8,7 @@
 	import { onNavigate } from '$app/navigation';
 	import XpToast from '$lib/components/XpToast.svelte';
 	import { xp } from '$lib/xp.svelte';
+	import { SequenceMatcher } from '$lib/konami';
 	import type { Component } from 'svelte';
 
 	let { children } = $props();
@@ -53,6 +54,65 @@
 	onMount(() => {
 		window.addEventListener('keydown', onPaletteKey);
 		return () => window.removeEventListener('keydown', onPaletteKey);
+	});
+
+	// The Konami code, site-wide. On the full run the whole face degausses - the
+	// overlay + its wobble class are dynamic-imported on the FIRST fire, so the
+	// easter egg weighs nothing on the first-route JS budget (same trick as the
+	// palette). Ignored while typing in a field or under a modifier.
+	const konami = new SequenceMatcher();
+	let degaussing = $state(false);
+	let Degauss = $state<Component<{ ondone: () => void }> | null>(null);
+
+	async function fireDegauss() {
+		if (degaussing) return; // one sweep at a time
+		if (!Degauss) {
+			try {
+				Degauss = (await import('$lib/components/Degauss.svelte')).default;
+			} catch {
+				return; // chunk failed: no harm, no degauss
+			}
+		}
+		degaussing = true;
+	}
+
+	function onKonami(e: KeyboardEvent) {
+		if (e.metaKey || e.ctrlKey || e.altKey) return;
+		const t = e.target as HTMLElement | null;
+		const tag = t?.tagName;
+		if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || t?.isContentEditable) return;
+		if (konami.push(e.key)) void fireDegauss();
+	}
+
+	onMount(() => {
+		window.addEventListener('keydown', onKonami);
+		return () => window.removeEventListener('keydown', onKonami);
+	});
+
+	// A word to anyone who opens the console: recruiters and the curious both do.
+	// Phosphor on the instrument's own black, once per session. The last line
+	// leaves the door to the two easter eggs ajar without cluttering the UI.
+	onMount(() => {
+		try {
+			if (sessionStorage.getItem('thunk.hello')) return;
+			sessionStorage.setItem('thunk.hello', '1');
+		} catch {
+			// no sessionStorage: fall through, greet once per load instead
+		}
+		const bg = 'background:#0a0e13;color:#3df0a8';
+		const dim = 'background:#0a0e13;color:#7c8a9c';
+		const soft = 'background:#0a0e13;color:#c9d4e0';
+		console.log(
+			'%c thunk %c  a systems course, from 1s and 0s up.\n' +
+				'%c A thunk is code set aside to run later, not thrown away.\n' +
+				'%c Built offline, no telemetry, no accounts. Source: github.com/melonmelonz\n' +
+				'%c There are two secrets. One is the old cheat. One is the old code:  UP UP DOWN DOWN LEFT RIGHT LEFT RIGHT B A',
+			`${bg};font-weight:700;padding:2px 0`,
+			soft,
+			dim,
+			dim,
+			`background:#0a0e13;color:#64d8ff`
+		);
 	});
 
 	// View transitions: pure progressive enhancement. Browsers without
@@ -105,6 +165,10 @@
 
 {#if paletteOpen && Palette}
 	<Palette onclose={() => (paletteOpen = false)} />
+{/if}
+
+{#if degaussing && Degauss}
+	<Degauss ondone={() => (degaussing = false)} />
 {/if}
 
 <XpToast />

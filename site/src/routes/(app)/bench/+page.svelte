@@ -2,6 +2,7 @@
 	import { onMount } from 'svelte';
 	import { KIND, loadSim, type Row, type Sim } from '$lib/bench/sim';
 	import { loadDoom, toDoomKey, formatWadProgress, type Doom, type Source } from '$lib/bench/doom';
+	import { CheatBuffer } from '$lib/bench/cheats';
 	import { parseWindow, formatWindowLine } from '$lib/bench/window';
 	import { serializeTrace } from '$lib/bench/trace';
 	import Meta from '$lib/components/Meta.svelte';
@@ -226,6 +227,20 @@
 		}
 	}
 
+	// ---- Cheat codes (pure homage) -------------------------------------------
+	// The id* codes, watched on the panel while DOOM has the keyboard. The wink is
+	// a HUD flash with the real 1993 message; the keystrokes still reach the engine
+	// untouched, so typing a cheat also walks the marine, exactly as it did then.
+	const cheats = new CheatBuffer();
+	let cheatMessage = $state('');
+	let cheatTimer = 0;
+
+	function flashCheat(message: string) {
+		cheatMessage = message;
+		clearTimeout(cheatTimer);
+		cheatTimer = window.setTimeout(() => (cheatMessage = ''), 2600);
+	}
+
 	// ---- Keyboard capture (DOOM only, while the panel is focused) ------------
 	function onPanelKeyDown(e: KeyboardEvent) {
 		if (source !== 'doom' || !doom || !powered) return;
@@ -234,6 +249,8 @@
 			e.preventDefault();
 			return;
 		}
+		const cheat = cheats.push(e.key);
+		if (cheat) flashCheat(cheat.message);
 		const k = toDoomKey(e);
 		if (k) {
 			doom.keyDown(k);
@@ -567,6 +584,11 @@
 					<!-- CRT treatment: scanlines + vignette on the lit content only,
 					     toggleable. Cheap CSS, no second render path. -->
 					<div class="crt" class:scanlines class:lit aria-hidden="true"></div>
+					<!-- Cheat HUD: a DOOM status-bar wink across the foot of the glass.
+					     Pure flash - the sim never sees it. Announced politely for SR. -->
+					{#if cheatMessage}
+						<div class="cheat mono" role="status" aria-live="polite">{cheatMessage}</div>
+					{/if}
 					{#if !lit}
 						<div class="nosignal" aria-hidden="true">
 							<span class="ns-bars">
@@ -935,6 +957,40 @@
 			radial-gradient(130% 100% at 50% 50%, transparent 60%, #05070b 100%);
 		opacity: 0.85;
 		mix-blend-mode: multiply;
+	}
+
+	/* Cheat HUD: a phosphor status-bar band pinned across the foot of the glass,
+	   the way DOOM printed its cheat acknowledgements. Fades in, holds, fades out
+	   (the message clears itself after a beat). */
+	.cheat {
+		position: absolute;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		padding: 0.45rem 0.6rem;
+		text-align: center;
+		font-size: 0.5625rem;
+		letter-spacing: 0.16em;
+		color: var(--phosphor);
+		text-shadow: 0 0 8px var(--phosphor);
+		background: linear-gradient(to top, rgba(5, 7, 11, 0.92), transparent);
+		pointer-events: none;
+		animation: cheat-in 220ms var(--ease-out) both;
+	}
+	@keyframes cheat-in {
+		from {
+			opacity: 0;
+			transform: translateY(6px);
+		}
+		to {
+			opacity: 1;
+			transform: none;
+		}
+	}
+	@media (prefers-reduced-motion: reduce) {
+		.cheat {
+			animation: none;
+		}
 	}
 
 	.nosignal {

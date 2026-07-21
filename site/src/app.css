@@ -250,6 +250,41 @@ main {
 	}
 }
 
+/* ---- Degauss (the Konami payoff) ------------------------------------- */
+
+/* Paired with Degauss.svelte: while the overlay lives, the whole face gives a
+   brief magnetic shudder - a hue wash, a contrast pulse, and a tiny geometric
+   wobble - then snaps back clean. Global because it rides on <body>, the ancestor
+   of the fixed shell, so the shudder carries the whole instrument. Skipped whole
+   under reduced motion (the overlay handles that path). */
+@media (prefers-reduced-motion: no-preference) {
+	body.degaussing {
+		animation: degauss-shudder 900ms var(--ease-out) both;
+	}
+}
+@keyframes degauss-shudder {
+	0% {
+		filter: none;
+		transform: none;
+	}
+	12% {
+		filter: hue-rotate(-40deg) contrast(1.25) brightness(1.15) saturate(1.4);
+		transform: scale(1.006) translate(1px, -1px) skewX(0.4deg);
+	}
+	30% {
+		filter: hue-rotate(30deg) contrast(0.9) brightness(1.05);
+		transform: scale(0.997) translate(-1px, 1px) skewX(-0.3deg);
+	}
+	52% {
+		filter: hue-rotate(-12deg) contrast(1.08) brightness(1.02);
+		transform: translate(1px, 0) skewX(0.15deg);
+	}
+	100% {
+		filter: none;
+		transform: none;
+	}
+}
+
 /* ---- Print: lessons as clean paper ----------------------------------- */
 
 /* A lesson should print like a document, not a screenshot of an app: the shell,

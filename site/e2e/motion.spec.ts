@@ -43,3 +43,28 @@ test('boot ritual runs and a client-side transition lands clean (motion on)', as
 	await expect(article.locator('.verdict.pass')).toHaveText('PASS');
 	await expect(page.getByRole('status').getByText('POWER ON')).toBeVisible();
 });
+
+test('the Konami degauss shudders the face under motion', async ({ page }) => {
+	await page.goto('/');
+	await page.waitForLoadState('networkidle');
+
+	const konami = [
+		'ArrowUp',
+		'ArrowUp',
+		'ArrowDown',
+		'ArrowDown',
+		'ArrowLeft',
+		'ArrowRight',
+		'ArrowLeft',
+		'ArrowRight',
+		'b',
+		'a'
+	];
+	for (const k of konami) await page.keyboard.press(k);
+
+	// Under motion (this project only), the payoff adds the shudder class to
+	// <body> for the length of the sweep, then removes it.
+	await expect(page.locator('body.degaussing')).toHaveCount(1);
+	await expect(page.locator('.degauss')).toBeVisible();
+	await expect(page.locator('body.degaussing')).toHaveCount(0, { timeout: 3000 });
+});
