@@ -154,8 +154,6 @@ async function sweepRange(page, locator, presses, key = 'ArrowRight', step = 70)
 	}
 }
 
-const KONAMI = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
-
 async function run() {
 	mkdirSync(RAW, { recursive: true });
 	// A clean raw dir each run so we pick the right webm.
@@ -318,22 +316,16 @@ async function run() {
 		await page.locator('.merged-line').first().scrollIntoViewIfNeeded().catch(() => {});
 		await T(3200);
 
-		// ===== 5. PAYOFF - a Konami degauss flourish, then the wordmark =====
-		mark('PAYOFF: Konami degauss');
-		await veil(page);
-		await page.goto(`${URL}/`, { waitUntil: 'domcontentloaded' });
-		await page.locator('.hero h1').first().waitFor({ state: 'visible' }).catch(() => {});
-		await reveal(page);
-		await T(1400);
-		for (const k of KONAMI) { await page.keyboard.press(k); await sleep(70); }
-		await T(1700); // the shudder + sweep
-
+		// ===== 5. PAYOFF - the wordmark, the address, and a CRT power-off flourish =====
+		// The only flicker in the film, saved for the very end: the payoff settles,
+		// then flickers and collapses to a phosphor line into black (baked into the
+		// card). No mid-film degauss.
 		mark('PAYOFF: wordmark + address');
 		await veil(page, 320);
 		await page.goto(`${CARD}?p=payoff#payoff`, { waitUntil: 'load' });
-		await reveal(page, 500);
-		await T(6600); // wordmark up ~2s, address ~3.3s, blackout ~5.2s
-		await sleep(700); // hold on black
+		await reveal(page, 600);
+		await T(7600); // wordmark ~2s, address ~3.3s, the CRT power-off ~4.4-5.4s
+		await sleep(800); // hold on black
 
 		mark('END');
 	} catch (err) {

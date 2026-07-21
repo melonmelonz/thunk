@@ -3,10 +3,10 @@
 A teleprompter for the generated film. The video does the whole run on its own -
 the three-developers story, the front door, a widget you drive, the command
 palette, a graded check with the XP toast, the WebAssembly bench, DOOM on the
-simulated bus and its cheat-code wink, the Konami degauss, and the first-patch
-tracker reaching MERGED - so all you do is talk over it.
+simulated bus and its cheat-code wink, and the first-patch tracker reaching
+MERGED, closing on a CRT power-off flourish - so all you do is talk over it.
 
-- **Video:** `demo/out/thunk-narration.mp4` (1920x1080, 30fps, ~1:41, silent, dip-to-black scene cuts)
+- **Video:** `demo/out/thunk-narration.mp4` (1920x1080, 30fps, ~1:37, silent, dip-to-black scene cuts)
 - **Script source:** [`../docs/DEMO-SCRIPT.md`](../docs/DEMO-SCRIPT.md) (the ~170-word VO, unchanged)
 - **Beat timings:** `demo/out/markers.json` (regenerated every render)
 
@@ -20,7 +20,7 @@ Pick whichever is easier:
 2. **In an editor (cleaner).** Drop the MP4 on the timeline, record or import the
    VO on an audio track, and nudge it to the timestamps below. Export.
 
-The video runs a little longer than the 1:30 script (~1:41) because the course
+The video runs a little longer than the 1:30 script (~1:37) because the course
 section shows the bench, DOOM, and the cheat in full and each scene change dips
 through black. That extra footage is the "let a beat of the bench run" the script
 note invites - let it breathe; you do not have to fill every second with words.
@@ -40,8 +40,8 @@ unhurried pace.
 | **0:50** | The bench powers up, the finale runs over the simulated bus, then DOOM boots on the same panel (a cheat-code wink flashes) | *(let it run - or ad-lib one line: "It goes all the way down to a real driver, a real bus, and yes, DOOM.")* "But that is not the point. Where it ends is the point." |
 | **1:13** | The launchpad: the First Patch tracker | "thunk walks you into your first real open-source contribution. It helps you find an issue you can actually fix, gives you a template and a checklist," |
 | **1:17** | The tracker steps CHOSE -> FORKED -> ... -> MERGED | "and tracks it from the day you pick it up to the day it gets merged. Not a certificate that says you showed up. A contribution with your name on it, out in the open, that anyone can check." |
-| **1:28** | A quick degauss flourish, then the wordmark and the address, fading to black | "That is the difference between hoping someone believes your resume and handing them proof. Start at zero, finish with a contribution." |
-| **~1:35** | On the address, held | "thunk dot goolz dot org." *(read slowly, then let it cut to black)* |
+| **1:28** | The wordmark and the address rise | "That is the difference between hoping someone believes your resume and handing them proof. Start at zero, finish with a contribution." |
+| **~1:32** | On the address, held - then the whole frame flickers and collapses to a phosphor line, a CRT powering off, into black | "thunk dot goolz dot org." *(read slowly; the power-off lands as you finish the address)* |
 
 ## Delivery notes (from the script)
 
