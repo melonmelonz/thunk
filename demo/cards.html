@@ -1,0 +1,452 @@
+<!doctype html>
+<!--
+  The bookend cards for the narration film: the "three developers" story that
+  opens the pitch and the wordmark payoff that closes it. Not part of the product
+  - a demo artifact the film driver renders and records. One file, two modes,
+  chosen by the URL hash (#story / #payoff); the CSS animations autoplay on load,
+  so the driver only has to navigate and wait. On-brand with the site: one
+  phosphor, hairlines not shadows, tabular mono, black that reads as an
+  instrument face. Fonts are a system mono stack (no network on the card).
+-->
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>thunk - film cards</title>
+		<style>
+			:root {
+				--bg: #0a0e13;
+				--s1: #0e1319;
+				--s2: #111722;
+				--s3: #151c25;
+				--text: #c9d4e0;
+				--muted: #7c8a9c;
+				--faint: #757f90;
+				--phosphor: #3df0a8;
+				--phosphor-dim: #3df0a833;
+				--cyan: #64d8ff;
+				--line: #1c2530;
+				--mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
+				--ease: cubic-bezier(0.22, 1, 0.36, 1);
+			}
+			* {
+				margin: 0;
+				padding: 0;
+				box-sizing: border-box;
+			}
+			html,
+			body {
+				width: 100%;
+				height: 100%;
+				background: var(--bg);
+				color: var(--text);
+				font-family: var(--mono);
+				overflow: hidden;
+			}
+			body::before {
+				content: '';
+				position: fixed;
+				inset: 0;
+				pointer-events: none;
+				background: radial-gradient(120% 80% at 50% -8%, #0f1621 0%, transparent 60%);
+				opacity: 0.6;
+			}
+			.stage {
+				position: fixed;
+				inset: 0;
+				display: flex;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 3vh;
+				padding: 6vh 6vw;
+			}
+			.eyebrow {
+				font-size: 1.05vw;
+				letter-spacing: 0.42em;
+				text-transform: uppercase;
+				color: var(--faint);
+				opacity: 0;
+				animation: fade-up 700ms var(--ease) 200ms both;
+			}
+			.eyebrow b {
+				color: var(--muted);
+				font-weight: 400;
+			}
+
+			/* ---- The three profiles ---------------------------------------- */
+			.devs {
+				display: grid;
+				grid-template-columns: repeat(3, minmax(0, 22vw));
+				gap: 2.2vw;
+			}
+			.dev {
+				position: relative;
+				border: 1px solid var(--line);
+				border-radius: 6px;
+				background: var(--s1);
+				padding: 2.2vh 1.6vw 2.4vh;
+				display: flex;
+				flex-direction: column;
+				gap: 1.6vh;
+				opacity: 0;
+				transform: translateY(14px);
+				animation: fade-up 760ms var(--ease) both;
+			}
+			.dev.d1 {
+				animation-delay: 500ms;
+			}
+			.dev.d2 {
+				animation-delay: 650ms;
+			}
+			.dev.d3 {
+				animation-delay: 800ms;
+			}
+			.dhead {
+				display: flex;
+				align-items: center;
+				gap: 0.9vw;
+			}
+			.avatar {
+				width: 2.6vw;
+				height: 2.6vw;
+				min-width: 34px;
+				min-height: 34px;
+				border-radius: 50%;
+				border: 1px solid var(--s3);
+				background:
+					radial-gradient(circle at 50% 38%, #223040, #0c1119 72%);
+				display: grid;
+				place-items: center;
+				color: var(--faint);
+				font-size: 1.1vw;
+			}
+			.who {
+				display: flex;
+				flex-direction: column;
+				gap: 0.3vh;
+			}
+			.tag {
+				font-size: 0.78vw;
+				letter-spacing: 0.24em;
+				color: var(--faint);
+			}
+			.name {
+				font-size: 1.15vw;
+				color: var(--text);
+				letter-spacing: 0.02em;
+			}
+			.rows {
+				display: flex;
+				flex-direction: column;
+				gap: 0.9vh;
+				margin-top: 0.4vh;
+			}
+			.row {
+				display: flex;
+				align-items: center;
+				gap: 0.7vw;
+				font-size: 0.92vw;
+				color: var(--muted);
+				opacity: 0;
+				animation: fade-in 500ms var(--ease) both;
+			}
+			.dev .row:nth-child(1) {
+				animation-delay: 1500ms;
+			}
+			.dev .row:nth-child(2) {
+				animation-delay: 1750ms;
+			}
+			.dev .row:nth-child(3) {
+				animation-delay: 2000ms;
+			}
+			.mark {
+				width: 1.15vw;
+				height: 1.15vw;
+				min-width: 15px;
+				min-height: 15px;
+				border: 1px solid var(--s3);
+				border-radius: 3px;
+				display: grid;
+				place-items: center;
+				font-size: 0.8vw;
+				color: var(--faint);
+				flex: none;
+			}
+			.mark.yes {
+				border-color: color-mix(in srgb, var(--phosphor) 40%, var(--line));
+				color: var(--phosphor);
+			}
+			.mark.no {
+				color: var(--faint);
+			}
+			/* The load-bearing row: only DEV 03 has the merged contribution. It lights
+			   after the rest, and the card it sits in earns the phosphor edge. */
+			.row.merged {
+				color: var(--faint);
+			}
+			.d3 .row.merged {
+				animation-delay: 3400ms;
+			}
+			.d3 .row.merged {
+				color: var(--text);
+			}
+			.d3 .row.merged .mark {
+				border-color: var(--phosphor);
+				background: color-mix(in srgb, var(--phosphor) 14%, transparent);
+				color: var(--phosphor);
+				box-shadow: 0 0 12px var(--phosphor-dim);
+			}
+			.dev.d3 {
+				animation:
+					fade-up 760ms var(--ease) 800ms both,
+					earn-edge 900ms var(--ease) 3400ms both;
+			}
+			.ribbon {
+				position: absolute;
+				top: -1.3vh;
+				right: 1vw;
+				font-size: 0.72vw;
+				letter-spacing: 0.2em;
+				color: var(--bg);
+				background: var(--phosphor);
+				border-radius: 3px;
+				padding: 0.5vh 0.7vw;
+				box-shadow: 0 0 16px var(--phosphor-dim);
+				opacity: 0;
+				transform: translateY(6px) scale(0.96);
+				animation: pop-in 640ms var(--ease) 3900ms both;
+			}
+			.caption {
+				font-size: 1vw;
+				letter-spacing: 0.12em;
+				color: var(--muted);
+				opacity: 0;
+				animation: fade-in 800ms var(--ease) 4400ms both;
+			}
+			.caption b {
+				color: var(--phosphor);
+				font-weight: 400;
+			}
+
+			/* ---- Payoff mode ------------------------------------------------ */
+			body.payoff .eyebrow,
+			body.payoff .caption {
+				display: none;
+			}
+			/* In payoff, the profiles snap to their end state (no reveal), then recede
+			   as the wordmark takes the frame. */
+			body.payoff .dev {
+				animation: fade-up 500ms var(--ease) both, recede 1100ms var(--ease) 1400ms both;
+				opacity: 1;
+				transform: none;
+			}
+			body.payoff .dev .row {
+				animation: none;
+				opacity: 1;
+			}
+			body.payoff .dev.d1,
+			body.payoff .dev.d2 {
+				opacity: 0.5;
+			}
+			body.payoff .dev.d3 {
+				border-color: color-mix(in srgb, var(--phosphor) 55%, var(--line));
+				box-shadow: 0 0 0 1px var(--phosphor-dim), 0 0 30px -8px var(--phosphor-dim);
+			}
+			body.payoff .d3 .row.merged {
+				color: var(--text);
+			}
+			body.payoff .d3 .row.merged .mark {
+				border-color: var(--phosphor);
+				background: color-mix(in srgb, var(--phosphor) 14%, transparent);
+				color: var(--phosphor);
+				box-shadow: 0 0 12px var(--phosphor-dim);
+			}
+			body.payoff .ribbon {
+				animation: fade-in 400ms var(--ease) both;
+				opacity: 1;
+				transform: none;
+			}
+
+			.finale {
+				position: fixed;
+				inset: 0;
+				display: none;
+				flex-direction: column;
+				align-items: center;
+				justify-content: center;
+				gap: 2.4vh;
+			}
+			body.payoff .finale {
+				display: flex;
+			}
+			.wordmark {
+				display: flex;
+				align-items: center;
+				gap: 1.1vw;
+				opacity: 0;
+				transform: translateY(10px);
+				animation: fade-up 900ms var(--ease) 2000ms both;
+			}
+			.tick {
+				width: 0.7vw;
+				height: 2.6vw;
+				min-width: 9px;
+				min-height: 34px;
+				background: var(--phosphor);
+				border-radius: 2px;
+				box-shadow: 0 0 18px var(--phosphor);
+				animation: tick-pulse 1.6s var(--ease) 2600ms infinite;
+			}
+			.word {
+				font-size: 5.5vw;
+				letter-spacing: -0.02em;
+				color: #fff;
+			}
+			.tagline {
+				font-size: 1.15vw;
+				letter-spacing: 0.06em;
+				color: var(--muted);
+				opacity: 0;
+				animation: fade-in 900ms var(--ease) 2700ms both;
+			}
+			.addr {
+				font-size: 1.35vw;
+				letter-spacing: 0.16em;
+				color: var(--phosphor);
+				text-shadow: 0 0 14px var(--phosphor-dim);
+				opacity: 0;
+				animation: fade-in 900ms var(--ease) 3300ms both;
+			}
+			.blackout {
+				position: fixed;
+				inset: 0;
+				background: #000;
+				opacity: 0;
+				pointer-events: none;
+			}
+			body.payoff .blackout {
+				animation: fade-in 700ms linear 5200ms both;
+			}
+
+			@keyframes fade-up {
+				from {
+					opacity: 0;
+					transform: translateY(14px);
+				}
+				to {
+					opacity: 1;
+					transform: none;
+				}
+			}
+			@keyframes fade-in {
+				from {
+					opacity: 0;
+				}
+				to {
+					opacity: 1;
+				}
+			}
+			@keyframes pop-in {
+				from {
+					opacity: 0;
+					transform: translateY(6px) scale(0.96);
+				}
+				to {
+					opacity: 1;
+					transform: none;
+				}
+			}
+			@keyframes earn-edge {
+				from {
+					border-color: var(--line);
+					box-shadow: none;
+				}
+				to {
+					border-color: color-mix(in srgb, var(--phosphor) 55%, var(--line));
+					box-shadow: 0 0 0 1px var(--phosphor-dim), 0 0 34px -10px var(--phosphor-dim);
+				}
+			}
+			@keyframes recede {
+				from {
+					opacity: 1;
+					transform: none;
+					filter: none;
+				}
+				to {
+					opacity: 0;
+					transform: translateY(10px) scale(0.97);
+					filter: blur(3px);
+				}
+			}
+			@keyframes tick-pulse {
+				0%,
+				100% {
+					opacity: 1;
+				}
+				50% {
+					opacity: 0.45;
+				}
+			}
+		</style>
+	</head>
+	<body>
+		<div class="stage">
+			<div class="eyebrow">Three applicants &middot; <b>one Rust job</b></div>
+			<div class="devs">
+				<div class="dev d1">
+					<div class="dhead">
+						<div class="avatar">A</div>
+						<div class="who"><span class="tag">DEV 01</span><span class="name">Applicant A</span></div>
+					</div>
+					<div class="rows">
+						<div class="row"><span class="mark yes">&check;</span> Writes Rust</div>
+						<div class="row"><span class="mark yes">&check;</span> Personal projects</div>
+						<div class="row merged"><span class="mark no">&mdash;</span> Merged contribution</div>
+					</div>
+				</div>
+				<div class="dev d2">
+					<div class="dhead">
+						<div class="avatar">B</div>
+						<div class="who"><span class="tag">DEV 02</span><span class="name">Applicant B</span></div>
+					</div>
+					<div class="rows">
+						<div class="row"><span class="mark yes">&check;</span> Writes Rust</div>
+						<div class="row"><span class="mark yes">&check;</span> Personal projects</div>
+						<div class="row merged"><span class="mark no">&mdash;</span> Merged contribution</div>
+					</div>
+				</div>
+				<div class="dev d3">
+					<span class="ribbon">GETS THE CALL</span>
+					<div class="dhead">
+						<div class="avatar">C</div>
+						<div class="who"><span class="tag">DEV 03</span><span class="name">Applicant C</span></div>
+					</div>
+					<div class="rows">
+						<div class="row"><span class="mark yes">&check;</span> Writes Rust</div>
+						<div class="row"><span class="mark yes">&check;</span> Personal projects</div>
+						<div class="row merged"><span class="mark yes">&check;</span> Merged contribution</div>
+					</div>
+				</div>
+			</div>
+			<div class="caption">A personal project says <i>trust me</i>. A merged contribution is <b>proof</b>.</div>
+		</div>
+
+		<div class="finale">
+			<div class="wordmark"><span class="tick"></span><span class="word">thunk</span></div>
+			<div class="tagline">Start at zero, finish with a contribution.</div>
+			<div class="addr">thunk.goolz.org</div>
+		</div>
+		<div class="blackout"></div>
+
+		<script>
+			// Mode from the hash: #payoff -> the closing card, otherwise the story.
+			// Re-applied on hashchange too, so switching modes without a reload works.
+			function applyMode() {
+				document.body.classList.toggle('payoff', location.hash.replace('#', '') === 'payoff');
+			}
+			applyMode();
+			addEventListener('hashchange', applyMode);
+		</script>
+	</body>
+</html>
