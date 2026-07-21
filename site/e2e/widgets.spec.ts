@@ -13,6 +13,7 @@ const VOLATILE_LESSON = '/m/m1-kernel/04-memory-and-mmap/';
 const OWNERSHIP_LESSON = '/m/m2-rust/03-borrowing/';
 const PIXEL_LESSON = '/m/m4-panel/02-color-in-sixteen-bits/';
 const DIFF_LESSON = '/m/m6-open-source/04-reading-a-diff/';
+const FRAME_LESSON = '/m/m5-doom/02-frames-to-the-panel/';
 
 test.describe('SPI Scope (m3-bus/02)', () => {
 	test('hydrates, redraws on a new byte, and latches MSB-first', async ({ page }) => {
@@ -182,5 +183,35 @@ test.describe('Diff Reader (m6-open-source/04)', () => {
 		await reveal.click();
 		await expect(reveal).toHaveAttribute('aria-expanded', 'true');
 		await expect(fig.locator('#diff-explain')).toContainText('out-of-range writes are refused');
+	});
+});
+
+test.describe('Frame Budget (m5-doom/02)', () => {
+	test('hydrates; the clock crosses the 30 fps deadline at ~37 MHz', async ({ page }) => {
+		await page.goto(FRAME_LESSON);
+		const fig = page.locator('figure.widget[data-widget="frame-budget"]');
+		await expect(fig.locator('.dial')).toBeVisible();
+		await expect(fig.locator('figcaption')).toHaveCount(0);
+
+		// Default 30 MHz misses: 30 MHz does not buy 30 fps (the lesson's aha).
+		const clock = fig.locator('input.range');
+		await expect(clock).toHaveValue('30');
+		await expect(fig.locator('.verdict')).toHaveText('MISSES 30 FPS');
+		await expect(fig.locator('.verdict')).not.toHaveClass(/\bon\b/);
+
+		// Windowed frame is the lesson figure, and it names the crossing clock.
+		await expect(fig.locator('.readout')).toContainText('153,600');
+		await expect(fig.locator('.readout')).toContainText('36.9 MHz');
+
+		// Push the clock past the crossing: the loop closes, the verdict lights.
+		await clock.fill('37');
+		await expect(fig.locator('.verdict')).toHaveText('MEETS 30 FPS');
+		await expect(fig.locator('.verdict')).toHaveClass(/\bon\b/);
+		await expect(fig.locator('.hval')).toContainText('30');
+
+		// Aiming every pixel needs five times the bytes and blows the budget again.
+		await fig.getByRole('radio', { name: /Aim every pixel/ }).click();
+		await expect(fig.locator('.readout')).toContainText('768,000');
+		await expect(fig.locator('.verdict')).toHaveText('MISSES 30 FPS');
 	});
 });

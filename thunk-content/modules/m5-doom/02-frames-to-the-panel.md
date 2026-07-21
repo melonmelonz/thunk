@@ -32,6 +32,12 @@ compute frames as fast as it likes; the panel shows them no faster than the wire
 It was not always so. On the machines of 1993, the engine's arithmetic was the slow stage; the
 bottleneck moves with the hardware.
 
+Turn the clock yourself. The panel is fixed at 153,600 bytes a frame; find the tick rate where the
+loop closes thirty times a second, and notice that thirty megahertz does not buy thirty frames.
+
+:::widget frame-budget
+:::
+
 ## Spending it well
 
 A budget this tight is why the M4 window trick matters. Suppose the driver named a position for

@@ -161,6 +161,12 @@ fn widget_caption(id: &str) -> Option<&'static str> {
              removed lines, hunk header, and line numbers, plus a reveal of what \
              the change does (open the course site to use it)."
         }
+        "frame-budget" => {
+            "An interactive frame budget: turn the bus clock and read whether the \
+             loop closes inside its thirtieth of a second, then swap the window \
+             trick for per-pixel aim and watch it blow (open the course site to \
+             use it)."
+        }
         _ => return None,
     })
 }

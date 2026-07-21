@@ -80,6 +80,7 @@ pub const WIDGET_IDS: &[&str] = &[
     "ownership-move",
     "pixel-forge",
     "diff-reader",
+    "frame-budget",
 ];
 
 /// Every `:::widget <id>` directive id referenced in a lesson body, in order of

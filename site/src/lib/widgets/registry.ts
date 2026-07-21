@@ -19,7 +19,8 @@ export const widgetRegistry: Record<string, () => Promise<WidgetModule>> = {
 	'volatile-memory': () => import('./VolatileMemory.svelte') as Promise<WidgetModule>,
 	'ownership-move': () => import('./OwnershipMove.svelte') as Promise<WidgetModule>,
 	'pixel-forge': () => import('./PixelForge.svelte') as Promise<WidgetModule>,
-	'diff-reader': () => import('./DiffReader.svelte') as Promise<WidgetModule>
+	'diff-reader': () => import('./DiffReader.svelte') as Promise<WidgetModule>,
+	'frame-budget': () => import('./FrameBudget.svelte') as Promise<WidgetModule>
 };
 
 /** The loader for a widget id, or undefined for an id the site cannot render. */
