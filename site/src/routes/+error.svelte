@@ -69,7 +69,7 @@
 	}
 	h1 {
 		font-size: clamp(2rem, 6vw, 3rem);
-		color: #fff;
+		color: var(--text-strong);
 		letter-spacing: -0.02em;
 	}
 	.msg {

@@ -3,8 +3,21 @@
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
-		<meta name="color-scheme" content="dark" />
+		<meta name="color-scheme" content="dark light" />
 		<meta name="theme-color" content="#0A0E13" />
+		<!-- Theme, before first paint: read the saved choice and stamp
+		     <html data-theme> so the light/dark palette is right on the very first
+		     frame (no flash). Defaults to dark, the instrument face. -->
+		<script>
+			(function () {
+				try {
+					var t = localStorage.getItem('thunk.theme');
+					document.documentElement.dataset.theme = t === 'light' ? 'light' : 'dark';
+				} catch (e) {
+					document.documentElement.dataset.theme = 'dark';
+				}
+			})();
+		</script>
 		<!-- Icon set (no manifest, no PWA scope): scalable SVG first, PNG
 		     fallbacks at 16/32 for older chrome, apple-touch at 180. -->
 		<link rel="icon" href="%sveltekit.assets%/favicon.svg" type="image/svg+xml" />

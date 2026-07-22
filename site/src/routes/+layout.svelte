@@ -8,14 +8,20 @@
 	import { onNavigate } from '$app/navigation';
 	import XpToast from '$lib/components/XpToast.svelte';
 	import { xp } from '$lib/xp.svelte';
+	import { theme } from '$lib/theme.svelte';
 	import { SequenceMatcher } from '$lib/konami';
 	import type { Component } from 'svelte';
 
 	let { children } = $props();
 
 	// Load the persisted XP record after hydration, so the first client render
-	// still matches the prerendered (empty) markup, then meters tick up.
-	onMount(() => xp.hydrate());
+	// still matches the prerendered (empty) markup, then meters tick up. Theme
+	// hydrates the same way - the boot script already stamped <html data-theme>
+	// before paint; this just syncs the reactive flag the toggle reads.
+	onMount(() => {
+		xp.hydrate();
+		theme.hydrate();
+	});
 
 	// The command palette. The component (and its filter code + the content it
 	// searches) is dynamic-imported on first open, so it never weighs on the

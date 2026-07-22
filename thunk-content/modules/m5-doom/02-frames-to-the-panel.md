@@ -32,6 +32,16 @@ compute frames as fast as it likes; the panel shows them no faster than the wire
 It was not always so. On the machines of 1993, the engine's arithmetic was the slow stage; the
 bottleneck moves with the hardware.
 
+Here is that whole budget in Rust, nothing variable about it. The panel's frame is a fixed size,
+and thirty frames a second is the target the motion sets:
+
+```rust
+const PIXELS: u32 = 320 * 240;                 // 76,800 on the panel
+const FRAME_BYTES: u32 = PIXELS * 2;           // 153,600 - two bytes a pixel
+const BITS_PER_FRAME: u32 = FRAME_BYTES * 8;   // 1,228,800
+const BITS_PER_SECOND: u32 = BITS_PER_FRAME * 30; // ~36.9 million at 30 fps
+```
+
 Turn the clock yourself. The panel is fixed at 153,600 bytes a frame; find the tick rate where the
 loop closes thirty times a second, and notice that thirty megahertz does not buy thirty frames.
 

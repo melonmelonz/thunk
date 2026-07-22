@@ -415,7 +415,7 @@
 	}
 	.clr:hover {
 		color: var(--muted);
-		border-color: #24303e;
+		border-color: var(--line-strong);
 	}
 	.clr:focus-visible {
 		outline: 1px solid var(--phosphor);

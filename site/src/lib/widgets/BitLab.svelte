@@ -161,7 +161,7 @@
 		background: color-mix(in srgb, var(--phosphor) 8%, var(--s2));
 	}
 	.sw:hover .track {
-		border-color: #24303e;
+		border-color: var(--line-strong);
 	}
 	.sw:focus-visible {
 		outline: none;
@@ -265,6 +265,6 @@
 	}
 	.clr:hover {
 		color: var(--muted);
-		border-color: #24303e;
+		border-color: var(--line-strong);
 	}
 </style>

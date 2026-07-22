@@ -27,6 +27,6 @@
 		color: var(--text);
 	}
 	.mark:hover .word {
-		color: #fff;
+		color: var(--text-strong);
 	}
 </style>

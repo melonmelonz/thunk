@@ -176,7 +176,7 @@
 	}
 	.lhead h1 {
 		font-size: clamp(1.9rem, 4.5vw, 2.6rem);
-		color: #fff;
+		color: var(--text-strong);
 		letter-spacing: -0.02em;
 		line-height: 1.08;
 	}
@@ -194,7 +194,7 @@
 	.prose :global(h2) {
 		font-size: 1.15rem;
 		font-weight: 500;
-		color: #fff;
+		color: var(--text-strong);
 		letter-spacing: -0.01em;
 		margin: 2.6rem 0 0.9rem;
 		padding-top: 1.6rem;
@@ -210,7 +210,7 @@
 		margin: 0 0 1.15rem;
 	}
 	.prose :global(strong) {
-		color: #fff;
+		color: var(--text-strong);
 		font-weight: 600;
 	}
 	.prose :global(a) {
@@ -375,7 +375,7 @@
 		margin-top: 0.5rem;
 		font-size: 1.35rem;
 		font-weight: 500;
-		color: #fff;
+		color: var(--text-strong);
 		letter-spacing: -0.01em;
 	}
 	.lc-sub {
@@ -433,7 +433,7 @@
 		min-width: 0;
 	}
 	.pg:hover {
-		border-color: #24303e;
+		border-color: var(--line-strong);
 	}
 	.pg.next {
 		text-align: right;

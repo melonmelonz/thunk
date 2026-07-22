@@ -276,7 +276,7 @@
 	}
 	.mini:hover {
 		color: var(--muted);
-		border-color: #24303e;
+		border-color: var(--line-strong);
 	}
 	.mini:focus-visible {
 		outline: 1px solid var(--phosphor);

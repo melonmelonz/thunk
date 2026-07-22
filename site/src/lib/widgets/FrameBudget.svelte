@@ -284,7 +284,7 @@
 			background 140ms var(--ease-out);
 	}
 	.opt:hover {
-		border-color: #24303e;
+		border-color: var(--line-strong);
 	}
 	.opt:focus-visible {
 		outline: 1px solid var(--phosphor);

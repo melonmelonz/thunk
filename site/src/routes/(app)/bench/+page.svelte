@@ -755,7 +755,7 @@
 	}
 	.head h1 {
 		font-size: clamp(1.9rem, 4.5vw, 2.6rem);
-		color: #fff;
+		color: var(--text-strong);
 		letter-spacing: -0.02em;
 	}
 	.lede {
@@ -814,7 +814,7 @@
 	}
 	.tbtn:hover:not(:disabled) {
 		color: var(--text);
-		border-color: #24303e;
+		border-color: var(--line-strong);
 	}
 	.tbtn:disabled {
 		opacity: 0.4;
@@ -1137,7 +1137,7 @@
 	}
 	.stool:hover:not(:disabled) {
 		color: var(--muted);
-		border-color: #24303e;
+		border-color: var(--line-strong);
 	}
 	.stool:disabled {
 		opacity: 0.4;
@@ -1219,7 +1219,7 @@
 		transition: border-color 160ms var(--ease-out);
 	}
 	.well.active {
-		border-color: #24303e;
+		border-color: var(--line-strong);
 	}
 	.well-head {
 		display: flex;

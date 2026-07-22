@@ -172,7 +172,7 @@
 	}
 	h1 {
 		font-size: clamp(1.8rem, 4.5vw, 2.5rem);
-		color: #fff;
+		color: var(--text-strong);
 		letter-spacing: -0.02em;
 		line-height: 1.1;
 	}

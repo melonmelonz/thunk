@@ -53,6 +53,11 @@
 	/* Hairlines: the grid shows only where it earns it. */
 	--line: #1c2530;
 	--line-soft: #161d27;
+	/* Strong tiers, formerly inlined: --text-strong is the pure-white emphasis on
+	   headings/values; --line-strong is the lifted border on hover/elevated edges.
+	   Both flip in light mode where white/near-black would otherwise break. */
+	--text-strong: #ffffff;
+	--line-strong: #24303e;
 
 	--font-mono: 'Commit Mono', ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
 	--font-body: 'Switzer', system-ui, -apple-system, 'Segoe UI', sans-serif;
@@ -69,6 +74,42 @@
 	-webkit-font-smoothing: antialiased;
 	-moz-osx-font-smoothing: grayscale;
 	text-rendering: optimizeLegibility;
+}
+
+/* ---- Light mode ------------------------------------------------------- */
+/* The same instrument read on paper: a cool near-white field, hairline grid,
+   near-black ink, and the phosphor pushed to a deeper green that holds contrast
+   on white. Simulated screens (the bench panel/bezel, DOOM) keep their own dark
+   glass - a lit display reads dark on any page. The surface ladder inverts:
+   surfaces sit at/above the page rather than glowing above black. */
+html[data-theme='light'] {
+	--bg: #eef1f5;
+	--s1: #ffffff;
+	--s2: #f6f8fa;
+	--s3: #e8edf2;
+
+	--text: #212a35;
+	--muted: #59636f;
+	--faint: #6a7480;
+
+	/* Phosphor, darkened so it carries text/edges on white; the dim wash and the
+	   glows key off it. Cyan and red darken to match. */
+	--phosphor: #0c9b6a;
+	--phosphor-dim: #0c9b6a2e;
+	--cyan: #0a7fb5;
+	--err: #cf3a3a;
+
+	--line: #d5dce3;
+	--line-soft: #e4e9ee;
+	--text-strong: #0c1420;
+	--line-strong: #c3ccd6;
+
+	color-scheme: light;
+}
+/* Keep the top-of-page radial glow from muddying the light field. */
+html[data-theme='light'] body::before {
+	opacity: 0.35;
+	background: radial-gradient(120% 80% at 50% -8%, #ffffff 0%, transparent 60%);
 }
 
 /* ---- Reset ----------------------------------------------------------- */

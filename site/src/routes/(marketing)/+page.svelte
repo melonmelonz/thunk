@@ -3,6 +3,7 @@
 	import ChannelStrip from '$lib/components/ChannelStrip.svelte';
 	import { xp } from '$lib/xp.svelte';
 	import Meta from '$lib/components/Meta.svelte';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 
 	// CONTINUE: resume the furthest in-progress lesson. Null (hidden) at the zero
 	// state; empty on the prerendered HTML, appears after the store hydrates.
@@ -28,6 +29,10 @@
 	description="An offline systems course. From true zero to DOOM on a panel, built and run on your own machine."
 	ogDescription="From true zero to DOOM on a panel. An offline systems course."
 />
+
+<div class="theme-corner">
+	<ThemeToggle />
+</div>
 
 <section class="hero">
 	<p class="eyebrow label">Offline systems course</p>
@@ -126,6 +131,14 @@
 </section>
 
 <style>
+	/* Floating theme switch, top-right - the front door has no status bar to
+	   carry it, so it sits quietly in the corner. */
+	.theme-corner {
+		position: fixed;
+		top: clamp(0.75rem, 2vw, 1.25rem);
+		right: clamp(0.75rem, 2vw, 1.25rem);
+		z-index: 50;
+	}
 	.hero {
 		padding-block: clamp(1rem, 4vw, 2.5rem) clamp(2.5rem, 6vw, 4rem);
 		max-width: 46rem;
@@ -140,7 +153,7 @@
 		font-size: clamp(3rem, 9vw, 4.75rem);
 		letter-spacing: -0.03em;
 		line-height: 0.95;
-		color: #fff;
+		color: var(--text-strong);
 	}
 	.fn {
 		font-family: var(--font-mono);
@@ -343,7 +356,7 @@
 			background 160ms var(--ease-out);
 	}
 	.bench:hover {
-		border-color: #24303e;
+		border-color: var(--line-strong);
 		background: var(--s2);
 	}
 	/* The teaser screen: static SMPTE mini-bars in PVM phosphor tones (muted

@@ -12,6 +12,7 @@
 	import SiteMark from '$lib/components/SiteMark.svelte';
 	import XpMeter from '$lib/components/XpMeter.svelte';
 	import RailNav from '$lib/components/RailNav.svelte';
+	import ThemeToggle from '$lib/components/ThemeToggle.svelte';
 
 	let { children } = $props();
 
@@ -222,6 +223,7 @@
 				{/if}
 			</div>
 			<div class="right">
+				<ThemeToggle />
 				<button
 					class="keyhint mono"
 					onclick={() => (keymapOpen = true)}
@@ -352,7 +354,7 @@
 	}
 	.collapse:hover {
 		color: var(--muted);
-		border-color: #24303e;
+		border-color: var(--line-strong);
 	}
 	/* Collapsed: the head stacks the home tick over the expand toggle, so there is
 	   always a visible way back out of the 48px state (the `[` key also works). */
@@ -440,7 +442,7 @@
 	}
 	.keyhint:hover {
 		color: var(--muted);
-		border-color: #24303e;
+		border-color: var(--line-strong);
 	}
 
 	.workspace {

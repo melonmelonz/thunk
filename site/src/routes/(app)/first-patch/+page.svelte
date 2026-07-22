@@ -395,7 +395,7 @@
 	}
 	.lhead h1 {
 		font-size: clamp(1.9rem, 4.5vw, 2.6rem);
-		color: #fff;
+		color: var(--text-strong);
 		letter-spacing: -0.02em;
 	}
 	.lede {
@@ -446,7 +446,7 @@
 	.block h2 {
 		font-size: 1.25rem;
 		font-weight: 500;
-		color: #fff;
+		color: var(--text-strong);
 		letter-spacing: -0.01em;
 	}
 	.block-lede {
@@ -499,7 +499,7 @@
 		gap: 0.35rem;
 	}
 	a.onramp:hover .or-name {
-		color: #fff;
+		color: var(--text-strong);
 	}
 	.or-out {
 		font-size: 0.75rem;
@@ -813,7 +813,7 @@
 	}
 	.btn.ghost:hover:not(:disabled) {
 		color: var(--muted);
-		border-color: #24303e;
+		border-color: var(--line-strong);
 	}
 	.btn.ghost.danger:hover:not(:disabled) {
 		color: var(--err);

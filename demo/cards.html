@@ -26,8 +26,26 @@
 				--phosphor-dim: #3df0a833;
 				--cyan: #64d8ff;
 				--line: #1c2530;
+				--word: #ffffff; /* wordmark ink; near-black in light */
+				--vignette: #0f1621; /* top glow tint */
 				--mono: ui-monospace, 'Cascadia Code', 'SF Mono', Menlo, Consolas, monospace;
 				--ease: cubic-bezier(0.22, 1, 0.36, 1);
+			}
+			/* Light mode: same cards on paper (mirrors app.css). ?theme=light. */
+			body.light {
+				--bg: #eef1f5;
+				--s1: #ffffff;
+				--s2: #f6f8fa;
+				--s3: #e8edf2;
+				--text: #212a35;
+				--muted: #59636f;
+				--faint: #6a7480;
+				--phosphor: #0c9b6a;
+				--phosphor-dim: #0c9b6a2e;
+				--cyan: #0a7fb5;
+				--line: #d5dce3;
+				--word: #0c1420;
+				--vignette: #ffffff;
 			}
 			* {
 				margin: 0;
@@ -48,7 +66,7 @@
 				position: fixed;
 				inset: 0;
 				pointer-events: none;
-				background: radial-gradient(120% 80% at 50% -8%, #0f1621 0%, transparent 60%);
+				background: radial-gradient(120% 80% at 50% -8%, var(--vignette) 0%, transparent 60%);
 				opacity: 0.6;
 			}
 			.stage {
@@ -230,6 +248,11 @@
 			}
 
 			/* ---- Payoff mode ------------------------------------------------ */
+			/* No applicant recall - the story already made that point. Straight to
+			   the wordmark so the ending flows. */
+			body.payoff .stage {
+				display: none;
+			}
 			body.payoff .eyebrow,
 			body.payoff .caption {
 				display: none;
@@ -237,7 +260,7 @@
 			/* In payoff, the profiles snap to their end state (no reveal), then recede
 			   as the wordmark takes the frame. */
 			body.payoff .dev {
-				animation: fade-up 500ms var(--ease) both, recede 1100ms var(--ease) 1400ms both;
+				animation: fade-up 500ms var(--ease) both, recede 1100ms var(--ease) 4800ms both;
 				opacity: 1;
 				transform: none;
 			}
@@ -286,7 +309,7 @@
 				gap: 1.1vw;
 				opacity: 0;
 				transform: translateY(10px);
-				animation: fade-up 900ms var(--ease) 2000ms both;
+				animation: fade-up 900ms var(--ease) 600ms both;
 			}
 			.tick {
 				width: 0.7vw;
@@ -296,19 +319,22 @@
 				background: var(--phosphor);
 				border-radius: 2px;
 				box-shadow: 0 0 18px var(--phosphor);
-				animation: tick-pulse 1.6s var(--ease) 2600ms infinite;
+				/* One-shot warm-in, then dead steady. No infinite pulse: the payoff
+				   must hold perfectly still until the CRT collapse. */
+				opacity: 0;
+				animation: tick-warm 700ms var(--ease) 500ms both;
 			}
 			.word {
 				font-size: 5.5vw;
 				letter-spacing: -0.02em;
-				color: #fff;
+				color: var(--word);
 			}
 			.tagline {
 				font-size: 1.15vw;
 				letter-spacing: 0.06em;
 				color: var(--muted);
 				opacity: 0;
-				animation: fade-in 900ms var(--ease) 2700ms both;
+				animation: fade-in 900ms var(--ease) 1300ms both;
 			}
 			.addr {
 				font-size: 1.35vw;
@@ -316,14 +342,14 @@
 				color: var(--phosphor);
 				text-shadow: 0 0 14px var(--phosphor-dim);
 				opacity: 0;
-				animation: fade-in 900ms var(--ease) 3300ms both;
+				animation: fade-in 900ms var(--ease) 2100ms both;
 			}
 			/* The closing flourish: after the address settles, the whole payoff
 			   flickers like a tube losing sync, then collapses to a bright phosphor
 			   line that contracts to a point and goes dark - a CRT powering off. */
 			body.payoff .finale {
 				transform-origin: center;
-				animation: crt-off 1000ms cubic-bezier(0.7, 0, 0.84, 0) 5200ms forwards;
+				animation: crt-off 1000ms cubic-bezier(0.7, 0, 0.84, 0) 13700ms forwards;
 			}
 			.crtbeam {
 				position: fixed;
@@ -340,7 +366,7 @@
 				pointer-events: none;
 			}
 			body.payoff .crtbeam {
-				animation: crt-beam 1000ms ease 5200ms forwards;
+				animation: crt-beam 1000ms ease 13700ms forwards;
 			}
 			@keyframes crt-off {
 				0% { opacity: 1; transform: scaleY(1); filter: none; }
@@ -366,7 +392,7 @@
 				pointer-events: none;
 			}
 			body.payoff .blackout {
-				animation: fade-in 600ms linear 6100ms both;
+				animation: fade-in 600ms linear 14600ms both;
 			}
 
 			@keyframes fade-up {
@@ -418,6 +444,10 @@
 					transform: translateY(10px) scale(0.97);
 					filter: blur(3px);
 				}
+			}
+			@keyframes tick-warm {
+				from { opacity: 0; }
+				to { opacity: 1; }
 			}
 			@keyframes tick-pulse {
 				0%,
@@ -488,6 +518,11 @@
 			}
 			applyMode();
 			addEventListener('hashchange', applyMode);
+			// Theme from ?theme=light (the film renders these cards in whichever
+			// palette the rest of the site is wearing).
+			if (new URLSearchParams(location.search).get('theme') === 'light') {
+				document.body.classList.add('light');
+			}
 		</script>
 	</body>
 </html>
